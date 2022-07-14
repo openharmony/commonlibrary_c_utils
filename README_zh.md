@@ -18,7 +18,7 @@ C++公共基础类库提供了一些常用的C++开发工具类，包括：
 ## 目录<a name="section17271017133915"></a>
 
 ```
-utils/native
+commonlibrary/c_utils
 └─ base
     ├── include       # 对各子系统开放的接口头文件
     ├── src           # 源文件
