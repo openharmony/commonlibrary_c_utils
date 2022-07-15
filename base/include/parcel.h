@@ -362,7 +362,8 @@ sptr<T> Parcel::ReadObject()
     if (!this->CheckOffsets()) {
         return nullptr;
     }
-    return T::Unmarshalling(*this);
+    sptr<T> res(T::Unmarshalling(*this));
+    return res;
 }
 
 // Read data from the given parcel into this parcelable object.
@@ -373,7 +374,6 @@ T *Parcel::ReadParcelable()
     if (size == 0) {
         return nullptr;
     }
-
     return T::Unmarshalling(*this);
 }
 
@@ -385,8 +385,8 @@ sptr<T> Parcel::ReadStrongParcelable()
     if (size == 0) {
         return nullptr;
     }
-
-    return T::Unmarshalling(*this);
+    sptr<T> res(T::Unmarshalling(*this));
+    return res;
 }
 
 } // namespace OHOS
