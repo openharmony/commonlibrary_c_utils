@@ -112,8 +112,8 @@ ohos_static_library("utilsbase") {
   defines = [ "CONFIG_HILOG" ]
   external_deps = [ "hilog_native:libhilog_base" ]
 
-  subsystem_name = "utils"
-  part_name = "utils_base"
+  subsystem_name = "commonlibrary"
+  part_name = "c_utils"
 }
 
 ohos_shared_library("utils") {
@@ -124,10 +124,11 @@ ohos_shared_library("utils") {
     ":private_securec_config",
   ]
   public_configs = [ ":static_utils_config" ]
-  subsystem_name = "utils"
   defines = [ "CONFIG_HILOG" ]
   external_deps = [ "hilog_native:libhilog_base" ]
-  part_name = "utils_base"
+
+  subsystem_name = "commonlibrary"
+  part_name = "c_utils"
   install_images = [
     "system",
     "updater",
@@ -135,21 +136,25 @@ ohos_shared_library("utils") {
 }
 
 ohos_static_library("utilsecurec") {
-  visibility = [ "//foundation/arkui/ace_engine/*:*" ]
+  visibility = [
+    "//foundation/arkui/ace_engine/*:*",
+    "//utils/native/base:*",
+  ]
   sources = securec_sources
   configs = [
     ":utils_config",
     ":private_securec_config",
   ]
   public_configs = [ ":static_utils_config" ]
-  subsystem_name = "utils"
-  part_name = "utils_base"
+  subsystem_name = "commonlibrary"
+  part_name = "c_utils"
 }
 
 ohos_shared_library("utilsecurec_shared") {
   visibility = [
     ":*",
     "//foundation/arkui/ace_engine/*:*",
+    "//utils/native/base:*",
   ]
   sources = securec_sources
   configs = [
@@ -157,7 +162,7 @@ ohos_shared_library("utilsecurec_shared") {
     ":private_securec_config",
   ]
   public_configs = [ ":utils_config" ]
-  part_name = "utils_base"
+  part_name = "c_utils"
   install_images = [
     "system",
     "updater",

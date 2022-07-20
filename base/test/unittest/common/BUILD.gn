@@ -34,8 +34,8 @@ ohos_unittest("UtilsStringTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -47,8 +47,8 @@ ohos_unittest("UtilsSecurecTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -60,8 +60,8 @@ ohos_unittest("UtilsDirectoryTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -73,8 +73,8 @@ ohos_unittest("UtilsDateTimeTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -86,8 +86,8 @@ ohos_unittest("UtilsParcelTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -99,8 +99,8 @@ ohos_unittest("UtilsAshmemTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 
   external_deps = [ "hilog_native:libhilog" ]
@@ -114,8 +114,8 @@ ohos_unittest("UtilsRefbaseTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -127,8 +127,8 @@ ohos_unittest("UtilsThreadTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -140,8 +140,8 @@ ohos_unittest("UtilsFileTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -153,8 +153,8 @@ ohos_unittest("UtilsObserverTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -166,8 +166,8 @@ ohos_unittest("UtilsSafeBlockQueueTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -183,8 +183,8 @@ ohos_unittest("UtilsSafeMapTest") {
   remove_configs = [ "//build/config/compiler:no_exceptions" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -196,8 +196,8 @@ ohos_unittest("UtilsSafeBlockQueueTrackingTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -209,8 +209,8 @@ ohos_unittest("UtilsSafeQueueTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -222,8 +222,8 @@ ohos_unittest("UtilsThreadPoolTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -235,8 +235,8 @@ ohos_unittest("UtilsSemaphoreTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -248,8 +248,8 @@ ohos_unittest("UtilsSingletonTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -261,8 +261,8 @@ ohos_unittest("UtilsSortedVectorTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -274,8 +274,8 @@ ohos_unittest("UtilsUniqueFdTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 
@@ -287,8 +287,8 @@ ohos_unittest("UtilsTimerTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "//commonlibrary/c_utils/base:utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 }
 

@@ -1,4 +1,4 @@
-# utils/native<a name="EN-US_TOPIC_0000001148676553"></a>
+# commonlibrary/c_utils<a name="EN-US_TOPIC_0000001148676553"></a>
 
 
 -   [Introduction](#section11660541593)
@@ -7,7 +7,7 @@
 
 ## Introduction<a name="section11660541593"></a>
 
-The  **utils/native**  repository provides the following commonly used C++ utility classes:
+The  **commonlibrary/c_utils**  repository provides the following commonly used C++ utility classes:
 
 -   Enhanced APIs for operations related to files, paths, and strings
 -   APIs related to the read-write lock, semaphore, timer, thread, and thread pool
@@ -18,7 +18,7 @@ The  **utils/native**  repository provides the following commonly used C++ utili
 ## Directory Structure<a name="section17271017133915"></a>
 
 ```
-utils/native
+commonlibrary/c_utils
 └─ base
     ├── include       # Header files of APIs open to other subsystems
     ├── src           # Source files
