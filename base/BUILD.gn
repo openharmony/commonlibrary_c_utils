@@ -162,6 +162,7 @@ ohos_shared_library("utilsecurec_shared") {
     ":private_securec_config",
   ]
   public_configs = [ ":utils_config" ]
+  subsystem_name = "commonlibrary"
   part_name = "c_utils"
   install_images = [
     "system",
