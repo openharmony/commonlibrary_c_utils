@@ -149,24 +149,4 @@ ohos_static_library("utilsecurec") {
   subsystem_name = "commonlibrary"
   part_name = "c_utils"
 }
-
-ohos_shared_library("utilsecurec_shared") {
-  visibility = [
-    ":*",
-    "//foundation/arkui/ace_engine/*:*",
-    "//utils/native/base:*",
-  ]
-  sources = securec_sources
-  configs = [
-    ":utils_config",
-    ":private_securec_config",
-  ]
-  public_configs = [ ":utils_config" ]
-  subsystem_name = "commonlibrary"
-  part_name = "c_utils"
-  install_images = [
-    "system",
-    "updater",
-  ]
-}
 ###############################################################################
