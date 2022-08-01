@@ -111,37 +111,33 @@ class RefTracker {
 public:
     RefTracker() {};
 
-    RefTracker(RefTracker* exTracker, const void* id, int strong,
-        int weak, int ref, uint pid, uint tid);
+    RefTracker(RefTracker* exTracker, const void* id, int strong, int weak, int ref, int pid, int tid);
 
-    void GetTrace(RefTracker* exTracker, const void* id, int strong,
-        int weak, int ref, uint pid, uint tid);
+    void GetTrace(RefTracker* exTracker, const void* id, int strong, int weak, int ref, int pid, int tid);
 
     // Only used for tracking the amount of Strong Reference.
-    void GetStrongTrace(RefTracker* exTracker, const void* id, int strong,
-        uint pid, uint tid);
+    void GetStrongTrace(RefTracker* exTracker, const void* id, int strong, int pid, int tid);
 
     // Only used for tracking the amount of Weak Reference.
-    void GetWeakTrace(RefTracker* exTracker, const void* id, int weak,
-        uint pid, uint tid);
+    void GetWeakTrace(RefTracker* exTracker, const void* id, int weak, int pid, int tid);
 
-    void PrintTrace();
+    void PrintTrace(const void* root);
 
-    void PrintStrongTrace();
+    void PrintStrongTrace(const void* root);
 
-    void PrintWeakTrace();
+    void PrintWeakTrace(const void* root);
 
     RefTracker* GetexTrace();
 
-    RefTracker* PopTrace();
+    RefTracker* PopTrace(const void* root);
 
 private:
     const void* ptrID;
     int strongRefCNT;
     int weakRefCNT;
     int refCNT;
-    uint PID;
-    uint TID;
+    int PID;
+    int TID;
     RefTracker* exTrace;
 };
 #endif

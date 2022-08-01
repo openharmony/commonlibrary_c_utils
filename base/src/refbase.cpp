@@ -66,12 +66,12 @@ bool WeakRefCounter::AttemptIncStrongRef(const void *objectId)
 }
 
 #ifdef DEBUG_REFBASE
-RefTracker::RefTracker(RefTracker* exTracker, const void* id, int strong, int weak, int ref, uint pid, uint tid)
+RefTracker::RefTracker(RefTracker* exTracker, const void* id, int strong, int weak, int ref, int pid, int tid)
     : ptrID (id), strongRefCNT (strong), weakRefCNT (weak), refCNT (ref), PID (pid), TID (tid), exTrace (exTracker)
 {
 }
 
-void RefTracker::GetTrace(RefTracker* exTracker, const void* id, int strong, int weak, int ref, uint pid, uint tid)
+void RefTracker::GetTrace(RefTracker* exTracker, const void* id, int strong, int weak, int ref, int pid, int tid)
 {
     ptrID = id;
     strongRefCNT = strong;
@@ -82,7 +82,7 @@ void RefTracker::GetTrace(RefTracker* exTracker, const void* id, int strong, int
     exTrace = exTracker;
 }
 
-void RefTracker::GetStrongTrace(RefTracker* exTracker, const void* id, int strong, uint pid, uint tid)
+void RefTracker::GetStrongTrace(RefTracker* exTracker, const void* id, int strong, int pid, int tid)
 {
     ptrID = id;
     strongRefCNT = strong;
@@ -93,7 +93,7 @@ void RefTracker::GetStrongTrace(RefTracker* exTracker, const void* id, int stron
     exTrace = exTracker;
 }
 
-void RefTracker::GetWeakTrace(RefTracker* exTracker, const void* id, int weak, uint pid, uint tid)
+void RefTracker::GetWeakTrace(RefTracker* exTracker, const void* id, int weak, int pid, int tid)
 {
     ptrID = id;
     strongRefCNT = -(INITIAL_PRIMARY_VALUE);
@@ -104,25 +104,23 @@ void RefTracker::GetWeakTrace(RefTracker* exTracker, const void* id, int weak, u
     exTrace = exTracker;
 }
 
-void RefTracker::PrintTrace()
+void RefTracker::PrintTrace(const void* root)
 {
-    UTILS_LOGI("ptrID: %{public}016x strongcnt: %{public}d weakcnt: \
-        %{public}d refcnt: %{public}d PID: %{public}d TID: %{public}d", \
-        ptrID, strongRefCNT, weakRefCNT, refCNT, PID, TID);
+    UTILS_LOGI("ptrID(%{public}lx) call %{public}lx. strongcnt: %{public}d weakcnt: %{public}d " \
+        "refcnt: %{public}d PID: %{public}d TID: %{public}d",
+        reinterpret_cast<size_t>(ptrID), reinterpret_cast<size_t>(root), strongRefCNT, weakRefCNT, refCNT, PID, TID);
 }
 
-void RefTracker::PrintStrongTrace()
+void RefTracker::PrintStrongTrace(const void* root)
 {
-    UTILS_LOGI("ptrID: %{public}016x strongcnt: %{public}d \
-        PID: %{public}d TID: %{public}d", ptrID, strongRefCNT,\
-        PID, TID);
+    UTILS_LOGI("ptrID(%{public}lx) call %{public}lx. strongcnt: %{public}d PID: %{public}d TID: %{public}d",
+        reinterpret_cast<size_t>(ptrID), reinterpret_cast<size_t>(root), strongRefCNT, PID, TID);
 }
 
-void RefTracker::PrintWeakTrace()
+void RefTracker::PrintWeakTrace(const void* root)
 {
-    UTILS_LOGI("ptrID: %{public}016x weakcnt: %{public}d \
-        PID: %{public}d TID: %{public}d", ptrID, weakRefCNT,\
-        PID, TID);
+    UTILS_LOGI("ptrID(%{public}lx) call %{public}lx. weakcnt: %{public}d PID: %{public}d TID: %{public}d",
+        reinterpret_cast<size_t>(ptrID), reinterpret_cast<size_t>(root), weakRefCNT, PID, TID);
 }
 
 RefTracker* RefTracker::GetexTrace()
@@ -130,10 +128,10 @@ RefTracker* RefTracker::GetexTrace()
     return exTrace;
 }
 
-RefTracker* RefTracker::PopTrace()
+RefTracker* RefTracker::PopTrace(const void* root)
 {
     RefTracker* ref = exTrace;
-    PrintTrace();
+    PrintTrace(root);
     delete this;
     return ref;
 }
@@ -151,7 +149,7 @@ void RefCounter::PrintTracker()
 {
     std::lock_guard<std::mutex> lock(trackerMutex);
     while (refTracker) {
-        refTracker = refTracker->PopTrace();
+        refTracker = refTracker->PopTrace(this);
     }
 }
 #endif
@@ -198,12 +196,7 @@ bool RefCounter::IsRefPtrValid()
 RefCounter::~RefCounter()
 {
 #ifdef DEBUG_REFBASE
-    while (refTracker) {
-        RefTracker* ref = refTracker;
-        ref->PrintTrace();
-        refTracker = ref->GetexTrace();
-        delete ref;
-    }
+    PrintTracker();
 #endif
 }
 
