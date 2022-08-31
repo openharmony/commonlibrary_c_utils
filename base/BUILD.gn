@@ -37,6 +37,10 @@ config("static_utils_config") {
   ]
 }
 
+config("utils_all_dependent_configs") {
+  include_dirs = [ "include" ]
+}
+
 sources_utils = [
   "src/string_ex.cpp",
   "src/unicode_ex.cpp",
@@ -123,6 +127,7 @@ ohos_shared_library("utils") {
     ":utils_config",
     ":private_securec_config",
   ]
+  all_dependent_configs = [ ":utils_all_dependent_configs" ]
   public_configs = [ ":static_utils_config" ]
   defines = [ "CONFIG_HILOG" ]
   external_deps = [ "hilog_native:libhilog_base" ]
