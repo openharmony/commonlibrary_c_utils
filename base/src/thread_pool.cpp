@@ -15,8 +15,10 @@
 
 #include "thread_pool.h"
 #include "errors.h"
+#include "utils_log.h"
 
 #include <memory>
+#include <pthread.h>
 
 namespace OHOS {
 
@@ -45,7 +47,13 @@ uint32_t ThreadPool::Start(int numThreads)
     threads_.reserve(numThreads);
 
     for (int i = 0; i < numThreads; ++i) {
-        threads_.push_back(std::thread(&ThreadPool::WorkInThread, this));
+        std::thread t(&ThreadPool::WorkInThread, this);
+        // Give the name of ThreadPool to threads created by the ThreadPool.
+        int err = pthread_setname_np(t.native_handle(), (myName_ + std::to_string(i)).c_str());
+        if (err != 0) {
+            UTILS_LOGW("Failed to set name to thread. %{public}s", strerror(err));
+        }
+        threads_.push_back(std::move(t));
     }
     return ERR_OK;
 }
