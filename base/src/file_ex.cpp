@@ -172,7 +172,7 @@ bool SaveStringToFd(int fd, const std::string& content)
         return false;
     }
 
-    if ((unsigned long)len != content.length()) {
+    if (static_cast<unsigned long>(len) != content.length()) {
         UTILS_LOGE("the length write to file is not equal to fileLength!len:%{public}ld, fileLen:%{public}zu",
             len, content.length());
         return false;

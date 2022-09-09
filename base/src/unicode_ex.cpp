@@ -59,22 +59,22 @@ void Utf32CodePointToUtf8(uint8_t* dstP, char32_t srcChar, size_t bytes)
 {
     dstP += bytes;
     if (bytes >= 4) {
-        *--dstP = (uint8_t)((srcChar | UTF8_BYTE_MARK) & UTF8_BYTE_MASK);
+        *--dstP = static_cast<uint8_t>((srcChar | UTF8_BYTE_MARK) & UTF8_BYTE_MASK);
         srcChar >>= UTF8_OFFSET;
     }
 
     if (bytes >= 3) {
-        *--dstP = (uint8_t)((srcChar | UTF8_BYTE_MARK) & UTF8_BYTE_MASK);
+        *--dstP = static_cast<uint8_t>((srcChar | UTF8_BYTE_MARK) & UTF8_BYTE_MASK);
         srcChar >>= UTF8_OFFSET;
     }
 
     if (bytes >= 2) {
-        *--dstP = (uint8_t)((srcChar | UTF8_BYTE_MARK) & UTF8_BYTE_MASK);
+        *--dstP = static_cast<uint8_t>((srcChar | UTF8_BYTE_MARK) & UTF8_BYTE_MASK);
         srcChar >>= UTF8_OFFSET;
     }
 
     if (bytes >= 1) {
-        *--dstP = (uint8_t)(srcChar | UTF8_FIRST_BYTE_MARK[bytes]);
+        *--dstP = static_cast<uint8_t>(srcChar | UTF8_FIRST_BYTE_MARK[bytes]);
     }
 }
 
@@ -117,7 +117,7 @@ int Utf16ToUtf8Length(const char16_t* str16, size_t str16Len)
             charLen = 4;
             str16 += 2;
         } else {
-            charLen = Utf32CodePointUtf8Length((char32_t)* str16++);
+            charLen = Utf32CodePointUtf8Length(static_cast<char32_t>(*str16++));
         }
 
         if (utf8Len > (INT_MAX - charLen)) {
@@ -143,7 +143,7 @@ void StrncpyStr16ToStr8(const char16_t* utf16Str, size_t str16Len, char* utf8Str
             utf32 |= *curUtf16++ - 0xDC00;
             utf32 += 0x10000;
         } else {
-            utf32 = (char32_t)* curUtf16++;
+            utf32 = static_cast<char32_t>(*curUtf16++);
         }
         const size_t len = Utf32CodePointUtf8Length(utf32);
         if (str8Len < len) {
@@ -282,16 +282,16 @@ char16_t* Utf8ToUtf16(const char* utf8Str, size_t u8len, char16_t* u16str, size_
         // Convert the UTF32 codepoint to one or more UTF16 codepoints
         if (codepoint <= 0xFFFF) {
             // Single UTF16 character
-            *u16cur++ = (char16_t)codepoint;
+            *u16cur++ = static_cast<char16_t>(codepoint);
         } else {
             // Multiple UTF16 characters with surrogates
             codepoint = codepoint - 0x10000;
-            *u16cur++ = (char16_t)((codepoint >> 10) + 0xD800);
+            *u16cur++ = static_cast<char16_t>((codepoint >> 10) + 0xD800);
             if (u16cur >= u16end) {
                 // Ooops...  not enough room for this surrogate pair.
                 return u16cur - 1;
             }
-            *u16cur++ = (char16_t)((codepoint & 0x3FF) + 0xDC00);
+            *u16cur++ = static_cast<char16_t>((codepoint & 0x3FF) + 0xDC00);
         }
 
         u8cur += len;

@@ -17,9 +17,10 @@
 #include "string_ex.h"
 #include <iostream>
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
+namespace OHOS {
+namespace {
 class UtilsStringTest : public testing::Test
 {
 public :
@@ -583,3 +584,5 @@ HWTEST_F(UtilsStringTest, DexToHexString_01, TestSize.Level0)
     result = DexToHexString(11259375, false);
     EXPECT_EQ(result, "abcdef");
 }
+}  // namespace
+}  // namespace OHOS
