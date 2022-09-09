@@ -26,18 +26,13 @@
 #include <chrono> // std::chrono::seconds
 #include <iostream> // std::cout
 #include <thread> // std::thread, std::this_thread::sleep_for
-
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
+namespace OHOS {
+namespace {
 class UtilsSafeBlockQueue : public testing::Test {
 };
-
-void task_put(SafeBlockQueue<int>& q, int i)
-{
-    q.Push(i);
-}
 
 const unsigned int QUEUE_SLOTS = 10;
 const unsigned int THREAD_NUM = QUEUE_SLOTS + 1;
@@ -65,6 +60,7 @@ public:
         getStatus = true;
     }
 };
+
 SafeBlockQueue<int> DemoThreadData::shareQueue(QUEUE_SLOTS);
 
 void PutHandleThreadData(DemoThreadData& q, int i)
@@ -666,3 +662,5 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentGetAndPopInfullqueue001, 
         demoDatas[0].Get();
     }
 }
+}  // namespace
+}  // namespace OHOS

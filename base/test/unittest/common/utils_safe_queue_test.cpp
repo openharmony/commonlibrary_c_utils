@@ -20,11 +20,11 @@
 #include <iostream>
 #include <thread>
 #include <chrono>   // std::chrono::seconds
-
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
+namespace OHOS {
+namespace {
 class UtilsSafeQueue : public testing::Test
 {
 };
@@ -56,6 +56,7 @@ public:
         getStatus = true;
     }
 };
+
 SafeQueue<int> DemoThreadData::shareQueue;
 
 void PutHandleThreadDataTime(DemoThreadData &q, int i, std::chrono::system_clock::time_point absTime)
@@ -285,3 +286,5 @@ HWTEST_F(UtilsSafeQueue, testMutilthreadConcurrentGetAndPopInNotEmptyQueue, Test
     putInTestThread.ResetStatus();
     getOutTestThread.ResetStatus();
 }
+}  // namespace
+}  // namespace OHOS

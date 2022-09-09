@@ -18,14 +18,14 @@
 #include <iostream>
 #include <fstream>
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
-
+namespace OHOS {
+namespace {
 class DelayedSingletonDeclearTest {
     DECLARE_DELAYED_SINGLETON(DelayedSingletonDeclearTest);
 public:
-    void* GetObjAddr() { return (void*)this; }
+    void* GetObjAddr() { return static_cast<void*>(this); }
 };
 
 DelayedSingletonDeclearTest::~DelayedSingletonDeclearTest() {};
@@ -34,7 +34,7 @@ DelayedSingletonDeclearTest::DelayedSingletonDeclearTest() {};
 class SingletonDeclearTest {
     DECLARE_SINGLETON(SingletonDeclearTest);
 public:
-    void* GetObjAddr() { return (void*)this; }
+    void* GetObjAddr() { return static_cast<void*>(this); }
 };
 
 SingletonDeclearTest::~SingletonDeclearTest() {};
@@ -42,19 +42,19 @@ SingletonDeclearTest::SingletonDeclearTest() {};
 
 class SingletonTest: public Singleton<SingletonTest> {
 public:
-    void* GetObjAddr() { return (void*)this; }
+    void* GetObjAddr() { return static_cast<void*>(this); }
 };
 
 class DelayedSingletonTest: public DelayedSingleton<DelayedSingletonTest> {
 public:
-    void* GetObjAddr() { return (void*)this; }
+    void* GetObjAddr() { return static_cast<void*>(this); }
 };
 
 
 class DelayedRefSingletonDeclearTest {
     DECLARE_DELAYED_REF_SINGLETON(DelayedRefSingletonDeclearTest);
 public:
-    void* GetObjAddr() { return (void*)this; }
+    void* GetObjAddr() { return static_cast<void*>(this); }
 };
 
 DelayedRefSingletonDeclearTest::DelayedRefSingletonDeclearTest() {};
@@ -62,7 +62,7 @@ DelayedRefSingletonDeclearTest::~DelayedRefSingletonDeclearTest() {};
 
 class DelayedRefSingletonTest: public DelayedRefSingleton<DelayedRefSingletonTest> {
 public:
-    void* GetObjAddr() { return (void*)this; }
+    void* GetObjAddr() { return static_cast<void*>(this); }
 };
 
 
@@ -94,7 +94,6 @@ void UtilsSingletonTest::TearDown(void)
 {
     // step 3: input testcase teardown step
 }
-
 
 HWTEST_F(UtilsSingletonTest, test_DelayedSingletonDeclearTest, TestSize.Level0)
 {
@@ -146,5 +145,5 @@ HWTEST_F(UtilsSingletonTest, test_DelayedRefSingletonDeclearTest, TestSize.Level
     DelayedRefSingletonDeclearTest& p2 = DelayedRefSingleton<DelayedRefSingletonDeclearTest>::GetInstance();
     EXPECT_EQ(p1.GetObjAddr(), p2.GetObjAddr());
 }
-
-
+}  // namespace
+}  // namespace OHOS

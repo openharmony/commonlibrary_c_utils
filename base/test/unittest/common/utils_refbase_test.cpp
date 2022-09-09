@@ -24,11 +24,11 @@
 #include "singleton.h"
 
 #include <future>
-
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
+namespace OHOS {
+namespace {
 static constexpr int FLAG_OF_CONS = 1;
 static constexpr int FLAG_OF_DEST = 2;
 static int g_sptrCount = 0;
@@ -866,3 +866,5 @@ HWTEST_F(UtilsRefbaseTest, testWptrefbase008, TestSize.Level0)
     testObject2 = testObject1.GetRefPtr();
     EXPECT_EQ(testObject1->GetWptrRefCount(), 2);
 }
+}  // namespace
+}  // namespace OHOS

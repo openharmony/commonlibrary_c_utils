@@ -20,11 +20,11 @@
 #include <iostream>
 #include <thread>
 #include <chrono> // std::chrono::seconds
-
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
+namespace OHOS {
+namespace {
 class UtilsSafeMap : public testing::Test {
 };
 
@@ -443,3 +443,5 @@ HWTEST_F(UtilsSafeMap, testUtilsConcurrentWriteAndFindAndSet001, TestSize.Level0
         }
     });
 }
+}  // namespace
+}  // namespace OHOS
