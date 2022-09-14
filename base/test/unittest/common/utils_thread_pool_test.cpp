@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,10 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <gtest/gtest.h>
-#include "thread_pool.h"
+
 #include <chrono>
 #include <cstdio>
+#include <sys/prctl.h>
+#include <gtest/gtest.h>
+#include "thread_pool.h"
 
 using namespace testing::ext;
 using namespace OHOS;
@@ -269,3 +271,35 @@ HWTEST_F(UtilsThreadPoolTest, test_08, TestSize.Level0)
     pool.Stop();
 }
 
+void TestFuncGetName(const std::string& poolName)
+{
+    char name[16];
+    prctl(PR_GET_NAME, name);
+    std::string nameStr(name);
+    size_t found = nameStr.find(poolName);
+    EXPECT_EQ(found, 0);
+}
+
+/*
+ *  Test_09 is used to verify the name set to ThreadPool will be set as the real name of threads in pool.
+ */
+HWTEST_F(UtilsThreadPoolTest, test_09, TestSize.Level0)
+{
+    std::string poolName("test_09_pool");
+    ThreadPool pool(poolName);
+    pool.Start(5);
+    EXPECT_EQ(pool.GetName(), poolName);
+    EXPECT_EQ((int)pool.GetThreadsNum(), 5);
+    EXPECT_EQ((int)pool.GetCurTaskNum(), 0);
+
+    for (int i = 0; i < 5; ++i)
+    {
+        auto task = std::bind(TestFuncGetName, poolName);
+        pool.AddTask(task);
+    }
+
+    sleep(1);
+    // these tasks are endless Loop, 5 threads process 5 tasks, zero task remains in the task queue
+    EXPECT_EQ((int)pool.GetCurTaskNum(), 0);
+    pool.Stop();
+}
