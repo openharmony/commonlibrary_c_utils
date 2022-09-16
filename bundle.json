@@ -3,6 +3,9 @@
   "version": "3.1.0",
   "description": "c_utils",
   "publishAs": "code-segment",
+  "segment": {
+    "destpath": "commonlibrary/c_utils"
+  },
   "scripts": {
     "install": "DEST_PATH=${DEP_BUNDLE_BASE}/commonlibrary/c_utils/base && mkdir -p $DEST_PATH && cp -r ./* $DEST_PATH"
   },
