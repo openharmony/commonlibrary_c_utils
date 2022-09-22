@@ -69,14 +69,14 @@ static void Trim(std::string &s)
 
 static int GetAshmemDeviceFd()
 {
-    static const std::string boot_id_path = "/proc/sys/kernel/random/boot_id";
+    static const std::string bootIdPath = "/proc/sys/kernel/random/boot_id";
     std::string boot_id;
     char buf[BUFSIZ];
     ssize_t n;
     int fdBoot = -1;
     int fdAshmem = -1;
 
-    fdBoot = TEMP_FAILURE_RETRY(open(boot_id_path.c_str(), O_RDONLY | O_CLOEXEC));
+    fdBoot = TEMP_FAILURE_RETRY(open(bootIdPath.c_str(), O_RDONLY | O_CLOEXEC));
     if (fdBoot < 0) {
         return -1;
     }

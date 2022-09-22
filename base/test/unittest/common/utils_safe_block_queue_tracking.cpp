@@ -18,23 +18,15 @@
 #include <future>
 #include <gtest/gtest.h>
 #include <thread>
-
 #include <iostream>
-
 #include <chrono> // std::chrono::seconds
-
-
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
+namespace OHOS {
+namespace {
 class UtilsSafeBlockQueueTracking : public testing::Test {
 };
-
-void taskPut(SafeBlockQueueTracking<int>& q, int i)
-{
-    q.Push(i);
-}
 
 const unsigned int QUEUE_SLOTS = 10;
 const unsigned int THREAD_NUM = QUEUE_SLOTS + 1;
@@ -690,3 +682,5 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndPopInfullqu
     ASSERT_TRUE(demoDatas[0].joinStatus);
     demoDatas[0].joinStatus = false;
 }
+}  // namespace
+}  // namespace OHOS

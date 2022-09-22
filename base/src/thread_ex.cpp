@@ -30,7 +30,7 @@ struct ThreadParam {
     std::string name;
 
     // prctl only support set the name of the calling process.
-    static int proxy(const ThreadParam* t)
+    static int Proxy(const ThreadParam* t)
     {
         if (t == nullptr) {
             UTILS_LOGD("invalid param.");
@@ -65,13 +65,13 @@ bool CreatePThread(ThreadParam& para, size_t stackSize, pthread_t *threadId)
     // create thread as "detached", so it cleans up after itself.
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-    auto t = new ThreadParam; // t would be delete in ThreadParam::proxy
+    auto t = new ThreadParam; // t would be delete in ThreadParam::Proxy
     t->startRoutine = para.startRoutine;
     t->args = para.args;
     t->priority = para.priority;
     t->name = para.name;
 
-    para.startRoutine = (ThreadFunc)&ThreadParam::proxy;
+    para.startRoutine = reinterpret_cast<ThreadFunc>(&ThreadParam::Proxy);
     para.args = t;
 
     if (stackSize) {
@@ -80,14 +80,14 @@ bool CreatePThread(ThreadParam& para, size_t stackSize, pthread_t *threadId)
 
     errno = 0;
     pthread_t thread;
-    int result = pthread_create(&thread, &attr, (PThreadRoutine)para.startRoutine, para.args);
+    int result = pthread_create(&thread, &attr, reinterpret_cast<PThreadRoutine>(para.startRoutine), para.args);
     pthread_attr_destroy(&attr);
 
     if (result != 0) {
         return false;
     }
 
-    if (threadId != NULL) {
+    if (threadId != nullptr) {
         *threadId = thread;
     }
 

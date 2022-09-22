@@ -20,11 +20,11 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <gtest/gtest.h>
-
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
+namespace OHOS {
+namespace {
 class UtilsUniqueFd : public testing::Test {
 public:
     static void SetUpTestCase(void);
@@ -166,3 +166,5 @@ HWTEST_F(UtilsUniqueFd, testUtilsUniqueFdDefineDeletorCloseStatus, TestSize.Leve
     int ret = write(fd, buf, sizeof(buf));
     ASSERT_EQ(ret, -1);
 };
+}  // namespace
+}  // namespace OHOS

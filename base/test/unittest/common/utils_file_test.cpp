@@ -21,12 +21,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
-
+namespace OHOS {
+namespace {	
 class UtilsFileTest : public testing::Test {
 public :
     static void SetUpTestCase(void);
@@ -140,7 +139,7 @@ HWTEST_F(UtilsFileTest, testLoadStringFromFile005, TestSize.Level0)
 {
     string str;
     string filename = "./tmp.txt";
-    string content(32*1024*1024, 't');
+    string content(32 * 1024 * 1024, 't');
     CreateTestFile(filename, content);
     EXPECT_TRUE(LoadStringFromFile(filename, str));
     RemoveTestFile(filename);
@@ -155,7 +154,7 @@ HWTEST_F(UtilsFileTest, testLoadStringFromFile006, TestSize.Level0)
 {
     string str;
     string filename = "./tmp.txt";
-    string content(32*1024*1024 + 1, 't');
+    string content(32 * 1024 * 1024 + 1, 't');
     CreateTestFile(filename, content);
     EXPECT_FALSE(LoadStringFromFile(filename, str));
     RemoveTestFile(filename);
@@ -216,7 +215,7 @@ HWTEST_F(UtilsFileTest, testLoadStringFromFd004, TestSize.Level0)
 {
     string result;
     string filename = "./tmp.txt";
-    string content(32*1024*1024, 't');
+    string content(32 * 1024 * 1024, 't');
     CreateTestFile(filename, content);
     int fd = open(filename.c_str(), O_RDONLY);
     EXPECT_TRUE(LoadStringFromFd(fd, result));
@@ -419,7 +418,7 @@ HWTEST_F(UtilsFileTest, testSaveStringToFd005, TestSize.Level0)
 {
     string content;
     string filename = "./tmp3.txt";
-    int fd = open(filename.c_str(), O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    int fd = open(filename.c_str(), O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     bool ret = SaveStringToFd(fd, content);
     close(fd);
     EXPECT_EQ(ret, true);
@@ -441,7 +440,7 @@ HWTEST_F(UtilsFileTest, testSaveStringToFd006, TestSize.Level0)
 {
     string content = "TTTTTTTT";
     string filename = "./tmp3.txt";
-    int fd = open(filename.c_str(), O_RDWR|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    int fd = open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     bool ret = SaveStringToFd(fd, content);
     close(fd);
     EXPECT_EQ(ret, true);
@@ -495,7 +494,7 @@ HWTEST_F(UtilsFileTest, testLoadBufferFromFile003, TestSize.Level0)
 {
     vector<char> buff;
     string filename = "./tmp1.txt";
-    string content(32*1024*1024 + 1, 't');
+    string content(32 * 1024 * 1024 + 1, 't');
     CreateTestFile(filename, content);
     bool ret = LoadBufferFromFile(filename, buff);
     RemoveTestFile(filename);
@@ -631,10 +630,10 @@ HWTEST_F(UtilsFileTest, testStringExistsInFile003, TestSize.Level0)
  */
 HWTEST_F(UtilsFileTest, testStringExistsInFile004, TestSize.Level0)
 {
-    string str1(32*1024*1024+1, 't');
-    string str2(32*1024*1024, 't');
+    string str1(32 * 1024 * 1024 + 1, 't');
+    string str2(32 * 1024 * 1024, 't');
     string filename = "./tmp.txt";
-    string content(32*1024*1024, 't');
+    string content(32 * 1024 * 1024, 't');
     CreateTestFile(filename, content);
     EXPECT_FALSE(StringExistsInFile(filename, str1, true));
     EXPECT_TRUE(StringExistsInFile(filename, str2, true));
@@ -751,10 +750,10 @@ HWTEST_F(UtilsFileTest, testCountStrInFile002, TestSize.Level0)
  */
 HWTEST_F(UtilsFileTest, testCountStrInFile003, TestSize.Level0)
 {
-    string str1(32*1024*1024+1, 't');
-    string str2(32*1024*1024, 't');
+    string str1(32 * 1024 * 1024 + 1, 't');
+    string str2(32 * 1024 * 1024, 't');
     string filename = "./tmp.txt";
-    string content(32*1024*1024, 't');
+    string content(32 * 1024 * 1024, 't');
     CreateTestFile(filename, content);
     EXPECT_EQ(CountStrInFile(filename, str1, true), 0);
     EXPECT_EQ(CountStrInFile(filename, str2, true), 1);
@@ -797,3 +796,5 @@ HWTEST_F(UtilsFileTest, testCountStrInFile005, TestSize.Level0)
     EXPECT_EQ(CountStrInFile(filename, str1, false), 3);
     RemoveTestFile(filename);
 }
+}  // namespace
+}  // namespace OHOS

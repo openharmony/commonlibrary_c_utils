@@ -18,10 +18,10 @@
 #include <iostream>
 #include <fstream>
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
-
+namespace OHOS {
+namespace {
 class BookList: public Observable {
 public:
     BookList() { books_.clear(); }
@@ -84,7 +84,6 @@ void UtilsObserverTest::TearDown(void)
 {
 }
 
-
 HWTEST_F(UtilsObserverTest, test_ObserverNotify, TestSize.Level0)
 {
     BookList bookList;
@@ -140,4 +139,5 @@ HWTEST_F(UtilsObserverTest, test_RemoveAllObserver, TestSize.Level0)
     EXPECT_EQ(bookObserver3->GetBooksCount(), 1);
     EXPECT_EQ(bookList.GetObserversCount(), 0);
 }
-
+}  // namespace
+}  // namespace OHOS

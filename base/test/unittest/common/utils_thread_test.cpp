@@ -17,11 +17,11 @@
 #include <iostream>
 #include <cstdio>
 #include <sys/prctl.h>
-
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
+namespace OHOS {
+namespace {
 static int times = 0;
 using ThreadRunFunc = bool (*)(int& data);
 
@@ -54,27 +54,6 @@ void UtilsThreadTest::TearDown(void)
     // recover times
     times = 0;
 }
-
-// get priority of thread
-int GetThreadPriority(const pthread_t& thread)
-{
-    sched_param param;
-    int priority;
-    int policy;
-    int ret;
-
-    // scheduling parameters of target thread
-    ret = pthread_getschedparam(thread, &policy, &param);
-    if (ret != 0) {
-        printf("pthread_getschedparam failed! thread:%lu, ret:%d\n", thread, ret);
-        return -1;
-    }
-
-    // sched_priority contains the priority of the thread
-    priority = param.sched_priority;
-    return priority;
-}
-
 
 bool TestRun01(int& data)
 {
@@ -313,4 +292,5 @@ HWTEST_F(UtilsThreadTest, testThread006, TestSize.Level0)
     // times > 10, TestRun03 return false, thread exit
     EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
 }
-
+}  // namespace
+}  // namespace OHOS
