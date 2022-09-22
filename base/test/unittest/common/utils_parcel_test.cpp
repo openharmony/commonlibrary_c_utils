@@ -21,11 +21,11 @@
 #include "parcel.h"
 #include "refbase.h"
 #include "securec.h"
-
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
+namespace OHOS {
+namespace {
 const int MAX_PARCEL_SIZE = 1000;
 char g_data[MAX_PARCEL_SIZE];
 class UtilsParcelTest : public testing::Test {
@@ -967,3 +967,5 @@ HWTEST_F(UtilsParcelTest, test_SetMaxCapacity_002, TestSize.Level0)
     ret = parcel.ReadString16Vector(&val);
     EXPECT_EQ(false, ret);
 }
+}  // namespace
+}  // namespace OHOS

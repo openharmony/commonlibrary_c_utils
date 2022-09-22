@@ -21,11 +21,10 @@
 #include <chrono>
 #include <stdatomic.h>
 #include <sys/time.h>
-
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
+namespace OHOS {
 namespace {
 int64_t CurMs()
 {
@@ -33,7 +32,7 @@ int64_t CurMs()
     gettimeofday(&tpend, nullptr);
     return (tpend.tv_sec * 1000000 + tpend.tv_usec) / 1000;
 }
-}
+
 class UtilsTimerTest : public testing::Test {
 public :
     static void SetUpTestCase(void);
@@ -88,7 +87,6 @@ HWTEST_F(UtilsTimerTest, testTimer001, TestSize.Level0)
     timer.Shutdown();
     EXPECT_GE(g_data1, 2);
     EXPECT_GE(10, g_data1);
-}
 */
 
 /*
@@ -152,7 +150,10 @@ public:
     void StopTimer();
     int GetData() const {return data_;}
 private:
-    void TimeOutProc() {data_ -= 1;};
+    void TimeOutProc()
+    {
+        data_ -= 1;
+    };
     int data_;
     Utils::Timer timer_;
 };
@@ -336,4 +337,5 @@ HWTEST_F(UtilsTimerTest, testTimer011, TestSize.Level0)
     timer.Shutdown();
     EXPECT_GE(g_data1, 8); /* 12 for max */
 }
-
+}  // namespace
+}  // namespace OHOS

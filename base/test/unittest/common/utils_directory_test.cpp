@@ -18,9 +18,10 @@
 #include <iostream>
 #include <fstream>
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
+namespace OHOS {
+namespace {
 class UtilsDirectoryTest : public testing::Test {
 public :
     static void SetUpTestCase(void);
@@ -286,4 +287,5 @@ HWTEST_F(UtilsDirectoryTest, testPathToRealPath005, TestSize.Level0)
     bool ret = PathToRealPath(path, realpath);
     EXPECT_EQ(ret, false);
 }
-
+}  // namespace
+}  // namespace OHOS

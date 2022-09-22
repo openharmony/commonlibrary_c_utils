@@ -17,10 +17,11 @@
 #include "datetime_ex.h"
 #include <unistd.h>
 using namespace testing::ext;
-using namespace OHOS;
 #include <iostream>
 using namespace std;
 
+namespace OHOS {
+namespace {
 class UtilsDateTimeTest : public testing::Test {
 public :
     static void SetUpTestCase(void);
@@ -149,4 +150,5 @@ HWTEST_F(UtilsDateTimeTest, testGetMicroTickCount001, TestSize.Level0)
     EXPECT_TRUE(end - begin >= 100000);
     EXPECT_TRUE(end - begin < 120000);
 }
-
+}  // namespace
+}  // namespace OHOS

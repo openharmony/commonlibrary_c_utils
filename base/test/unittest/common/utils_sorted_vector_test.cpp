@@ -16,11 +16,11 @@
 
 #include <gtest/gtest.h>
 #include <iostream>
-
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
+namespace OHOS {
+namespace {
 class UtilsSortedVector : public testing::Test {
 };
 
@@ -595,3 +595,5 @@ HWTEST_F(UtilsSortedVector, testAddNotAllowDuplicate, TestSize.Level0)
         ASSERT_EQ(i, svec[i]);
     }
 }
+}  // namespace
+}  // namespace OHOS
