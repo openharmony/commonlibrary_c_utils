@@ -18,8 +18,9 @@
 #include <cstdio>
 
 using namespace testing::ext;
-using namespace OHOS;
 
+namespace OHOS {
+namespace {
 class UtilsThreadPoolTest : public testing::Test
 {
 public :
@@ -268,4 +269,5 @@ HWTEST_F(UtilsThreadPoolTest, test_08, TestSize.Level0)
     EXPECT_EQ(g_times, 1);
     pool.Stop();
 }
-
+}  // namespace
+}  // namespace OHOS
