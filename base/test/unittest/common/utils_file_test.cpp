@@ -25,7 +25,7 @@ using namespace testing::ext;
 using namespace std;
 
 namespace OHOS {
-namespace {	
+namespace {
 class UtilsFileTest : public testing::Test {
 public :
     static void SetUpTestCase(void);
