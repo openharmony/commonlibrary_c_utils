@@ -25,7 +25,10 @@ namespace {
 class DelayedSingletonDeclearTest {
     DECLARE_DELAYED_SINGLETON(DelayedSingletonDeclearTest);
 public:
-    void* GetObjAddr() { return static_cast<void*>(this); }
+    void* GetObjAddr()
+    {
+        return static_cast<void*>(this);
+    }
 };
 
 DelayedSingletonDeclearTest::~DelayedSingletonDeclearTest() {};
@@ -34,7 +37,10 @@ DelayedSingletonDeclearTest::DelayedSingletonDeclearTest() {};
 class SingletonDeclearTest {
     DECLARE_SINGLETON(SingletonDeclearTest);
 public:
-    void* GetObjAddr() { return static_cast<void*>(this); }
+    void* GetObjAddr()
+    {
+        return static_cast<void*>(this);
+    }
 };
 
 SingletonDeclearTest::~SingletonDeclearTest() {};
@@ -42,19 +48,28 @@ SingletonDeclearTest::SingletonDeclearTest() {};
 
 class SingletonTest: public Singleton<SingletonTest> {
 public:
-    void* GetObjAddr() { return static_cast<void*>(this); }
+    void* GetObjAddr()
+    {
+        return static_cast<void*>(this);
+    }
 };
 
 class DelayedSingletonTest: public DelayedSingleton<DelayedSingletonTest> {
 public:
-    void* GetObjAddr() { return static_cast<void*>(this); }
+    void* GetObjAddr()
+    {
+        return static_cast<void*>(this);
+    }
 };
 
 
 class DelayedRefSingletonDeclearTest {
     DECLARE_DELAYED_REF_SINGLETON(DelayedRefSingletonDeclearTest);
 public:
-    void* GetObjAddr() { return static_cast<void*>(this); }
+    void* GetObjAddr()
+    {
+        return static_cast<void*>(this);
+    }
 };
 
 DelayedRefSingletonDeclearTest::DelayedRefSingletonDeclearTest() {};
@@ -62,7 +77,10 @@ DelayedRefSingletonDeclearTest::~DelayedRefSingletonDeclearTest() {};
 
 class DelayedRefSingletonTest: public DelayedRefSingleton<DelayedRefSingletonTest> {
 public:
-    void* GetObjAddr() { return static_cast<void*>(this); }
+    void* GetObjAddr()
+    {
+        return static_cast<void*>(this);
+    }
 };
 
 
