@@ -42,7 +42,6 @@ struct ThreadParam {
         std::string threadName = t->name;
 
         delete t;
-        t = nullptr;
 
         // set thread priority
         (void)setpriority(PRIO_PROCESS, 0, prio);
@@ -82,6 +81,7 @@ bool CreatePThread(ThreadParam& para, size_t stackSize, pthread_t *threadId)
     pthread_t thread;
     int result = pthread_create(&thread, &attr, reinterpret_cast<PThreadRoutine>(para.startRoutine), para.args);
     pthread_attr_destroy(&attr);
+    para.args = nullptr;
 
     if (result != 0) {
         return false;
