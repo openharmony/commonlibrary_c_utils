@@ -20,8 +20,9 @@
 #include "thread_pool.h"
 
 using namespace testing::ext;
-using namespace OHOS;
 
+namespace OHOS {
+namespace {
 class UtilsThreadPoolTest : public testing::Test
 {
 public :
@@ -303,3 +304,5 @@ HWTEST_F(UtilsThreadPoolTest, test_09, TestSize.Level0)
     EXPECT_EQ((int)pool.GetCurTaskNum(), 0);
     pool.Stop();
 }
+}  // namespace
+}  // namespace OHOS
