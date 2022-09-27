@@ -158,10 +158,11 @@ void Timer::DoUnregister(uint32_t interval)
 
 void Timer::OnTimer(int timerFd)
 {
-    uint32_t interval = timers_[timerFd];
+    uint32_t interval;
     TimerEntryList entryList;
     {
         std::lock_guard<std::mutex> lock(mutex_);
+        interval = timers_[timerFd];
         entryList = intervalToTimers_[interval];
     }
 
