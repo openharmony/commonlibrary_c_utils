@@ -31,6 +31,11 @@ class ThreadPool : public NoCopyable {
 public:
     typedef std::function<void()> Task;
 
+    // The name(args here) will be set as a part the real name of threads in pool.
+    // The real name of threads in pool will be like: myName_ + no.
+    // The thread name is a meaningful C language string, whose length
+    // is restricted to 16 characters, including the terminating null byte ('\0').
+    // Please pay attention to the length of name(args here).
     explicit ThreadPool(const std::string &name = std::string());
     ~ThreadPool();
 
