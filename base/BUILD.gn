@@ -73,6 +73,19 @@ ohos_static_library("utilsbase") {
   part_name = "c_utils"
 }
 
+ohos_static_library("utilsbase_rtti") {
+  visibility = [ "//foundation/multimedia/histreamer/engine/plugin/plugins/source/video_capture:std_video_capture" ]
+  sources = sources_utils
+  all_dependent_configs = [ ":utils_all_dependent_configs" ]
+  defines = [ "CONFIG_HILOG" ]
+  external_deps = [ "hilog_native:libhilog_base" ]
+  public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+  remove_configs = [ "//build/config/compiler:no_rtti" ]
+  cflags = [ "-frtti" ]
+  subsystem_name = "commonlibrary"
+  part_name = "c_utils"
+}
+
 ohos_shared_library("utils") {
   sources = sources_utils
   all_dependent_configs = [ ":utils_all_dependent_configs" ]
