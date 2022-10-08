@@ -7,13 +7,12 @@
 
 ## Introduction<a name="section11660541593"></a>
 
-The  **commonlibrary/c_utils**  repository provides the following commonly used C++ utility classes:
+The  **commonlibrary/c_utils**  repository provides the following commonly used C++ utility classes for standard system:
 
 -   Enhanced APIs for operations related to files, paths, and strings
 -   APIs related to the read-write lock, semaphore, timer, thread, and thread pool
 -   APIs related to the security data container and data serialization
 -   Error codes for each subsystem
--   Safe functions in C
 
 ## Directory Structure<a name="section17271017133915"></a>
 
@@ -27,11 +26,7 @@ commonlibrary/c_utils
 
 ## Repositories Involved<a name="section1249817110914"></a>
 
-Utils subsystem
+**[commonlibrary\_c\_utils](https://gitee.com/openharmony/commonlibrary_c_utils)**
 
-[utils](https://gitee.com/openharmony/utils/blob/master/README.md)
-
-[utils\_native](https://gitee.com/openharmony/utils_native/blob/master/README.md)
-
-[utils\_native\_lite](https://gitee.com/openharmony/utils_native_lite/blob/master/README.md)
+[commonlibrary\_utils\_lite](https://gitee.com/openharmony/commonlibrary_utils_lite)
 
