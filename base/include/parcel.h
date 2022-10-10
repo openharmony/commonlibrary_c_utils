@@ -106,6 +106,8 @@ public:
 
     size_t GetDataCapacity() const;
 
+    size_t GetMaxCapacity() const;
+
     bool SetDataCapacity(size_t newCapacity);
 
     bool SetDataSize(size_t dataSize);

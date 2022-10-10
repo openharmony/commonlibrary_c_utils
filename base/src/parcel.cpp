@@ -172,6 +172,11 @@ size_t Parcel::GetDataCapacity() const
     return dataCapacity_;
 }
 
+size_t Parcel::GetMaxCapacity() const
+{
+    return maxDataCapacity_;
+}
+
 bool Parcel::SetMaxCapacity(size_t maxCapacity)
 {
     if (maxCapacity > maxDataCapacity_) {
