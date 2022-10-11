@@ -12,15 +12,12 @@
 # limitations under the License.
 import("//build/test.gni")
 
-
 #################################group#########################################
 group("unittest") {
   testonly = true
   deps = []
 
-  deps += [
-    "unittest/common:unittest",
-  ]
+  deps += [ "unittest/common:unittest" ]
 
   if (is_phone_product) {
     deps += [
