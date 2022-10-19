@@ -40,6 +40,19 @@ ohos_unittest("UtilsStringTest") {
 }
 
 ##############################unittest##########################################
+ohos_unittest("UtilsSecurecTest") {
+  module_out_path = module_output_path
+  sources = [ "utils_securec_test.cpp" ]
+
+  configs = [ ":module_private_config" ]
+
+  deps = [
+    "//commonlibrary/c_utils/base:utils",
+    "//third_party/googletest:gtest_main",
+  ]
+}
+
+##############################unittest##########################################
 ohos_unittest("UtilsDirectoryTest") {
   module_out_path = module_output_path
   sources = [ "utils_directory_test.cpp" ]
@@ -296,6 +309,7 @@ group("unittest") {
     ":UtilsSafeBlockQueueTrackingTest",
     ":UtilsSafeMapTest",
     ":UtilsSafeQueueTest",
+    ":UtilsSecurecTest",
     ":UtilsSingletonTest",
     ":UtilsSortedVectorTest",
     ":UtilsStringTest",
