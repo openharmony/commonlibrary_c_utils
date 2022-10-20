@@ -45,12 +45,22 @@ public:
     EventReactor& operator=(const EventReactor&&) = delete;
     virtual ~EventReactor();
 
-    uint32_t StartUp();
+    uint32_t SetUp();
     void CleanUp();
 
     void RunLoop(int timeout) const;
-    void StopLoop();
-    bool IsStopped() const { return stopped_; }
+    void SwitchOn();
+    void SwitchOff();
+
+    bool IsLoopReady() const
+    {
+        return loopReady_;
+    }
+
+    bool IsSwitchedOn() const
+    {
+        return switch_;
+    }
 
     void UpdateEventHandler(EventHandler* handler);
     void RemoveEventHandler(EventHandler* handler);
@@ -59,7 +69,8 @@ public:
     void CancelTimer(int timerFd);
 
 private:
-    volatile bool stopped_;
+    mutable volatile bool loopReady_; // refers to whether reactor is ready to call RunLoop().
+    volatile bool switch_; // a switch to enable while-loop in RunLoop(). true: start, false: stop.
     std::unique_ptr<EventDemultiplexer> demultiplexer_;
     std::recursive_mutex mutex_;
     std::list<std::shared_ptr<TimerEventHandler>> timerEventHandlers_;

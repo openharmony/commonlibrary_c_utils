@@ -27,7 +27,7 @@ namespace OHOS {
 namespace Utils {
 
 EventReactor::EventReactor()
-    :stopped_(true), demultiplexer_(new EventDemultiplexer())
+    :loopReady_(false), switch_(false), demultiplexer_(new EventDemultiplexer())
 {
 }
 
@@ -51,19 +51,19 @@ void EventReactor::UpdateEventHandler(EventHandler* handler)
     }
 }
 
-uint32_t EventReactor::StartUp()
+uint32_t EventReactor::SetUp()
 {
     if (demultiplexer_ == nullptr) {
         return TIMER_ERR_INVALID_VALUE;
     }
 
-    uint32_t ret = demultiplexer_->StartUp();
+    uint32_t ret = demultiplexer_->StartUp(); // return TIME_ERR_OK, if demultiplexer has been started.
     if (ret != 0) {
         UTILS_LOGE("demultiplexer startUp failed.");
         return ret;
     }
 
-    stopped_ = false;
+    loopReady_ = true;
     return TIMER_ERR_OK;
 }
 
@@ -81,14 +81,22 @@ void EventReactor::RunLoop(int timeout) const
         UTILS_LOGE("demultiplexer_ is nullptr.");
         return;
     }
-    while (!stopped_) {
+
+    while (loopReady_ && switch_) {
         demultiplexer_->Polling(timeout);
     }
+
+    loopReady_ = false;
 }
 
-void EventReactor::StopLoop()
+void EventReactor::SwitchOn()
 {
-    stopped_ = true;
+    switch_ = true;
+}
+
+void EventReactor::SwitchOff()
+{
+    switch_ = false;
 }
 
 uint32_t EventReactor::ScheduleTimer(const TimerCallback& cb, uint32_t interval, int& timerFd, bool once)
