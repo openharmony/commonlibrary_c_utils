@@ -95,9 +95,6 @@ uint32_t EventReactor::ScheduleTimer(const TimerCallback& cb, uint32_t interval,
 {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     std::shared_ptr<TimerEventHandler> handler = std::make_shared<TimerEventHandler>(this, interval, once);
-    if (handler == nullptr) {
-        return TIMER_ERR_INVALID_VALUE;
-    }
     handler->SetTimerCallback(cb);
     uint32_t ret = handler->Initialize();
     if (ret != TIMER_ERR_OK) {

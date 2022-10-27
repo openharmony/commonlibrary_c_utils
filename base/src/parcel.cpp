@@ -964,8 +964,8 @@ const std::string Parcel::ReadString()
         return std::string();
     }
 
-    size_t readCapacity = dataLength + 1;
-    if ((readCapacity > (size_t)dataLength) && (readCapacity <= GetReadableBytes())) {
+    size_t readCapacity = static_cast<size_t>(dataLength) + 1;
+    if (readCapacity <= GetReadableBytes()) {
         const uint8_t *dest = ReadBuffer(readCapacity);
         if (dest != nullptr) {
             const auto *str = reinterpret_cast<const char *>(dest);
@@ -990,8 +990,8 @@ bool Parcel::ReadString(std::string &value)
         return false;
     }
 
-    size_t readCapacity = dataLength + 1;
-    if ((readCapacity > (size_t)dataLength) && (readCapacity <= GetReadableBytes())) {
+    size_t readCapacity = static_cast<size_t>(dataLength) + 1;
+    if (readCapacity <= GetReadableBytes()) {
         const uint8_t *dest = ReadBuffer(readCapacity);
         if (dest != nullptr) {
             const auto *str = reinterpret_cast<const char *>(dest);
@@ -1017,8 +1017,8 @@ const std::u16string Parcel::ReadString16()
         return std::u16string();
     }
 
-    size_t readCapacity = (dataLength + 1) * sizeof(char16_t);
-    if ((readCapacity > (size_t)dataLength) && (readCapacity <= GetReadableBytes())) {
+    size_t readCapacity = (static_cast<size_t>(dataLength) + 1) * sizeof(char16_t);
+    if ((readCapacity > (static_cast<size_t>(dataLength))) && (readCapacity <= GetReadableBytes())) {
         const uint8_t *str = ReadBuffer(readCapacity);
         if (str != nullptr) {
             const auto *u16Str = reinterpret_cast<const char16_t *>(str);
@@ -1043,7 +1043,7 @@ bool Parcel::ReadString16(std::u16string &value)
         return false;
     }
 
-    size_t readCapacity = (dataLength + 1) * sizeof(char16_t);
+    size_t readCapacity = (static_cast<size_t>(dataLength) + 1) * sizeof(char16_t);
     if (readCapacity <= GetReadableBytes()) {
         const uint8_t *str = ReadBuffer(readCapacity);
         if (str != nullptr) {
@@ -1075,8 +1075,8 @@ const std::u16string Parcel::ReadString16WithLength(int32_t &readLength)
         return std::u16string();
     }
 
-    size_t readCapacity = (dataLength + 1) * sizeof(char16_t);
-    if ((readCapacity > (size_t)dataLength) && (readCapacity <= GetReadableBytes())) {
+    size_t readCapacity = (static_cast<size_t>(dataLength) + 1) * sizeof(char16_t);
+    if ((readCapacity > (static_cast<size_t>(dataLength))) && (readCapacity <= GetReadableBytes())) {
         const uint8_t *str = ReadBuffer(readCapacity);
         if (str != nullptr) {
             const auto *u16Str = reinterpret_cast<const char16_t *>(str);
@@ -1106,8 +1106,8 @@ const std::string Parcel::ReadString8WithLength(int32_t &readLength)
         return std::string();
     }
 
-    size_t readCapacity = (dataLength + 1) * sizeof(char);
-    if ((readCapacity > (size_t)dataLength) && (readCapacity <= GetReadableBytes())) {
+    size_t readCapacity = (static_cast<size_t>(dataLength) + 1) * sizeof(char);
+    if (readCapacity <= GetReadableBytes()) {
         const uint8_t *str = ReadBuffer(readCapacity);
         if (str != nullptr) {
             const auto *u8Str = reinterpret_cast<const char *>(str);
