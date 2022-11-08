@@ -95,7 +95,7 @@ private:
 #ifdef DEBUG_REFBASE
     RefTracker* refTracker = nullptr;
     std::mutex trackerMutex;  // To ensure refTracker be thread-safe
-    void GetNewTrace(const void* object);
+    void GetNewTrace(const void* objectId);
     void PrintTracker();
 #endif
 };
@@ -144,7 +144,7 @@ private:
 
 class WeakRefCounter {
 public:
-    WeakRefCounter(RefCounter *base, void *cookie);
+    WeakRefCounter(RefCounter *counter, void *cookie);
 
     virtual ~WeakRefCounter();
 
@@ -166,13 +166,13 @@ class RefBase {
 public:
     RefBase();
 
-    RefBase(const RefBase &refbase);
+    RefBase(const RefBase &);
 
-    RefBase &operator=(const RefBase &refbase);
+    RefBase &operator=(const RefBase &);
 
-    RefBase(RefBase &&refbase) noexcept;
+    RefBase(RefBase &&other) noexcept;
 
-    RefBase &operator=(RefBase &&refbase) noexcept;
+    RefBase &operator=(RefBase &&other) noexcept;
 
     virtual ~RefBase();
 
@@ -205,13 +205,13 @@ public:
 
     bool IsExtendLifeTimeSet();
 
-    virtual void OnFirstStrongRef(const void *objectId);
+    virtual void OnFirstStrongRef(const void *);
 
-    virtual void OnLastStrongRef(const void *objectId);
+    virtual void OnLastStrongRef(const void *);
 
-    virtual void OnLastWeakRef(const void *objectId);
+    virtual void OnLastWeakRef(const void *);
 
-    virtual bool OnAttemptPromoted(const void *objectId);
+    virtual bool OnAttemptPromoted(const void *);
 
 private:
     RefCounter *refs_ = nullptr;

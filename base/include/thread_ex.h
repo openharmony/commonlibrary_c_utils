@@ -59,6 +59,7 @@ protected:
     virtual bool Run() = 0; // Derived class must implement Run()
 
 private:
+    Thread(const Thread&) = delete;
     Thread& operator=(const Thread&) = delete;
     static int ThreadStart(void* args);
     ThreadStatus Join(); // pthread created as detached

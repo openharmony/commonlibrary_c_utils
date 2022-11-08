@@ -16,7 +16,7 @@
 #ifndef UTILS_BASE_ERRORS_H
 #define UTILS_BASE_ERRORS_H
 
-#include <errno.h>
+#include <cerrno>
 
 namespace OHOS {
 

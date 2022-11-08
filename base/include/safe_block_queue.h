@@ -27,7 +27,7 @@ namespace OHOS {
 template <typename T>
 class SafeBlockQueue {
 public:
-    SafeBlockQueue(int capacity) : maxSize_(capacity)
+    explicit SafeBlockQueue(int capacity) : maxSize_(capacity)
     {
     }
 
@@ -116,7 +116,7 @@ protected:
 template <typename T>
 class SafeBlockQueueTracking : public SafeBlockQueue<T> {
 public:
-    SafeBlockQueueTracking(int capacity) : SafeBlockQueue<T>(capacity)
+    explicit SafeBlockQueueTracking(int capacity) : SafeBlockQueue<T>(capacity)
     {
         unfinishedTaskCount_ = 0;
     }
