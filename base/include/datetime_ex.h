@@ -29,32 +29,32 @@ constexpr int64_t MICROSEC_TO_NANOSEC = 1000;
 constexpr int SECONDS_PER_HOUR = 3600; // 60 * 60
 constexpr int SECONDS_PER_DAY = 86400; // 60 * 60 * 24
 
-static constexpr inline int64_t SecToNanosec(int64_t sec)
+constexpr inline int64_t SecToNanosec(int64_t sec)
 {
     return sec * SEC_TO_NANOSEC;
 }
 
-static constexpr inline int64_t MillisecToNanosec(int64_t millise)
+constexpr inline int64_t MillisecToNanosec(int64_t millise)
 {
     return millise * MILLISEC_TO_NANOSEC;
 }
 
-static constexpr inline int64_t MicrosecToNanosec(int64_t microsec)
+constexpr inline int64_t MicrosecToNanosec(int64_t microsec)
 {
     return microsec * MICROSEC_TO_NANOSEC;
 }
 
-static constexpr inline int64_t NanosecToSec(int64_t nanosec)
+constexpr inline int64_t NanosecToSec(int64_t nanosec)
 {
     return nanosec / SEC_TO_NANOSEC;
 }
 
-static constexpr inline int64_t NanosecToMillisec(int64_t nanosec)
+constexpr inline int64_t NanosecToMillisec(int64_t nanosec)
 {
     return nanosec / MILLISEC_TO_NANOSEC;
 }
 
-static constexpr inline int64_t NanosecToMicrosec(int64_t nanosec)
+constexpr inline int64_t NanosecToMicrosec(int64_t nanosec)
 {
     return nanosec / MICROSEC_TO_NANOSEC;
 }

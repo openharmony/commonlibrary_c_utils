@@ -16,7 +16,7 @@
 #ifndef UTILS_BASE_ASHMEM_H
 #define UTILS_BASE_ASHMEM_H
 
-#include <stddef.h>
+#include <cstddef>
 #include <linux/ashmem.h>
 #include "refbase.h"
 #include "parcel.h"
@@ -40,7 +40,7 @@ public:
     bool WriteToAshmem(const void *data, int32_t size, int32_t offset);
     const void *ReadFromAshmem(int32_t size, int32_t offset);
     Ashmem(int fd, int32_t size);
-    ~Ashmem();
+    ~Ashmem() override;
     int GetAshmemFd() const
     {
         return memoryFd_;

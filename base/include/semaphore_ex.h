@@ -22,7 +22,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <string>
-#include <time.h> // timespec since c11
+#include <ctime> // timespec since c11
 
 namespace OHOS {
 
@@ -30,9 +30,9 @@ const int INVALID_SEMA_VALUE = -1;
 
 class NamedSemaphore : public NoCopyable {
 public:
-    NamedSemaphore(size_t);
+    explicit NamedSemaphore(size_t);
     NamedSemaphore(const std::string&, size_t);
-    ~NamedSemaphore();
+    ~NamedSemaphore() override;
 
     bool Create();
     bool Unlink();
@@ -56,8 +56,7 @@ private:
 
 class Semaphore : public NoCopyable {
 public:
-    Semaphore(int value = 1) : count_(value) {}
-    ~Semaphore() = default;
+    explicit Semaphore(int value = 1) : count_(value) {}
 
     void Wait();
     void Post();

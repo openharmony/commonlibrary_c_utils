@@ -136,10 +136,10 @@ RefTracker* RefTracker::PopTrace(const void* root)
     return ref;
 }
 
-void RefCounter::GetNewTrace(const void* object)
+void RefCounter::GetNewTrace(const void* objectId)
 {
     std::lock_guard<std::mutex> lock(trackerMutex);
-    RefTracker* newTracker = new RefTracker(refTracker, object, atomicStrong_.load(std::memory_order_relaxed),
+    RefTracker* newTracker = new RefTracker(refTracker, objectId, atomicStrong_.load(std::memory_order_relaxed),
         atomicWeak_.load(std::memory_order_relaxed), atomicRefCount_.load(std::memory_order_relaxed),
         getpid(), gettid());
     refTracker = newTracker;
@@ -200,10 +200,10 @@ RefCounter::~RefCounter()
 #endif
 }
 
-int RefCounter::IncStrongRefCount(const void* object)
+int RefCounter::IncStrongRefCount(const void* objectId)
 {
 #ifdef DEBUG_REFBASE
-    GetNewTrace(object);
+    GetNewTrace(objectId);
 #endif
     int curCount = atomicStrong_.load(std::memory_order_relaxed);
     if (curCount >= 0) {
@@ -216,10 +216,10 @@ int RefCounter::IncStrongRefCount(const void* object)
     return curCount;
 }
 
-int RefCounter::DecStrongRefCount(const void* object)
+int RefCounter::DecStrongRefCount(const void* objectId)
 {
 #ifdef DEBUG_REFBASE
-    GetNewTrace(object);
+    GetNewTrace(objectId);
 #endif
     int curCount = GetStrongRefCount();
     if (curCount == INITIAL_PRIMARY_VALUE) {
@@ -238,18 +238,18 @@ int RefCounter::GetStrongRefCount()
     return atomicStrong_.load(std::memory_order_relaxed);
 }
 
-int RefCounter::IncWeakRefCount(const void* object)
+int RefCounter::IncWeakRefCount(const void* objectId)
 {
 #ifdef DEBUG_REFBASE
-    GetNewTrace(object);
+    GetNewTrace(objectId);
 #endif
     return atomicWeak_.fetch_add(1, std::memory_order_relaxed);
 }
 
-int RefCounter::DecWeakRefCount(const void* object)
+int RefCounter::DecWeakRefCount(const void* objectId)
 {
 #ifdef DEBUG_REFBASE
-    GetNewTrace(object);
+    GetNewTrace(objectId);
 #endif
     int curCount = GetWeakRefCount();
     if (curCount > 0) {
@@ -437,8 +437,8 @@ RefBase::~RefBase()
 {
     if (refs_ != nullptr) {
         refs_->RemoveCallback();
-        if ((refs_->IsLifeTimeExtended() && refs_->GetWeakRefCount() == 0)
-            || refs_->GetStrongRefCount() == INITIAL_PRIMARY_VALUE) {
+        if ((refs_->IsLifeTimeExtended() && refs_->GetWeakRefCount() == 0) ||
+             refs_->GetStrongRefCount() == INITIAL_PRIMARY_VALUE) {
             refs_->DecRefCount();
         }
         refs_ = nullptr;

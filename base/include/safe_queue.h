@@ -34,10 +34,10 @@ public:
         }
     }
 
-    void Erase(T& Object)
+    void Erase(T& object)
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        deque_.remove(Object);
+        deque_.remove(object);
     }
 
     bool Empty()
@@ -89,12 +89,12 @@ protected:
     using SafeQueueInner<T>::deque_;
     using SafeQueueInner<T>::mutex_;
 
-    virtual void DoPush(const T& pt) override
+    void DoPush(const T& pt) override
     {
         deque_.push_back(pt);
     }
 
-    virtual bool DoPop(T& pt) override
+    bool DoPop(T& pt) override
     {
         if (deque_.size() > 0) {
             pt = deque_.front();
@@ -113,12 +113,12 @@ protected:
     using SafeQueueInner<T>::deque_;
     using SafeQueueInner<T>::mutex_;
 
-    virtual void DoPush(const T& pt) override
+    void DoPush(const T& pt) override
     {
         deque_.push_back(pt);
     }
 
-    virtual bool DoPop(T& pt) override
+    bool DoPop(T& pt) override
     {
         if (deque_.size() > 0) {
             pt = deque_.back();

@@ -146,39 +146,39 @@ private:
 };
 
 template <typename Deleter = DefaultDeleter>
-bool operator==(const int& lhs, const UniqueFdAddDeletor<Deleter>& uniqueFd)
+bool operator==(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
 {
-    return lhs == uniqueFd.fd_;
+    return lhs == rhs.fd_;
 }
 
 template <typename Deleter = DefaultDeleter>
-bool operator!=(const int& lhs, const UniqueFdAddDeletor<Deleter>& uniqueFd)
+bool operator!=(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
 {
-    return !(lhs == uniqueFd.fd_);
+    return !(lhs == rhs.fd_);
 }
 
 template <typename Deleter = DefaultDeleter>
-bool operator>=(const int& lhs, const UniqueFdAddDeletor<Deleter>& uniqueFd)
+bool operator>=(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
 {
-    return lhs >= uniqueFd.fd_;
+    return lhs >= rhs.fd_;
 }
 
 template <typename Deleter = DefaultDeleter>
-bool operator>(const int& lhs, const UniqueFdAddDeletor<Deleter>& uniqueFd)
+bool operator>(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
 {
-    return lhs > uniqueFd.fd_;
+    return lhs > rhs.fd_;
 }
 
 template <typename Deleter = DefaultDeleter>
-bool operator<=(const int& lhs, const UniqueFdAddDeletor<Deleter>& uniqueFd)
+bool operator<=(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
 {
-    return lhs <= uniqueFd.fd_;
+    return lhs <= rhs.fd_;
 }
 
 template <typename Deleter = DefaultDeleter>
-bool operator<(const int& lhs, const UniqueFdAddDeletor<Deleter>& uniqueFd)
+bool operator<(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
 {
-    return lhs < uniqueFd.fd_;
+    return lhs < rhs.fd_;
 }
 
 using UniqueFd = UniqueFdAddDeletor<DefaultDeleter>;

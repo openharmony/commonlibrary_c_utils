@@ -16,7 +16,7 @@
 #ifndef UTILS_COMMON_TIMER_ERRORS_H
 #define UTILS_COMMON_TIMER_ERRORS_H
 
-#include <errno.h>
+#include <cerrno>
 #include "errors.h"
 #include "common_errors.h"
 
