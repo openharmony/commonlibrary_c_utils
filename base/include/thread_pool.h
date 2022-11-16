@@ -37,7 +37,7 @@ public:
     // is restricted to 16 characters, including the terminating null byte ('\0').
     // Please pay attention to the length of name(args here).
     explicit ThreadPool(const std::string &name = std::string());
-    ~ThreadPool () override;
+    ~ThreadPool() override;
 
     uint32_t Start(int threadsNum);
     void Stop();
