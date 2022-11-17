@@ -68,7 +68,7 @@ std::shared_ptr<T> DelayedSingleton<T>::GetInstance()
     if (instance_ == nullptr) {
         std::lock_guard<std::mutex> lock(mutex_);
         if (instance_ == nullptr) {
-            std::shared_ptr<T> temp(new T);
+            std::shared_ptr<T> temp(new (std::nothrow) T);
             instance_ = temp;
         }
     }
