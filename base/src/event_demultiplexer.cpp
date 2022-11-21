@@ -133,7 +133,7 @@ void EventDemultiplexer::Polling(int timeout /* ms */)
     }
 
     for (int idx = 0; idx < nfds; ++idx) {
-        int events = epollEvents[idx].events;
+        uint32_t events = epollEvents[idx].events;
         void* ptr = epollEvents[idx].data.ptr;
         auto handler = reinterpret_cast<EventHandler*>(ptr);
         if (handler != nullptr) {
