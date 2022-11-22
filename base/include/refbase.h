@@ -188,8 +188,6 @@ public:
 
     WeakRefCounter *CreateWeakRef(void *cookie);
 
-    RefCounter *GetRefCounter() const;
-
     void IncWeakRef(const void *objectId);
 
     void DecWeakRef(const void *objectId);

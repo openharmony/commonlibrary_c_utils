@@ -361,7 +361,7 @@ bool RefCounter::AttemptIncStrong(const void *objectId)
         if (atomicStrong_.compare_exchange_weak(curCount, curCount + 1, std::memory_order_relaxed)) {
             break;
         }
-        // curCount has been updated.
+        curCount = atomicStrong_.load(std::memory_order_relaxed);
     }
     if (curCount <= 0) {
         DecWeakRefCount(objectId);
@@ -509,11 +509,6 @@ void RefBase::IncWeakRef(const void *objectId)
     if (refs_ != nullptr) {
         refs_->IncWeakRefCount(objectId);
     }
-}
-
-RefCounter *RefBase::GetRefCounter() const
-{
-    return refs_;
 }
 
 void RefBase::DecWeakRef(const void *objectId)
