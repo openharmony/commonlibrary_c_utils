@@ -52,7 +52,7 @@ public:
 
     inline void ClearBehavior(BehaviorFlag b) const
     {
-        behavior_ &= ~(static_cast<uint8_t>(b));
+        behavior_ &= static_cast<uint8_t>(~b);
     }
 
     inline bool TestBehavior(BehaviorFlag b) const
@@ -320,7 +320,7 @@ private:
 
     inline size_t GetPadSize(size_t size)
     {
-        const int SIZE_OFFSET = 3;
+        const size_t SIZE_OFFSET = 3;
         return (((size + SIZE_OFFSET) & (~SIZE_OFFSET)) - size);
     }
 

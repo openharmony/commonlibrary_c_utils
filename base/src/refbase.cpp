@@ -456,8 +456,8 @@ void RefBase::IncStrongRef(const void *objectId)
         return;
     }
 
-    const int curCount = refs_->IncStrongRefCount(objectId);
     IncWeakRef(objectId);
+    const int curCount = refs_->IncStrongRefCount(objectId);
     if (curCount == INITIAL_PRIMARY_VALUE) {
         OnFirstStrongRef(objectId);
     }

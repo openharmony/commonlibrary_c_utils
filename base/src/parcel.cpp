@@ -1239,7 +1239,7 @@ bool Parcel::ReadVector(std::vector<T> *val, bool (Parcel::*Read)(T &))
         return false;
     }
 
-    size_t readAbleSize = this->GetReadableBytes();
+    size_t readAbleSize = this->GetReadableBytes() / sizeof(T);
     size_t size = static_cast<size_t>(len);
     if ((size > readAbleSize) || (size > val->max_size())) {
         UTILS_LOGE("Failed to read vector, size = %{public}zu, readAbleSize = %{public}zu", size, readAbleSize);

@@ -42,7 +42,7 @@ public:
     uint32_t Start(int threadsNum);
     void Stop();
     void AddTask(const Task& f);
-    void SetMaxTaskNum(int maxSize) { maxTaskNum_ = maxSize; }
+    void SetMaxTaskNum(size_t maxSize) { maxTaskNum_ = maxSize; }
 
     // for testability
     size_t GetMaxTaskNum() const { return maxTaskNum_; }

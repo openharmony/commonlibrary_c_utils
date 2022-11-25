@@ -248,7 +248,7 @@ int Utf8ToUtf16Length(const char* str8, size_t str8Len)
     int utf16len = 0;
     while (str8 < str8end) {
         utf16len++;
-        int u8charlen = Utf8CodePointLen(*str8);
+        size_t u8charlen = Utf8CodePointLen(*str8);
         if (str8 + u8charlen - 1 >= str8end) {
             UTILS_LOGE("Get str16 length failed because str8 unicode is illegal!");
             return -1;
