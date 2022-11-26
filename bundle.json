@@ -16,6 +16,7 @@
     "name": "c_utils",
     "subsystem": "commonlibrary",
     "adapted_system_type": [ "standard" ],
+    "features":[ "c_utils_feature_coverage = false" ],
     "deps": {
       "components": [
         "hilog_native"
