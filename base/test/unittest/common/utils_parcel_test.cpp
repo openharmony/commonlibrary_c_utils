@@ -30,6 +30,8 @@ const int MAX_PARCEL_SIZE = 1000;
 char g_data[MAX_PARCEL_SIZE];
 class UtilsParcelTest : public testing::Test {
 public:
+    static constexpr size_t DEFAULT_CPACITY = 204800; // 200K
+    static constexpr size_t CAPACITY_THRESHOLD = 4096; // 4k
     static void TearDownTestCase(void);
 };
 
@@ -78,35 +80,28 @@ void WriteTestData(Parcel &parcel, const struct TestData &data)
     EXPECT_EQ(result, true);
 }
 
-/**
- * Here to simulate the scenario of ipc sending data, the buffer will be released when the Parcel object is destructed.
-*/
-bool SendData(void *&buffer, size_t size, const uint8_t *data)
+void WriteUnalignedTestData(Parcel &parcel, const struct TestData &data)
 {
-    if (size <= 0) {
-        return false;
-    }
-    buffer = malloc(size);
-    if (buffer == nullptr) {
-        return false;
-    }
-    if (memcpy_s(buffer, size, data, size) != EOK) {
-        return false;
-    }
-    return true;
+    bool result = false;
+
+    result = parcel.WriteBoolUnaligned(data.booltest);
+    EXPECT_EQ(result, true);
+
+    result = parcel.WriteInt8Unaligned(data.int8test);
+    EXPECT_EQ(result, true);
+
+    result = parcel.WriteInt16Unaligned(data.int16test);
+    EXPECT_EQ(result, true);
+
+    result = parcel.WriteUint8Unaligned(data.uint8test);
+    EXPECT_EQ(result, true);
+
+    result = parcel.WriteUint16Unaligned(data.uint16test);
+    EXPECT_EQ(result, true);
 }
 
-/**
- * @tc.name: test_parcel_WriteAndRead_001
- * @tc.desc: test parcel primary type read write.
- * @tc.type: FUNC
- */
-HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_001, TestSize.Level0)
+void ReadTestData(Parcel &parcel, const struct TestData &data)
 {
-    Parcel parcel(nullptr);
-    struct TestData data = { true, -0x34, 0x5634, -0x12345678, 0x34, 0x5634, 0x12345678 };
-    WriteTestData(parcel, data);
-
     bool readbool = parcel.ReadBool();
     EXPECT_EQ(readbool, data.booltest);
 
@@ -129,6 +124,133 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_001, TestSize.Level0)
     EXPECT_EQ(readuint32, data.uint32test);
 }
 
+void ReadUnalignedTestData(Parcel &parcel, const struct TestData &data)
+{
+    bool readbool = parcel.ReadBoolUnaligned();
+    EXPECT_EQ(readbool, data.booltest);
+
+    int8_t readint8;
+    EXPECT_TRUE(parcel.ReadInt8Unaligned(readint8));
+    EXPECT_EQ(readint8, data.int8test);
+
+    int16_t readint16;
+    EXPECT_TRUE(parcel.ReadInt16Unaligned(readint16));
+    EXPECT_EQ(readint16, data.int16test);
+
+    uint8_t readuint8;
+    EXPECT_TRUE(parcel.ReadUint8Unaligned(readuint8));
+    EXPECT_EQ(readuint8, data.uint8test);
+
+    uint16_t readuint16;
+    EXPECT_TRUE(parcel.ReadUint16Unaligned(readuint16));
+    EXPECT_EQ(readuint16, data.uint16test);
+}
+
+void ReadTestDataWithTarget(Parcel &parcel, const struct TestData &data)
+{
+    bool result = false;
+    bool boolVal = true;
+    result = parcel.ReadBool(boolVal);
+    EXPECT_EQ(result, true);
+    EXPECT_EQ(boolVal, data.booltest);
+
+    int8_t int8Val;
+    result = parcel.ReadInt8(int8Val);
+    EXPECT_EQ(result, true);
+    EXPECT_EQ(int8Val, data.int8test);
+
+    int16_t int16Val;
+    result = parcel.ReadInt16(int16Val);
+    EXPECT_EQ(result, true);
+    EXPECT_EQ(int16Val, data.int16test);
+
+    int32_t int32Val;
+    result = parcel.ReadInt32(int32Val);
+    EXPECT_EQ(result, true);
+    EXPECT_EQ(int32Val, data.int32test);
+
+    uint8_t uint8Val;
+    result = parcel.ReadUint8(uint8Val);
+    EXPECT_EQ(result, true);
+    EXPECT_EQ(uint8Val, data.uint8test);
+
+    uint16_t uint16Val;
+    result = parcel.ReadUint16(uint16Val);
+    EXPECT_EQ(result, true);
+    EXPECT_EQ(uint16Val, data.uint16test);
+
+    uint32_t uint32Val;
+    result = parcel.ReadUint32(uint32Val);
+    EXPECT_EQ(result, true);
+    EXPECT_EQ(uint32Val, data.uint32test);
+}
+
+/**
+ * Here to simulate the scenario of ipc sending data, the buffer will be released when the Parcel object is destructed.
+*/
+bool SendData(void *&buffer, size_t size, const uint8_t *data)
+{
+    if (size <= 0) {
+        return false;
+    }
+    buffer = malloc(size);
+    if (buffer == nullptr) {
+        return false;
+    }
+    if (memcpy_s(buffer, size, data, size) != EOK) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @tc.name: test_parcel_SetMaxCapacity_001
+ * @tc.desc: test parcel primary type read write.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UtilsParcelTest, test_parcel_SetMaxCapacity_001, TestSize.Level0)
+{
+    size_t cap = DEFAULT_CPACITY;
+    Parcel parcel(nullptr);
+    EXPECT_TRUE(parcel.SetMaxCapacity(cap + 1));
+    EXPECT_FALSE(parcel.SetMaxCapacity(cap - 1));
+}
+
+/**
+ * @tc.name: test_parcel_SetAllocator_001
+ * @tc.desc: test setting allocator to parcels with and without existed allocator.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UtilsParcelTest, test_parcel_SetAllocator_001, TestSize.Level0)
+{
+    Allocator* alloc = new DefaultAllocator();
+    Parcel parcel(alloc);
+    EXPECT_FALSE(parcel.SetAllocator(alloc));
+    EXPECT_FALSE(parcel.SetAllocator(nullptr));
+
+    struct TestData data = { true, -0x34, 0x5634, -0x12345678, 0x34, 0x5634, 0x12345678 };
+
+    WriteTestData(parcel, data);
+    parcel.SetAllocator(new DefaultAllocator());
+    ReadTestData(parcel, data);
+}
+
+/**
+ * @tc.name: test_parcel_WriteAndRead_001
+ * @tc.desc: test parcel primary type read write.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_001, TestSize.Level0)
+{
+    Parcel parcel(nullptr);
+    struct TestData data = { true, -0x34, 0x5634, -0x12345678, 0x34, 0x5634, 0x12345678 };
+    WriteTestData(parcel, data);
+    ReadTestData(parcel, data);
+
+    WriteUnalignedTestData(parcel, data);
+    ReadUnalignedTestData(parcel, data);
+}
+
 /**
  * @tc.name: test_parcel_WriteAndRead_002
  * @tc.desc: test parcel primary type read write.
@@ -140,6 +262,7 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_002, TestSize.Level0)
     Parcel parcel2(nullptr);
     struct TestData data = { true, -0x34, 0x5634, -0x12345678, 0x34, 0x5634, 0x12345678 };
     WriteTestData(parcel1, data);
+    WriteUnalignedTestData(parcel1, data);
 
     void *buffer = nullptr;
     size_t size = parcel1.GetDataSize();
@@ -150,26 +273,8 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_002, TestSize.Level0)
     bool result = parcel2.ParseFrom(reinterpret_cast<uintptr_t>(buffer), parcel1.GetDataSize());
     EXPECT_EQ(result, true);
 
-    bool readbool = parcel2.ReadBool();
-    EXPECT_EQ(readbool, data.booltest);
-
-    int8_t readint8 = parcel2.ReadInt8();
-    EXPECT_EQ(readint8, data.int8test);
-
-    int16_t readint16 = parcel2.ReadInt16();
-    EXPECT_EQ(readint16, data.int16test);
-
-    int32_t readint32 = parcel2.ReadInt32();
-    EXPECT_EQ(readint32, data.int32test);
-
-    uint8_t readuint8 = parcel2.ReadUint8();
-    EXPECT_EQ(readuint8, data.uint8test);
-
-    uint16_t readuint16 = parcel2.ReadUint16();
-    EXPECT_EQ(readuint16, data.uint16test);
-
-    uint32_t readuint32 = parcel2.ReadUint32();
-    EXPECT_EQ(readuint32, data.uint32test);
+    ReadTestData(parcel2, data);
+    ReadUnalignedTestData(parcel2, data);
 }
 
 /**
@@ -193,40 +298,7 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_003, TestSize.Level0)
     bool result = parcel2.ParseFrom(reinterpret_cast<uintptr_t>(buffer), parcel1.GetDataSize());
     EXPECT_EQ(result, true);
 
-    bool boolVal = true;
-    result = parcel2.ReadBool(boolVal);
-    EXPECT_EQ(result, true);
-    EXPECT_EQ(boolVal, data.booltest);
-
-    int8_t int8Val;
-    result = parcel2.ReadInt8(int8Val);
-    EXPECT_EQ(result, true);
-    EXPECT_EQ(int8Val, data.int8test);
-
-    int16_t int16Val;
-    result = parcel2.ReadInt16(int16Val);
-    EXPECT_EQ(result, true);
-    EXPECT_EQ(int16Val, data.int16test);
-
-    int32_t int32Val;
-    result = parcel2.ReadInt32(int32Val);
-    EXPECT_EQ(result, true);
-    EXPECT_EQ(int32Val, data.int32test);
-
-    uint8_t uint8Val;
-    result = parcel2.ReadUint8(uint8Val);
-    EXPECT_EQ(result, true);
-    EXPECT_EQ(uint8Val, data.uint8test);
-
-    uint16_t uint16Val;
-    result = parcel2.ReadUint16(uint16Val);
-    EXPECT_EQ(result, true);
-    EXPECT_EQ(uint16Val, data.uint16test);
-
-    uint32_t uint32Val;
-    result = parcel2.ReadUint32(uint32Val);
-    EXPECT_EQ(result, true);
-    EXPECT_EQ(uint32Val, data.uint32test);
+    ReadTestDataWithTarget(parcel2, data);
 }
 
 /**
@@ -280,26 +352,26 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_String_001, TestSize.Level0)
     Parcel parcel1(nullptr);
     bool result;
 
-    string strwrite = "test";
-    result = parcel1.WriteString(strwrite);
+    string strWrite = "test";
+    result = parcel1.WriteString(strWrite);
     EXPECT_EQ(result, true);
 
-    string strwrite1 =
+    string strWrite1 =
         "test for write string padded**********************************************************##################";
-    result = parcel1.WriteString(strwrite1);
+    result = parcel1.WriteString(strWrite1);
     EXPECT_EQ(result, true);
 
-    string strwrite2 =
+    string strWrite2 =
         "test for write string padded**********************************************************##################";
-    result = parcel1.WriteString(strwrite2);
+    result = parcel1.WriteString(strWrite2);
     EXPECT_EQ(result, true);
 
-    string strread = parcel1.ReadString();
-    string strread1 = parcel1.ReadString();
-    string strread2 = parcel1.ReadString();
-    EXPECT_EQ(0, strcmp(strread.c_str(), strwrite.c_str()));
-    EXPECT_EQ(0, strcmp(strread1.c_str(), strwrite1.c_str()));
-    EXPECT_EQ(0, strcmp(strread2.c_str(), strwrite2.c_str()));
+    string strRead = parcel1.ReadString();
+    string strRead1 = parcel1.ReadString();
+    string strRead2 = parcel1.ReadString();
+    EXPECT_EQ(0, strcmp(strRead.c_str(), strWrite.c_str()));
+    EXPECT_EQ(0, strcmp(strRead1.c_str(), strWrite1.c_str()));
+    EXPECT_EQ(0, strcmp(strRead2.c_str(), strWrite2.c_str()));
 
     Parcel parcel2(nullptr);
 
@@ -311,12 +383,12 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_String_001, TestSize.Level0)
 
     result = parcel2.ParseFrom(reinterpret_cast<uintptr_t>(buffer), parcel1.GetDataSize());
 
-    strread = parcel2.ReadString();
-    strread1 = parcel2.ReadString();
-    strread2 = parcel2.ReadString();
-    EXPECT_EQ(0, strcmp(strread.c_str(), strwrite.c_str()));
-    EXPECT_EQ(0, strcmp(strread1.c_str(), strwrite1.c_str()));
-    EXPECT_EQ(0, strcmp(strread2.c_str(), strwrite2.c_str()));
+    strRead = parcel2.ReadString();
+    strRead1 = parcel2.ReadString();
+    strRead2 = parcel2.ReadString();
+    EXPECT_EQ(0, strcmp(strRead.c_str(), strWrite.c_str()));
+    EXPECT_EQ(0, strcmp(strRead1.c_str(), strWrite1.c_str()));
+    EXPECT_EQ(0, strcmp(strRead2.c_str(), strWrite2.c_str()));
 }
 
 /**
@@ -328,18 +400,18 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_String_002, TestSize.Level0)
 {
     Parcel parcel1(nullptr);
 
-    u16string str16write = u"12345";
-    bool result = parcel1.WriteString16(str16write);
+    u16string str16Write = u"12345";
+    bool result = parcel1.WriteString16(str16Write);
     EXPECT_EQ(result, true);
 
-    u16string str16write2 = u"12345 test for write16string padded*********";
-    result = parcel1.WriteString16(str16write2);
+    u16string str16Write2 = u"12345 test for write16string padded*********";
+    result = parcel1.WriteString16(str16Write2);
     EXPECT_EQ(result, true);
 
-    u16string str16read = parcel1.ReadString16();
-    u16string str16read2 = parcel1.ReadString16();
-    EXPECT_EQ(0, str16read.compare(str16write));
-    EXPECT_EQ(0, str16read2.compare(str16write2));
+    u16string str16Read = parcel1.ReadString16();
+    u16string str16Read2 = parcel1.ReadString16();
+    EXPECT_EQ(0, str16Read.compare(str16Write));
+    EXPECT_EQ(0, str16Read2.compare(str16Write2));
 
     Parcel parcel2(nullptr);
 
@@ -351,10 +423,10 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_String_002, TestSize.Level0)
 
     result = parcel2.ParseFrom(reinterpret_cast<uintptr_t>(buffer), parcel1.GetDataSize());
 
-    str16read = parcel2.ReadString16();
-    str16read2 = parcel2.ReadString16();
-    EXPECT_EQ(0, str16read.compare(str16write));
-    EXPECT_EQ(0, str16read2.compare(str16write2));
+    str16Read = parcel2.ReadString16();
+    str16Read2 = parcel2.ReadString16();
+    EXPECT_EQ(0, str16Read.compare(str16Write));
+    EXPECT_EQ(0, str16Read2.compare(str16Write2));
 }
 
 /**
@@ -364,15 +436,22 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_String_002, TestSize.Level0)
  */
 HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_String_003, TestSize.Level0)
 {
+    bool result;
     Parcel parcel(nullptr);
     string test1 = "12345";
     string test2 = "23456";
     string test3 = "34567";
     string test4 = "45678";
-    parcel.WriteCString(test1.c_str());
-    parcel.WriteCString(test2.c_str());
-    parcel.WriteCString(test3.c_str());
-    parcel.WriteCString(test4.c_str());
+    result = parcel.WriteCString(nullptr);
+    EXPECT_FALSE(result);
+    result = parcel.WriteCString(test1.c_str());
+    EXPECT_TRUE(result);
+    result = parcel.WriteCString(test2.c_str());
+    EXPECT_TRUE(result);
+    result = parcel.WriteCString(test3.c_str());
+    EXPECT_TRUE(result);
+    result = parcel.WriteCString(test4.c_str());
+    EXPECT_TRUE(result);
 
     EXPECT_EQ(0, strcmp(test1.c_str(), parcel.ReadCString()));
     EXPECT_EQ(0, strcmp(test2.c_str(), parcel.ReadCString()));
@@ -428,6 +507,56 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_String004, TestSize.Level0)
 
     EXPECT_EQ(0, str16read3.compare(str16write));
     EXPECT_EQ(0, str16read4.compare(str16write2));
+}
+
+/**
+ * @tc.name: test_parcel_WriteAndRead_String005
+ * @tc.desc: test parcel CString read write.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_String005, TestSize.Level0)
+{
+    Parcel parcel1(nullptr);
+    bool result = false;
+
+    // write from Java, read from C++
+    result = parcel1.WriteString8WithLength(nullptr, 0);
+    EXPECT_EQ(result, true);
+
+    string str8write = "12345";
+    char *value1 = str8write.data();
+    result = parcel1.WriteString8WithLength(value1, str8write.length());
+    EXPECT_EQ(result, true);
+
+    string str8write2 = "12345 test for write16string padded*********";
+    char *value2 = str8write2.data();
+    result = parcel1.WriteString8WithLength(value2, str8write2.length());
+    EXPECT_EQ(result, true);
+
+    string str8readNull = parcel1.ReadString();
+    string str8read1 = parcel1.ReadString();
+    string str8read2 = parcel1.ReadString();
+    EXPECT_EQ(0, str8readNull.compare(std::string()));
+    EXPECT_EQ(0, str8read1.compare(str8write));
+    EXPECT_EQ(0, str8read2.compare(str8write2));
+
+    // write from C++, read from Java
+    result = parcel1.WriteString(str8write);
+    EXPECT_EQ(result, true);
+
+    result = parcel1.WriteString(str8write2);
+    EXPECT_EQ(result, true);
+
+    int32_t readLength1 = 0;
+    string str8read3 = parcel1.ReadString8WithLength(readLength1);
+    EXPECT_EQ(readLength1, static_cast<int32_t>(str8write.length()));
+
+    int32_t readLength2 = 0;
+    string str8read4 = parcel1.ReadString8WithLength(readLength2);
+    EXPECT_EQ(readLength2, static_cast<int32_t>(str8write2.length()));
+
+    EXPECT_EQ(0, str8read3.compare(str8write));
+    EXPECT_EQ(0, str8read4.compare(str8write2));
 }
 
 /**
@@ -556,6 +685,81 @@ void ValidateUnpadded(const struct Unpadded &left, const struct Unpadded &right)
 }
 
 /**
+ * @tc.name: test_CalcNewCapacity_001
+ * @tc.desc: test kinds of input to CalcNewCapacity.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UtilsParcelTest, test_CalcNewCapacity_001, TestSize.Level0)
+{
+    Parcel parcel;
+    bool ret;
+
+    size_t newMaxCapacity;
+    size_t minNewCapacity = CAPACITY_THRESHOLD;
+    const string strLenThreshd = string(minNewCapacity, 't');
+    ret = parcel.WriteUnpadBuffer(static_cast<const void *>(strLenThreshd.data()), minNewCapacity);
+    EXPECT_EQ(true, ret); // calculated capacity = CAPACITY_THRESHOLD
+
+    newMaxCapacity = CAPACITY_THRESHOLD - 1;
+    minNewCapacity = newMaxCapacity;
+    const string strLessThreshd = string(minNewCapacity, 'l');
+    parcel.SetMaxCapacity(newMaxCapacity);
+    ret = parcel.WriteUnpadBuffer(static_cast<const void *>(strLessThreshd.data()), minNewCapacity);
+    EXPECT_EQ(true, ret); // calculated capacity = newMaxCapacity
+
+    newMaxCapacity = -1; // minNewCapacity = CAPACITY_THRESHOLD - 1
+    const string strNoMaxCap = string(minNewCapacity, 'n');
+    parcel.SetMaxCapacity(newMaxCapacity);
+    ret = parcel.WriteUnpadBuffer(static_cast<const void *>(strNoMaxCap.data()), minNewCapacity);
+    EXPECT_EQ(ret, true); // calculated capacity = CAPACITY_THRESHOLD
+
+    minNewCapacity = CAPACITY_THRESHOLD + 1; // newMaxCapacity = -1
+    const string strExtThreshd = string(minNewCapacity, 'e');
+    parcel.SetMaxCapacity(newMaxCapacity);
+    ret = parcel.WriteUnpadBuffer(static_cast<const void *>(strExtThreshd.data()), minNewCapacity);
+    EXPECT_EQ(ret, true); // calculated capacity = 2 * CAPACITY_THRESHOLD
+
+    newMaxCapacity = CAPACITY_THRESHOLD; // minNewCapacity = CAPACITY_THRESHOLD + 1
+    const string strCapThreshd = string(minNewCapacity, 'e');
+    parcel.SetMaxCapacity(newMaxCapacity);
+    ret = parcel.WriteUnpadBuffer(static_cast<const void *>(strCapThreshd.data()), minNewCapacity);
+    EXPECT_EQ(ret, true); // calculated capacity = CAPACITY_THRESHOLD
+}
+
+/**
+ * @tc.name: test_SetDataCapacity_001
+ * @tc.desc: test kinds of input to SetDataCapacity.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UtilsParcelTest, test_SetDataCapacity_001, TestSize.Level0)
+{
+    Parcel parcel;
+    bool result;
+    struct TestData data = { true, -0x34, 0x5634, -0x12345678, 0x34, 0x5634, 0x12345678 };
+
+    WriteTestData(parcel, data);
+    result = parcel.SetDataCapacity(0);
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: test_SetDataSize_001
+ * @tc.desc: test kinds of input to SetDataSize.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UtilsParcelTest, test_SetDataSize_001, TestSize.Level0)
+{
+    Parcel parcel;
+    bool result;
+    result = parcel.SetDataCapacity(sizeof(bool));
+    EXPECT_TRUE(result);
+    result = parcel.WriteBool(true);
+    EXPECT_TRUE(result);
+    result = parcel.SetDataSize(DEFAULT_CPACITY + 1);
+    EXPECT_FALSE(result);
+}
+
+/**
  * @tc.name: test_parcel_Data_Structure_001
  * @tc.desc: test parcel struct data related function.
  * @tc.type: FUNC
@@ -597,6 +801,58 @@ HWTEST_F(UtilsParcelTest, test_parcel_Data_Structure_001, TestSize.Level0)
         reinterpret_cast<const struct Unpadded *>(parcel.ReadUnpadBuffer(sizeof(struct Unpadded)));
     ValidateUnpadded(*unpadReadNew, unpad);
     EXPECT_EQ(parcel.GetWritePosition(), parcel.GetReadPosition());
+}
+
+/**
+ * @tc.name: test_parcel_Data_Structure_002
+ * @tc.desc: test invalid input to WriteBuffer and WriteBufferAddTerminator.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UtilsParcelTest, test_parcel_Data_Structure_002, TestSize.Level0)
+{
+    Parcel parcel(nullptr);
+    bool result;
+
+    const string str = "test invalid input";
+    const string strOverflow = "test write with SIZE_MAX bytes";
+    const string strWriteFail = string((DEFAULT_CPACITY+1)/sizeof(char), 'f');
+    const string strWriteTermFail = string((DEFAULT_CPACITY-2)/sizeof(char), 't');
+
+    result = parcel.WriteBuffer(nullptr, sizeof(string));
+    EXPECT_EQ(false, result);
+    result = parcel.WriteBufferAddTerminator(nullptr, sizeof(string), sizeof(char));
+    EXPECT_EQ(false, result);
+
+    result = parcel.WriteBuffer(static_cast<const void *>(str.data()), 0);
+    EXPECT_EQ(false, result);
+    result = parcel.WriteBufferAddTerminator(static_cast<const void *>(str.data()), 0, sizeof(char));
+    EXPECT_EQ(false, result);
+
+    result = parcel.WriteBuffer(static_cast<const void *>(strOverflow.data()), SIZE_MAX);
+    EXPECT_EQ(false, result);
+    result = parcel.WriteBufferAddTerminator(static_cast<const void *>(strOverflow.data()),
+                                             SIZE_MAX, sizeof(char));
+    EXPECT_EQ(false, result);
+
+    result = parcel.WriteBuffer(static_cast<const void *>(strWriteFail.data()), strWriteFail.length());
+    EXPECT_EQ(false, result);
+    result = parcel.WriteBufferAddTerminator(static_cast<const void *>(strWriteFail.data()),
+                                             strWriteFail.length(), sizeof(char));
+    EXPECT_EQ(false, result);
+
+    result = parcel.WriteBufferAddTerminator(static_cast<const void *>(str.data()), str.length(), sizeof(char));
+    EXPECT_EQ(true, result);
+
+    Parcel recvParcel(nullptr);
+    void *buffer = nullptr;
+    size_t size = parcel.GetDataSize();
+    if (!SendData(buffer, size, reinterpret_cast<const uint8_t *>(parcel.GetData()))) {
+        ASSERT_FALSE(false);
+    }
+    result = recvParcel.ParseFrom(reinterpret_cast<uintptr_t>(buffer), parcel.GetDataSize());
+    EXPECT_EQ(result, true);
+    result = recvParcel.WriteBufferAddTerminator(static_cast<const void *>(&str), str.length() + 1, sizeof(char));
+    EXPECT_EQ(result, false);
 }
 
 struct VectorTestData {
