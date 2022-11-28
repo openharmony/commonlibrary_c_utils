@@ -102,6 +102,17 @@ HWTEST_F(UtilsDirectoryTest, testExtractFileExt001, TestSize.Level0)
 }
 
 /*
+ * @tc.name: testExtractFileExt002
+ * @tc.desc: get the filename of the path and test whether the filename contains "."
+ */
+HWTEST_F(UtilsDirectoryTest, testExtractFileExt002, TestSize.Level0)
+{
+    string strBaseName = "test/test_txt";
+    string strTypeName = ExtractFileExt(strBaseName);
+    EXPECT_EQ(strTypeName, "");
+}
+
+/*
  * @tc.name: testExcludeTrailingPathDelimiter001
  * @tc.desc: directory unit test
  */
@@ -171,6 +182,17 @@ HWTEST_F(UtilsDirectoryTest, testForceRemoveDirectory001, TestSize.Level0)
 }
 
 /*
+ * @tc.name: testForceRemoveDirectory002
+ * @tc.desc: test whether the folder exists
+ */
+HWTEST_F(UtilsDirectoryTest, testForceRemoveDirectory002, TestSize.Level0)
+{
+    string dirpath = "/data/test/utils_directory_tmp/";
+    bool ret = ForceRemoveDirectory(dirpath);
+    EXPECT_EQ(ret, false);
+}
+
+/*
  * @tc.name: testRemoveFile001
  * @tc.desc: directory unit test
  */
@@ -219,6 +241,34 @@ HWTEST_F(UtilsDirectoryTest, testGetFolderSize001, TestSize.Level0)
 
     ret = ForceRemoveDirectory(dirpath);
     EXPECT_EQ(ret, true);
+}
+
+/*
+ * @tc.name: testChangeModeFile001
+ * @tc.desc: test whether the folder exists
+ */
+HWTEST_F(UtilsDirectoryTest, testChangeModeFile001, TestSize.Level0)
+{
+    string dirpath = "/data/test/utils_directory_tmp/";
+    mode_t mode = S_IRWXU | S_IRWXG | S_IRWXO;
+    bool ret = ChangeModeFile(dirpath + "test.txt", mode);
+    EXPECT_EQ(ret, false);
+}
+
+/*
+ * @tc.name: testChangeModeDirectory001
+ * @tc.desc: test whether the folder is empty and get the size of the folder
+ */
+HWTEST_F(UtilsDirectoryTest, testChangeModeDirectory001, TestSize.Level0)
+{
+    string dirpath = "";
+    mode_t mode = S_IRUSR  | S_IRGRP | S_IROTH;
+    bool ret = ChangeModeDirectory(dirpath, mode);
+    EXPECT_EQ(ret, false);
+
+    uint64_t resultsize = GetFolderSize(dirpath);
+    uint64_t resultcomp = 0;
+    EXPECT_EQ(resultsize, resultcomp);
 }
 
 /*
@@ -283,6 +333,18 @@ HWTEST_F(UtilsDirectoryTest, testPathToRealPath005, TestSize.Level0)
         test/data/test/data/test/data/test/data/test/data/test/data/test/data/ \
         test/data/test/data/test/data/test/data/test/data/test/data/test/data/ \
         test/data/test/data/test/data/test";
+    string realpath;
+    bool ret = PathToRealPath(path, realpath);
+    EXPECT_EQ(ret, false);
+}
+
+/*
+ * @tc.name: testPathToRealPath006
+ * @tc.desc: test whether the folder exists
+ */
+HWTEST_F(UtilsDirectoryTest, testPathToRealPath006, TestSize.Level0)
+{
+    string path(PATH_MAX, 'x');
     string realpath;
     bool ret = PathToRealPath(path, realpath);
     EXPECT_EQ(ret, false);
