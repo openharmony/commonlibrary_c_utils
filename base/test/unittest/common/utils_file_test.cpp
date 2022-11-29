@@ -14,20 +14,26 @@
  */
 
 #include <gtest/gtest.h>
-#include "file_ex.h"
 #include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+#include "file_ex.h"
+
 using namespace testing::ext;
 using namespace std;
 
 namespace OHOS {
 namespace {
 class UtilsFileTest : public testing::Test {
-public :
+public:
+    static constexpr char CONTENT_STR[] = "TTtt@#$%^&*()_+~`";
+    static constexpr char FILE_PATH[] = "./tmp.txt";
+    static constexpr char NULL_STR[] = "";
+    static constexpr int MAX_FILE_LENGTH = 32 * 1024 * 1024;
     static void SetUpTestCase(void);
     static void TearDownTestCase(void);
     void SetUp();
@@ -69,7 +75,7 @@ int RemoveTestFile(const std::string& path)
 
 /*
  * @tc.name: testLoadStringFromFile001
- * @tc.desc: singleton template
+ * @tc.desc: Test loading an existed file 'meminfo'
  */
 HWTEST_F(UtilsFileTest, testLoadStringFromFile001, TestSize.Level0)
 {
@@ -91,25 +97,25 @@ HWTEST_F(UtilsFileTest, testLoadStringFromFile001, TestSize.Level0)
 
 /*
  * @tc.name: testLoadStringFromFile002
- * @tc.desc: singleton template
+ * @tc.desc: Test loading a non-existed file
  */
 HWTEST_F(UtilsFileTest, testLoadStringFromFile002, TestSize.Level0)
 {
     string str;
-    string filename = "";
+    string filename = NULL_STR;
     EXPECT_FALSE(LoadStringFromFile(filename, str));
     EXPECT_TRUE(str.empty());
 }
 
 /*
  * @tc.name: testLoadStringFromFile003
- * @tc.desc: singleton template
+ * @tc.desc: Test loading a newly created file with null contents
  */
 HWTEST_F(UtilsFileTest, testLoadStringFromFile003, TestSize.Level0)
 {
     string str;
-    string filename = "./tmp.txt";
-    string content = "";
+    string filename = FILE_PATH;
+    string content = NULL_STR;
     CreateTestFile(filename, content);
     EXPECT_TRUE(LoadStringFromFile(filename, str));
     RemoveTestFile(filename);
@@ -118,13 +124,13 @@ HWTEST_F(UtilsFileTest, testLoadStringFromFile003, TestSize.Level0)
 
 /*
  * @tc.name: testLoadStringFromFile004
- * @tc.desc: singleton template
+ * @tc.desc: Test loading a newly created file with contents
  */
 HWTEST_F(UtilsFileTest, testLoadStringFromFile004, TestSize.Level0)
 {
     string str;
-    string filename = "./tmp.txt";
-    string content = "TTTTT";
+    string filename = FILE_PATH;
+    string content = CONTENT_STR;
     CreateTestFile(filename, content);
     EXPECT_TRUE(LoadStringFromFile(filename, str));
     RemoveTestFile(filename);
@@ -133,13 +139,13 @@ HWTEST_F(UtilsFileTest, testLoadStringFromFile004, TestSize.Level0)
 
 /*
  * @tc.name: testLoadStringFromFile005
- * @tc.desc: singleton template
+ * @tc.desc: Test loading a newly created file, whose contents are of maximum length
  */
-HWTEST_F(UtilsFileTest, testLoadStringFromFile005, TestSize.Level0)
+HWTEST_F(UtilsFileTest, testLoadStringFromFile005, TestSize.Level1)
 {
     string str;
-    string filename = "./tmp.txt";
-    string content(32 * 1024 * 1024, 't');
+    string filename = FILE_PATH;
+    string content(MAX_FILE_LENGTH, 't');
     CreateTestFile(filename, content);
     EXPECT_TRUE(LoadStringFromFile(filename, str));
     RemoveTestFile(filename);
@@ -148,13 +154,13 @@ HWTEST_F(UtilsFileTest, testLoadStringFromFile005, TestSize.Level0)
 
 /*
  * @tc.name: testLoadStringFromFile006
- * @tc.desc: singleton template
+ * @tc.desc: Test loading a newly created file, whose contents exceeds maximum length
  */
-HWTEST_F(UtilsFileTest, testLoadStringFromFile006, TestSize.Level0)
+HWTEST_F(UtilsFileTest, testLoadStringFromFile006, TestSize.Level1)
 {
     string str;
-    string filename = "./tmp.txt";
-    string content(32 * 1024 * 1024 + 1, 't');
+    string filename = FILE_PATH;
+    string content(MAX_FILE_LENGTH + 1, 't');
     CreateTestFile(filename, content);
     EXPECT_FALSE(LoadStringFromFile(filename, str));
     RemoveTestFile(filename);
@@ -163,25 +169,24 @@ HWTEST_F(UtilsFileTest, testLoadStringFromFile006, TestSize.Level0)
 
 /*
  * @tc.name: testLoadStringFromFd001
- * @tc.desc: singleton template
+ * @tc.desc: Test loading a file by a invalid fd -1
  */
 HWTEST_F(UtilsFileTest, testLoadStringFromFd001, TestSize.Level0)
 {
     string result;
-    string filename = "";
     EXPECT_FALSE(LoadStringFromFd(-1, result));
     EXPECT_EQ(result, "");
 }
 
 /*
  * @tc.name: testLoadStringFromFd002
- * @tc.desc: singleton template
+ * @tc.desc: Test loading a newly created file without contents by its fd
  */
 HWTEST_F(UtilsFileTest, testLoadStringFromFd002, TestSize.Level0)
 {
     string result;
-    string filename = "./tmp.txt";
-    string content = "";
+    string filename = FILE_PATH;
+    string content = NULL_STR;
     CreateTestFile(filename, content);
     int fd = open(filename.c_str(), O_RDONLY);
     EXPECT_TRUE(LoadStringFromFd(fd, result));
@@ -192,13 +197,13 @@ HWTEST_F(UtilsFileTest, testLoadStringFromFd002, TestSize.Level0)
 
 /*
  * @tc.name: testLoadStringFromFd003
- * @tc.desc: singleton template
+ * @tc.desc: Test loading a newly created file with contents by its fd
  */
 HWTEST_F(UtilsFileTest, testLoadStringFromFd003, TestSize.Level0)
 {
     string result;
-    string filename = "./tmp.txt";
-    string content = "TTTTT";
+    string filename = FILE_PATH;
+    string content = CONTENT_STR;
     CreateTestFile(filename, content);
     int fd = open(filename.c_str(), O_RDONLY);
     EXPECT_TRUE(LoadStringFromFd(fd, result));
@@ -209,13 +214,13 @@ HWTEST_F(UtilsFileTest, testLoadStringFromFd003, TestSize.Level0)
 
 /*
  * @tc.name: testLoadStringFromFd004
- * @tc.desc: singleton template
+ * @tc.desc: Test loading a newly created file by fd, whose contents are of maximum length
  */
-HWTEST_F(UtilsFileTest, testLoadStringFromFd004, TestSize.Level0)
+HWTEST_F(UtilsFileTest, testLoadStringFromFd004, TestSize.Level1)
 {
     string result;
-    string filename = "./tmp.txt";
-    string content(32 * 1024 * 1024, 't');
+    string filename = FILE_PATH;
+    string content(MAX_FILE_LENGTH, 't');
     CreateTestFile(filename, content);
     int fd = open(filename.c_str(), O_RDONLY);
     EXPECT_TRUE(LoadStringFromFd(fd, result));
@@ -225,36 +230,51 @@ HWTEST_F(UtilsFileTest, testLoadStringFromFd004, TestSize.Level0)
 }
 
 /*
+ * @tc.name: testLoadStringFromFd005
+ * @tc.desc: Test loading a newly created file by fd, whose contents exceeds maximum length
+ */
+HWTEST_F(UtilsFileTest, testLoadStringFromFd005, TestSize.Level1)
+{
+    string result;
+    string filename = FILE_PATH;
+    string content(MAX_FILE_LENGTH + 1, 't');
+    CreateTestFile(filename, content);
+    int fd = open(filename.c_str(), O_RDONLY);
+    EXPECT_FALSE(LoadStringFromFd(fd, result));
+    close(fd);
+    RemoveTestFile(filename);
+    EXPECT_NE(result, content);
+}
+
+/*
+ * @tc.name: testLoadStringFromFd006
+ * @tc.desc: Test loading a newly created file by fd, which is closed ahead of loading.
+ */
+HWTEST_F(UtilsFileTest, testLoadStringFromFd006, TestSize.Level0)
+{
+    string result;
+    string filename = FILE_PATH;
+    string content = CONTENT_STR;
+    CreateTestFile(filename, content);
+    int fd = open(filename.c_str(), O_RDONLY);
+    close(fd);
+    EXPECT_FALSE(LoadStringFromFd(fd, result));
+    RemoveTestFile(filename);
+    EXPECT_EQ(result, "");
+}
+
+/*
  * @tc.name: testSaveStringToFile001
  * @tc.desc: singleton template
  */
 HWTEST_F(UtilsFileTest, testSaveStringToFile001, TestSize.Level0)
 {
-    string content;
-    string path = "./tmp2.txt";
-    string fileContent = "ttxx";
-    CreateTestFile(path, fileContent);
-    bool ret = SaveStringToFile(path, content);
+    string path = FILE_PATH;
+    string content = CONTENT_STR;
+    string newContent;
+    CreateTestFile(path, content);
+    bool ret = SaveStringToFile(path, newContent);
     EXPECT_EQ(ret, true);
-
-    string loadResult;
-    EXPECT_TRUE(LoadStringFromFile(path, loadResult));
-    RemoveTestFile(path);
-    EXPECT_EQ(loadResult, fileContent);
-}
-
-/*
- * @tc.name: testSaveStringToFile002
- * @tc.desc: singleton template
- */
-HWTEST_F(UtilsFileTest, testSaveStringToFile002, TestSize.Level0)
-{
-    string path = "./tmp2.txt";
-    string fileContent = "ttxx";
-    CreateTestFile(path, fileContent);
-
-    string content = "xxtt";
-    EXPECT_TRUE(SaveStringToFile(path, content));
 
     string loadResult;
     EXPECT_TRUE(LoadStringFromFile(path, loadResult));
@@ -263,38 +283,57 @@ HWTEST_F(UtilsFileTest, testSaveStringToFile002, TestSize.Level0)
 }
 
 /*
- * @tc.name: testSaveStringToFile003
+ * @tc.name: testSaveStringToFile002
  * @tc.desc: singleton template
+ */
+HWTEST_F(UtilsFileTest, testSaveStringToFile002, TestSize.Level0)
+{
+    string path = FILE_PATH;
+    string content = "Before truncated！";
+    CreateTestFile(path, content);
+
+    string newContent = CONTENT_STR;
+    EXPECT_TRUE(SaveStringToFile(path, newContent));
+
+    string loadResult;
+    EXPECT_TRUE(LoadStringFromFile(path, loadResult));
+    RemoveTestFile(path);
+    EXPECT_EQ(loadResult, newContent);
+}
+
+/*
+ * @tc.name: testSaveStringToFile003
+ * @tc.desc: Test writting a string to a file in truncate mode
  */
 HWTEST_F(UtilsFileTest, testSaveStringToFile003, TestSize.Level0)
 {
-    string path = "./tmp2.txt";
-    string fileContent = "ttxx";
-    CreateTestFile(path, fileContent);
+    string path = FILE_PATH;
+    string content = "Before truncated！";
+    CreateTestFile(path, content);
 
-    string content = "xxtt";
-    bool ret = SaveStringToFile(path, content, true);
+    string newContent = CONTENT_STR;
+    bool ret = SaveStringToFile(path, newContent, true);
     EXPECT_EQ(ret, true);
 
     string loadResult;
     ret = LoadStringFromFile(path, loadResult);
     RemoveTestFile(path);
     EXPECT_EQ(ret, true);
-    EXPECT_STREQ(loadResult.c_str(), content.c_str());
+    EXPECT_STREQ(loadResult.c_str(), newContent.c_str());
 }
 
 /*
  * @tc.name: testSaveStringToFile004
- * @tc.desc: singleton template
+ * @tc.desc: Test writting an empty string to a file in truncate mode
  */
 HWTEST_F(UtilsFileTest, testSaveStringToFile004, TestSize.Level0)
 {
-    string path = "./tmp2.txt";
-    string fileContent = "ttxx";
-    CreateTestFile(path, fileContent);
+    string path = FILE_PATH;
+    string content = "Before truncated！";
+    CreateTestFile(path, content);
 
-    string content = "xxtt";
-    bool ret = SaveStringToFile(path, content, true);
+    string newContent;
+    bool ret = SaveStringToFile(path, newContent, true);
     EXPECT_EQ(ret, true);
 
     string loadResult;
@@ -306,119 +345,73 @@ HWTEST_F(UtilsFileTest, testSaveStringToFile004, TestSize.Level0)
 
 /*
  * @tc.name: testSaveStringToFile005
- * @tc.desc: singleton template
+ * @tc.desc: Test writting an empty string to a file in append mode
  */
 HWTEST_F(UtilsFileTest, testSaveStringToFile005, TestSize.Level0)
 {
-    string path = "./tmp2.txt";
-    string fileContent = "ttxx";
-    CreateTestFile(path, fileContent);
-
-    string content;
-    bool ret = SaveStringToFile(path, content, true);
+    string newContent;
+    string path = FILE_PATH;
+    string content = "Before appended！";
+    CreateTestFile(path, content);
+    bool ret = SaveStringToFile(path, newContent, false);
     EXPECT_EQ(ret, true);
 
     string loadResult;
     ret = LoadStringFromFile(path, loadResult);
     RemoveTestFile(path);
     EXPECT_EQ(ret, true);
-    EXPECT_STREQ(loadResult.c_str(), fileContent.c_str());
+    EXPECT_STREQ(loadResult.c_str(), content.c_str());
 }
 
 /*
  * @tc.name: testSaveStringToFile006
- * @tc.desc: singleton template
+ * @tc.desc: Test writting a string to a file in append mode
  */
 HWTEST_F(UtilsFileTest, testSaveStringToFile006, TestSize.Level0)
 {
-    string content;
-    string path = "./tmp2.txt";
-    string fileContent = "ttxx";
-    CreateTestFile(path, fileContent);
-    bool ret = SaveStringToFile(path, content, false);
+    string path = FILE_PATH;
+    string content = "Before appended！";
+    CreateTestFile(path, content);
+
+    string newContent = CONTENT_STR;
+    bool ret = SaveStringToFile(path, newContent, false);
     EXPECT_EQ(ret, true);
 
     string loadResult;
     ret = LoadStringFromFile(path, loadResult);
     RemoveTestFile(path);
     EXPECT_EQ(ret, true);
-    EXPECT_STREQ(loadResult.c_str(), fileContent.c_str());
-}
-
-/*
- * @tc.name: testSaveStringToFile007
- * @tc.desc: singleton template
- */
-HWTEST_F(UtilsFileTest, testSaveStringToFile007, TestSize.Level0)
-{
-    string path = "./tmp2.txt";
-    string fileContent = "ttxx";
-    CreateTestFile(path, fileContent);
-
-    string content = "xxtt";
-    bool ret = SaveStringToFile(path, content, false);
-    EXPECT_EQ(ret, true);
-
-    string loadResult;
-    ret = LoadStringFromFile(path, loadResult);
-    RemoveTestFile(path);
-    EXPECT_EQ(ret, true);
-    EXPECT_EQ(loadResult, fileContent + content);
+    EXPECT_EQ(loadResult, content + newContent);
 }
 
 /*
  * @tc.name: testSaveStringToFd001
- * @tc.desc: singleton template
+ * @tc.desc: Test writting an empty string to files with invalid fds
  */
 HWTEST_F(UtilsFileTest, testSaveStringToFd001, TestSize.Level0)
 {
     string content;
-    bool ret = SaveStringToFd(-1, content);
+    bool ret = SaveStringToFd(0, content);
+    EXPECT_EQ(ret, false);
+    ret = SaveStringToFd(-1, content);
+    EXPECT_EQ(ret, false);
+
+    content = CONTENT_STR;
+    ret = SaveStringToFd(0, content);
+    EXPECT_EQ(ret, false);
+    ret = SaveStringToFd(-1, content);
     EXPECT_EQ(ret, false);
 }
 
 /*
  * @tc.name: testSaveStringToFd002
- * @tc.desc: singleton template
+ * @tc.desc: Test writting an empty string to a file specified by its fd
  */
 HWTEST_F(UtilsFileTest, testSaveStringToFd002, TestSize.Level0)
 {
     string content;
-    bool ret = SaveStringToFd(0, content);
-    EXPECT_EQ(ret, false);
-}
-
-/*
- * @tc.name: testSaveStringToFd003
- * @tc.desc: singleton template
- */
-HWTEST_F(UtilsFileTest, testSaveStringToFd003, TestSize.Level0)
-{
-    string content = "tt";
-    bool ret = SaveStringToFd(-1, content);
-    EXPECT_EQ(ret, false);
-}
-
-/*
- * @tc.name: testSaveStringToFd004
- * @tc.desc: singleton template
- */
-HWTEST_F(UtilsFileTest, testSaveStringToFd004, TestSize.Level0)
-{
-    string content;
-    bool ret = SaveStringToFd(-1, content);
-    EXPECT_EQ(ret, false);
-}
-
-/*
- * @tc.name: testSaveStringToFd005
- * @tc.desc: singleton template
- */
-HWTEST_F(UtilsFileTest, testSaveStringToFd005, TestSize.Level0)
-{
-    string content;
-    string filename = "./tmp3.txt";
-    int fd = open(filename.c_str(), O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    string filename = FILE_PATH;
+    int fd = open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     bool ret = SaveStringToFd(fd, content);
     close(fd);
     EXPECT_EQ(ret, true);
@@ -433,13 +426,13 @@ HWTEST_F(UtilsFileTest, testSaveStringToFd005, TestSize.Level0)
 }
 
 /*
- * @tc.name: testSaveStringToFd006
- * @tc.desc: singleton template
+ * @tc.name: testSaveStringToFd003
+ * @tc.desc: Test loading a non-empty string to a file specified by its fd
  */
-HWTEST_F(UtilsFileTest, testSaveStringToFd006, TestSize.Level0)
+HWTEST_F(UtilsFileTest, testSaveStringToFd003, TestSize.Level0)
 {
-    string content = "TTTTTTTT";
-    string filename = "./tmp3.txt";
+    string content = CONTENT_STR;
+    string filename = FILE_PATH;
     int fd = open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     bool ret = SaveStringToFd(fd, content);
     close(fd);
@@ -452,6 +445,28 @@ HWTEST_F(UtilsFileTest, testSaveStringToFd006, TestSize.Level0)
     RemoveTestFile(filename);
     EXPECT_EQ(ret, true);
     EXPECT_EQ(loadResult, content);
+}
+
+/*
+ * @tc.name: testSaveStringToFd004
+ * @tc.desc: Test loading a non-empty string to a file without write-authority specified by its fd
+ */
+HWTEST_F(UtilsFileTest, testSaveStringToFd004, TestSize.Level0)
+{
+    string content = CONTENT_STR;
+    string filename = FILE_PATH;
+    int fd = open(filename.c_str(), O_RDONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    bool ret = SaveStringToFd(fd, content);
+    close(fd);
+    EXPECT_EQ(ret, false);
+
+    string loadResult;
+    fd = open(filename.c_str(), O_RDONLY);
+    ret = LoadStringFromFd(fd, loadResult);
+    close(fd);
+    RemoveTestFile(filename);
+    EXPECT_EQ(ret, true);
+    EXPECT_EQ(loadResult, "");
 }
 
 /*
@@ -474,7 +489,23 @@ HWTEST_F(UtilsFileTest, testLoadBufferFromFile001, TestSize.Level0)
 HWTEST_F(UtilsFileTest, testLoadBufferFromFile002, TestSize.Level0)
 {
     vector<char> buff;
-    string filename = "./tmp.txt";
+    string filename = FILE_PATH;
+    string content;
+    CreateTestFile(filename, content);
+    bool ret = LoadBufferFromFile(filename, buff);
+    RemoveTestFile(filename);
+    EXPECT_TRUE(ret);
+    EXPECT_EQ(0, static_cast<int>(buff.size()));
+}
+
+/*
+ * @tc.name: testLoadBufferFromFile003
+ * @tc.desc: singleton template
+ */
+HWTEST_F(UtilsFileTest, testLoadBufferFromFile003, TestSize.Level0)
+{
+    vector<char> buff;
+    string filename = FILE_PATH;
     string content = "TXB";
     CreateTestFile(filename, content);
     bool ret = LoadBufferFromFile(filename, buff);
@@ -487,13 +518,13 @@ HWTEST_F(UtilsFileTest, testLoadBufferFromFile002, TestSize.Level0)
 }
 
 /*
- * @tc.name: testLoadBufferFromFile003
+ * @tc.name: testLoadBufferFromFile004
  * @tc.desc: singleton template
  */
-HWTEST_F(UtilsFileTest, testLoadBufferFromFile003, TestSize.Level0)
+HWTEST_F(UtilsFileTest, testLoadBufferFromFile004, TestSize.Level1)
 {
     vector<char> buff;
-    string filename = "./tmp1.txt";
+    string filename = FILE_PATH;
     string content(32 * 1024 * 1024 + 1, 't');
     CreateTestFile(filename, content);
     bool ret = LoadBufferFromFile(filename, buff);
@@ -509,9 +540,9 @@ HWTEST_F(UtilsFileTest, testLoadBufferFromFile003, TestSize.Level0)
 HWTEST_F(UtilsFileTest, testSaveBufferToFile001, TestSize.Level0)
 {
     vector<char> buff;
-    string path = "./tmp2.txt";
-    string fileContent = "ttxx";
-    CreateTestFile(path, fileContent);
+    string path = FILE_PATH;
+    string content = "ttxx";
+    CreateTestFile(path, content);
     bool ret = SaveBufferToFile(path, buff, false);
     EXPECT_EQ(ret, true);
 
@@ -519,7 +550,7 @@ HWTEST_F(UtilsFileTest, testSaveBufferToFile001, TestSize.Level0)
     ret = LoadStringFromFile(path, loadResult);
     RemoveTestFile(path);
     EXPECT_EQ(ret, true);
-    EXPECT_EQ(loadResult, fileContent);
+    EXPECT_EQ(loadResult, content);
 }
 
 /*
@@ -528,19 +559,19 @@ HWTEST_F(UtilsFileTest, testSaveBufferToFile001, TestSize.Level0)
  */
 HWTEST_F(UtilsFileTest, testSaveBufferToFile002, TestSize.Level0)
 {
-    string path = "./tmp2.txt";
-    string fileContent = "ttxx";
-    CreateTestFile(path, fileContent);
+    string path = FILE_PATH;
+    string content = "ttxx";
+    CreateTestFile(path, content);
 
-    vector<char> content = {'x', 'x', 't', 't'};
-    bool ret = SaveBufferToFile(path, content);
+    vector<char> newContent = {'x', 'x', 't', 't'};
+    bool ret = SaveBufferToFile(path, newContent);
     EXPECT_EQ(ret, true);
 
     string loadResult;
     ret = LoadStringFromFile(path, loadResult);
     RemoveTestFile(path);
     EXPECT_EQ(ret, true);
-    EXPECT_EQ(loadResult, std::string(content.begin(), content.end()));
+    EXPECT_EQ(loadResult, std::string(newContent.begin(), newContent.end()));
 }
 
 /*
@@ -550,9 +581,9 @@ HWTEST_F(UtilsFileTest, testSaveBufferToFile002, TestSize.Level0)
 HWTEST_F(UtilsFileTest, testSaveBufferToFile003, TestSize.Level0)
 {
     vector<char> buff;
-    string path = "./tmp2.txt";
-    string fileContent = "ttxx";
-    CreateTestFile(path, fileContent);
+    string path = FILE_PATH;
+    string content = "ttxx";
+    CreateTestFile(path, content);
     bool ret = SaveBufferToFile(path, buff, false);
     EXPECT_EQ(ret, true);
 
@@ -560,7 +591,7 @@ HWTEST_F(UtilsFileTest, testSaveBufferToFile003, TestSize.Level0)
     ret = LoadStringFromFile(path, loadResult);
     RemoveTestFile(path);
     EXPECT_EQ(ret, true);
-    EXPECT_EQ(loadResult, fileContent);
+    EXPECT_EQ(loadResult, content);
 }
 
 /*
@@ -569,19 +600,19 @@ HWTEST_F(UtilsFileTest, testSaveBufferToFile003, TestSize.Level0)
  */
 HWTEST_F(UtilsFileTest, testSaveBufferToFile004, TestSize.Level0)
 {
-    string path = "./tmp2.txt";
-    string fileContent = "ttxx";
-    CreateTestFile(path, fileContent);
+    string path = FILE_PATH;
+    string content = "ttxx";
+    CreateTestFile(path, content);
 
-    vector<char> content = {'x', 'x', 't', 't'};
-    bool ret = SaveBufferToFile(path, content, false);
+    vector<char> newContent = {'x', 'x', 't', 't'};
+    bool ret = SaveBufferToFile(path, newContent, false);
     EXPECT_EQ(ret, true);
 
     string loadResult;
     ret = LoadStringFromFile(path, loadResult);
     RemoveTestFile(path);
     EXPECT_EQ(ret, true);
-    EXPECT_EQ(loadResult, fileContent + std::string(content.begin(), content.end()));
+    EXPECT_EQ(loadResult, content + std::string(newContent.begin(), newContent.end()));
 }
 
 /*
@@ -602,8 +633,8 @@ HWTEST_F(UtilsFileTest, testStringExistsInFile001, TestSize.Level0)
  */
 HWTEST_F(UtilsFileTest, testStringExistsInFile002, TestSize.Level0)
 {
-    string str = "";
-    string filename = "./tmp.txt";
+    string str = NULL_STR;
+    string filename = FILE_PATH;
     string content = "hello world!";
     CreateTestFile(filename, content);
     EXPECT_FALSE(StringExistsInFile(filename, str, true));
@@ -617,7 +648,7 @@ HWTEST_F(UtilsFileTest, testStringExistsInFile002, TestSize.Level0)
 HWTEST_F(UtilsFileTest, testStringExistsInFile003, TestSize.Level0)
 {
     string str = "world";
-    string filename = "./tmp.txt";
+    string filename = FILE_PATH;
     string content = "hello world!";
     CreateTestFile(filename, content);
     EXPECT_TRUE(StringExistsInFile(filename, str, true));
@@ -628,11 +659,11 @@ HWTEST_F(UtilsFileTest, testStringExistsInFile003, TestSize.Level0)
  * @tc.name: testStringExistsInFile004
  * @tc.desc: singleton template
  */
-HWTEST_F(UtilsFileTest, testStringExistsInFile004, TestSize.Level0)
+HWTEST_F(UtilsFileTest, testStringExistsInFile004, TestSize.Level1)
 {
     string str1(32 * 1024 * 1024 + 1, 't');
     string str2(32 * 1024 * 1024, 't');
-    string filename = "./tmp.txt";
+    string filename = FILE_PATH;
     string content(32 * 1024 * 1024, 't');
     CreateTestFile(filename, content);
     EXPECT_FALSE(StringExistsInFile(filename, str1, true));
@@ -647,7 +678,7 @@ HWTEST_F(UtilsFileTest, testStringExistsInFile004, TestSize.Level0)
 HWTEST_F(UtilsFileTest, testStringExistsInFile005, TestSize.Level0)
 {
     string str = "woRld";
-    string filename = "./tmp.txt";
+    string filename = FILE_PATH;
     string content = "hello world!";
     CreateTestFile(filename, content);
     EXPECT_TRUE(StringExistsInFile(filename, str, false));
@@ -666,7 +697,7 @@ HWTEST_F(UtilsFileTest, testStringExistsInFile006, TestSize.Level0)
     string str3 = "llo ";
     string str4 = "123 w";
     string str5 = "hi";
-    string filename = "./tmp.txt";
+    string filename = FILE_PATH;
     string content = "Test, hello 123 World!";
     CreateTestFile(filename, content);
     EXPECT_TRUE(StringExistsInFile(filename, str1, false));
@@ -694,7 +725,7 @@ HWTEST_F(UtilsFileTest, testStringExistsInFile007, TestSize.Level0)
 {
     string str1 = "is";
     string str2 = "\n\ris";
-    string filename = "./tmp.txt";
+    string filename = FILE_PATH;
     string content = "Test, special string\n\ris ok";
     CreateTestFile(filename, content);
     EXPECT_TRUE(StringExistsInFile(filename, str1, false));
@@ -736,8 +767,8 @@ HWTEST_F(UtilsFileTest, testCountStrInFile001, TestSize.Level0)
  */
 HWTEST_F(UtilsFileTest, testCountStrInFile002, TestSize.Level0)
 {
-    string str = "";
-    string filename = "./tmp.txt";
+    string str = NULL_STR;
+    string filename = FILE_PATH;
     string content = "hello world!";
     CreateTestFile(filename, content);
     EXPECT_EQ(CountStrInFile(filename, str, true), -1);
@@ -748,11 +779,11 @@ HWTEST_F(UtilsFileTest, testCountStrInFile002, TestSize.Level0)
  * @tc.name: testCountStrInFile003
  * @tc.desc: singleton template
  */
-HWTEST_F(UtilsFileTest, testCountStrInFile003, TestSize.Level0)
+HWTEST_F(UtilsFileTest, testCountStrInFile003, TestSize.Level1)
 {
     string str1(32 * 1024 * 1024 + 1, 't');
     string str2(32 * 1024 * 1024, 't');
-    string filename = "./tmp.txt";
+    string filename = FILE_PATH;
     string content(32 * 1024 * 1024, 't');
     CreateTestFile(filename, content);
     EXPECT_EQ(CountStrInFile(filename, str1, true), 0);
@@ -769,7 +800,7 @@ HWTEST_F(UtilsFileTest, testCountStrInFile004, TestSize.Level0)
     string str1 = "very";
     string str2 = "VERY";
     string str3 = "abc";
-    string filename = "./tmp.txt";
+    string filename = FILE_PATH;
     string content = "This is very very long string for test.\n Very Good,\r VERY HAPPY.";
     CreateTestFile(filename, content);
     EXPECT_EQ(CountStrInFile(filename, str1, true), 2);
@@ -789,7 +820,7 @@ HWTEST_F(UtilsFileTest, testCountStrInFile004, TestSize.Level0)
 HWTEST_F(UtilsFileTest, testCountStrInFile005, TestSize.Level0)
 {
     string str1 = "aba";
-    string filename = "./tmp.txt";
+    string filename = FILE_PATH;
     string content = "This is abababaBABa.";
     CreateTestFile(filename, content);
     EXPECT_EQ(CountStrInFile(filename, str1, true), 2);
