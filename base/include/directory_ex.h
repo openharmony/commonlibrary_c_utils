@@ -23,92 +23,124 @@
 namespace OHOS {
 
 /**
- * The GetCurrentProcFullFileName function get the current process exe name.
+ * @brief Get the full absolute path to the current program.
+ *
+ * /proc/self/exe represents the current program, and its source path can be 
+ * read with the readlink function to get the absolute path of the current 
+ * program.
  */
+std::string GetCurrentProcFullFileName();
 std::string GetCurrentProcFullFileName();
 
 /**
- * The GetCurrentProcPath function get the current process exe path.
+ * @brief Get the absolute path of the current program.
  */
 std::string GetCurrentProcPath();
 
 /**
- * The ExtractFilePath function extract the input file path.
+ * @brief Obtain the path to the corresponding file by the full path.
  */
 std::string ExtractFilePath(const std::string& fileFullName);
 
 /**
- * The ExtractFilePath function extract the input file name.
+ * @brief Obtain the name to the corresponding file by the full path.
  */
 std::string ExtractFileName(const std::string& fileFullName);
 
 /**
- * The ExtractFileExt function extract the input file name type.
+ * @brief Obtain the filename extension to the corresponding file by the full 
+ * path.
  */
 std::string ExtractFileExt(const std::string& fileName);
 
 /**
- * The ExcludeTrailingPathDelimiter function exclude the end '/' from the strPath,
- * return the path without the end '/'.
+ * @brief Exclude the end '/' from the strPath.
+ *
+ * Determine whether the path has ended with '/', and returns the path after 
+ * removing '/', otherwise returns the path directly.
  */
 std::string ExcludeTrailingPathDelimiter(const std::string& path);
 
 /**
- * The IncludeTrailingPathDelimiter function include the end '/' from the strPath,
- * return the path with the end '/'.
+ * @brief Include the end '/' from the strPath.
+ *
+ * Determine whether the path has ended with "/", and returns the path after 
+ * adding '/', otherwise returns the path directly.
  */
 std::string IncludeTrailingPathDelimiter(const std::string& path);
 
 /**
- * The GetDirFiles function get all files in the path.
+ * @brief Get names of all files under `path` recursively.
+ *
+ * @param path Input path.
+ * @param files Target `std::vector` to store the file names.
  */
 void GetDirFiles(const std::string& path, std::vector<std::string>& files);
 
 /**
- * The IsEmptyFolder function judge the path is empty,
- * return true if is empty, else false.
+ * @brief Judge if the path is empty.
+ *
+ * @return Return true if is empty, else false.
  */
 bool IsEmptyFolder(const std::string& path);
 
 /**
- * The ForceCreateDirectory function is force create the dir with subdir,
- * return true if create succ, else false.
+ * @brief Create the dir recursively.
+ *
+ * Parent directory can be created at the same time when it does not exist.
+ *
+ * @note If there are problems such as 'Permission Denied', the creation may 
+ * also fail.
+ * @return Return true if create success, else false.
  */
 bool ForceCreateDirectory(const std::string& path);
 
 /**
- * The ForceRemoveDirectory function is force delete the dir with subdir and files,
- * return true if remove succ, else false.
+ * @brief Delete the specified dir.
+ *
+ * All subdirs and files will also be deleted.
+ *
+ * @note It is not necessarily successful to delete.
+ * @note If there are problems such as 'Permission Denied', the deletion may 
+ * also fail.
+ * @return Return true if delete success, else false.
  */
 bool ForceRemoveDirectory(const std::string& path);
 
 /**
- * The RemoveFile function is remove the input strFileName,
- * return true if remove succ, else false.
+ * @brief Remove the file specified by fileName.
+ *
+ * @return Return true if remove success, else false.
  */
 bool RemoveFile(const std::string& fileName);
 
 /**
- * The GetFolderSize function is get the folder size(bytes).
+ * @brief Get the folder size(bytes).
  */
 uint64_t GetFolderSize(const std::string& path);
 
 /**
- * The ChangeModeFile function is change the input file authority,
- * return true if change succ,  else false.
+ * @brief Change the file authority.
+ *
+ * @param mode Specify the changed permissions, see chmod().
+ * @return Return true if change success, else false.
  */
 bool ChangeModeFile(const std::string& fileName, const mode_t& mode);
 
 /**
- * The ChangeModeDirectory function is change the input Directory authority, include subdir,
- * return true if change succ,  else false.
+ * @brief Change authority of the directory specified by path and all of its 
+ * subdirectories.
+ *
+ * @param mode Specify the changed permissions, see chmod().
+ * @return Return true if change success, else false.
  */
 bool ChangeModeDirectory(const std::string& path, const mode_t& mode);
 
 /**
-* The PathToRealPath function is get real path from relative path,
-* return true if change succ, else false.
-*/
+ * @brief Get real path from relative path.
+ *
+ * @return Return true if get success, else false.
+ */
 bool PathToRealPath(const std::string& path, std::string& realPath);
 } // OHOS
 #endif

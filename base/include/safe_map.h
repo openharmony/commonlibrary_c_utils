@@ -21,6 +21,9 @@
 
 namespace OHOS {
 
+/**
+ * @brief A thread-safe map implementation is provided.
+ */
 template <typename K, typename V>
 class SafeMap {
 public:
@@ -47,20 +50,40 @@ public:
         return map_[key];
     }
 
-    // when multithread calling size() return a tmp status, some threads may insert just after size() call
+    /**
+     * @brief Get the size of the map.
+     *
+     * when multithread calling Size() return a tmp status, some threads may
+     * insert just after Size() call.
+     */
     int Size()
     {
         std::lock_guard<std::mutex> lock(mutex_);
         return map_.size();
     }
 
-    // when multithread calling Empty() return a tmp status, some threads may insert just after Empty() call
+    /**
+     * @brief Determine whether the map is empty or not.
+     *
+     * when multithread calling Empty() return a tmp status, some threads may 
+     * insert just after Empty() call.
+     *
+     * @return Return true if it is empty, otherwise returns false.
+     */
     bool IsEmpty()
     {
         std::lock_guard<std::mutex> lock(mutex_);
         return map_.empty();
     }
 
+    /**
+     * @brief Insert a new element into the map.
+     *
+     * @param key The key to be inserted.
+     * @param value The value to be inserted.
+     * @return Return true if the insertion is successful, otherwise returns 
+     * false.
+     */
     bool Insert(const K& key, const V& value)
     {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -68,6 +91,14 @@ public:
         return ret.second;
     }
 
+    /**
+     * @brief Insert elements into the map.
+     *
+     * @param key The key to be inserted.
+     * @param value The value to be inserted.
+     * @note Delete and then insert when the key exists, ensuring that the 
+     * final value is inserted.
+     */
     void EnsureInsert(const K& key, const V& value)
     {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -81,6 +112,13 @@ public:
         return;
     }
 
+    /**
+     * @brief Search for elements in the map.
+     *
+     * @param Key The key to be found.
+     * @param value The value corresponding to the found key.
+     * @return Return true when the key exists, otherwise returns false.
+     */
     bool Find(const K& key, V& value)
     {
         bool ret = false;
@@ -95,6 +133,15 @@ public:
         return ret;
     }
 
+    /**
+     * @brief Search for elements in the map and replace the `oldValue` 
+     * corresponding to the key with `newValue`.
+     *
+     * @param Key The key to be found.
+     * @param oldValue The value corresponding to the found key.
+     * @param newValue The new value to insert.
+     * @return Return true when the key exists, otherwise returns false.
+     */
     bool FindOldAndSetNew(const K& key, V& oldValue, const V& newValue)
     {
         bool ret = false;
@@ -112,12 +159,20 @@ public:
         return ret;
     }
 
+    /**
+     * @brief Delete key-value pairs whose key is key in the map.
+     *
+     * @param Key The key to be deleted.
+     */
     void Erase(const K& key)
     {
         std::lock_guard<std::mutex> lock(mutex_);
         map_.erase(key);
     }
 
+    /**
+     * @brief Delete all key-value pairs stored in the map.
+     */
     void Clear()
     {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -127,6 +182,12 @@ public:
 
     using SafeMapCallBack = std::function<void(const K, V&)>;
 
+    /**
+     * @brief Iterate through the elements in the map.
+     *
+     * @param callback A specific function that performs custom operations on 
+     * each KV key-value pair.
+     */
     void Iterate(const SafeMapCallBack& callback)
     {
         std::lock_guard<std::mutex> lock(mutex_);

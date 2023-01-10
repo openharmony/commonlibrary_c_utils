@@ -18,14 +18,23 @@
 
 namespace OHOS {
 
+/**
+ * @brief Disable the copy and move construct/assignment method.
+ */
 #define DISALLOW_COPY_AND_MOVE(className)\
     DISALLOW_COPY(className);\
     DISALLOW_MOVE(className)
 
+/**
+ * @brief Disable the copy construct/assignment method.
+ */
 #define DISALLOW_COPY(className)\
     className(const className&) = delete;\
     className& operator= (const className&) = delete
 
+/**
+ * @brief Disable the move construct/assignment method.
+ */
 #define DISALLOW_MOVE(className)\
     className(className&&) = delete;\
     className& operator= (className&&) = delete
