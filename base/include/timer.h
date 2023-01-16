@@ -29,7 +29,21 @@
 
 namespace OHOS {
 namespace Utils {
-
+/*
+ * Notice:
+ *     1. Timer should be set up(via Setup()) before use, and shutdown(via Shutdown()) before its deconstruction.
+ *
+ *     2. Timer should be set up first and then shutdown.
+ *        Avoid delegating them to different threads since it may cause multithreading problem.
+ *
+ *     3. Set up Timer again would not reset this Timer, but return `TIMER_ERR_INVALID_VALUE`.
+ *        If a reset operation is required, shut Timer down first and then set it up.
+ *
+ *     4. Parameter in Shutdown() determines whether the thread in Timer would be detach or join.
+ *        (True(default) --> join; False --> detach).
+ *        + Detach operation would cause possible multithreading problems, thus is not recommended.
+ *          If a detach operation is required, availability of related objects used in `thread_` should be guaranteed.
+ */
 class Timer {
 public:
     using TimerCallback = std::function<void ()>;

@@ -31,6 +31,10 @@ Timer::Timer(const std::string& name, int timeoutMs) : name_(name), timeoutMs_(t
 
 uint32_t Timer::Setup()
 {
+    if (thread_.joinable()) { // avoid double assign to an active thread
+        return TIMER_ERR_INVALID_VALUE;
+    }
+    reactor_->SwitchOn();
     std::thread loop_thread(std::bind(&Timer::MainLoop, this));
     thread_.swap(loop_thread);
 
@@ -39,12 +43,12 @@ uint32_t Timer::Setup()
 
 void Timer::Shutdown(bool useJoin)
 {
-    if (reactor_->IsStopped()) {
+    if (!thread_.joinable()) {
         UTILS_LOGD("timer has been stopped already");
         return;
     }
 
-    reactor_->StopLoop();
+    reactor_->SwitchOff();
     if (timeoutMs_ == -1) {
         std::lock_guard<std::mutex> lock(mutex_);
         if (intervalToTimers_.empty()) {
@@ -128,7 +132,7 @@ void Timer::Unregister(uint32_t timerId)
 void Timer::MainLoop()
 {
     prctl(PR_SET_NAME, name_.c_str(), 0, 0, 0);
-    if (reactor_->StartUp() == TIMER_ERR_OK) {
+    if (reactor_->SetUp() == TIMER_ERR_OK) {
         reactor_->RunLoop(timeoutMs_);
     }
     reactor_->CleanUp();
@@ -172,7 +176,7 @@ void Timer::OnTimer(int timerFd)
             continue;
         }
         /* if stop, callback is forbidden */
-        if (!reactor_->IsStopped()) {
+        if (reactor_->IsLoopReady() && reactor_->IsSwitchedOn()) {
             ptr->callback();
         }
 
