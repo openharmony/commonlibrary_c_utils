@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,6 +13,15 @@
  * limitations under the License.
  */
 
+/**
+ * @file safe_queue.h
+ *
+ * @brief The file contains interfaces of thread-safe queues in c_utils.
+ *
+ * The file contains thread-safe abstract class, the SafeQueue
+ * and SafeStack that override the virtual methods of the abstract class.
+ */
+
 #ifndef UTILS_BASE_SAFE_QUEUE_H
 #define UTILS_BASE_SAFE_QUEUE_H
 
@@ -21,6 +30,12 @@
 
 namespace OHOS {
 
+/**
+ * @brief An abstract class for thread-safe queues.
+ *
+ * Encapsulate std::lock_guard locks on the basis of std::deque,
+ * so that the interface of the queue becomes thread-safe.
+ */
 template <typename T>
 class SafeQueueInner {
 
@@ -82,6 +97,12 @@ protected:
     std::mutex mutex_;
 };
 
+/**
+ * @brief Thread-safe Queue.
+ *
+ * Overrides the DoPush and DoPop methods of abstract classes to implement
+ * the push and pop functionality of the "SafeQueue".
+ */
 template <typename T>
 class SafeQueue : public SafeQueueInner<T> {
 
@@ -94,6 +115,10 @@ protected:
         deque_.push_back(pt);
     }
 
+/**
+ * @brief Encapsulate the pop_front() of dequeues
+ * and implement the pop function of queues.
+ */
     bool DoPop(T& pt) override
     {
         if (deque_.size() > 0) {
@@ -106,6 +131,12 @@ protected:
     }
 };
 
+/**
+ * @brief Thread-safe Stack.
+ *
+ * Overrides the DoPush and DoPop methods of abstract classes
+ * to implement the push and pop functionality of the "SafeStack".
+ */
 template <typename T>
 class SafeStack : public SafeQueueInner<T> {
 
@@ -118,6 +149,10 @@ protected:
         deque_.push_back(pt);
     }
 
+/**
+ * @brief Encapsulate the pop_back() of dequeues
+ * and implement the pop function of stack.
+ */
     bool DoPop(T& pt) override
     {
         if (deque_.size() > 0) {
