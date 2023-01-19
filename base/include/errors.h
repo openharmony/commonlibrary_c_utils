@@ -13,6 +13,12 @@
  * limitations under the License.
  */
 
+ /**
+  * @file errors.h
+  *
+  * @brief Provide format of error code in OpenHarmony.
+  */
+
 #ifndef UTILS_BASE_ERRORS_H
 #define UTILS_BASE_ERRORS_H
 
@@ -32,6 +38,9 @@ namespace OHOS {
 
 using ErrCode = int;
 
+/**
+ * @brief Value of 'Subsystem' segment of ErrCode for every subsystem.
+ */
 enum {
     SUBSYS_COMMON                = 0,
     SUBSYS_AAFWK                 = 1,
@@ -87,6 +96,15 @@ enum {
 };
 
 // be used to init the subsystem errorno.
+/**
+ * @brief Generate base error code for a specified module in specified
+ * subsystem.
+ *
+ * @param subsystem Value of 'Subsystem' segment.
+ * @param module Value of 'Module' segment,
+ * which is 0 by default.
+ * @return Return base ErrCode for specified module.
+ */
 constexpr ErrCode ErrCodeOffset(unsigned int subsystem, unsigned int module = 0)
 {
     constexpr int SUBSYSTEM_BIT_NUM = 21;
@@ -95,8 +113,18 @@ constexpr ErrCode ErrCodeOffset(unsigned int subsystem, unsigned int module = 0)
 }
 
 // offset of common error, only be used in this file.
+/**
+ * @brief Base ErrCode of common(valid for all modules)
+ * in commonlibrary subsystem.
+ */
 constexpr ErrCode BASE_ERR_OFFSET = ErrCodeOffset(SUBSYS_COMMON);
 
+/**
+ * @brief Value of common 'Code' segment of ErrCode
+ * in commonlibrary subsystem.
+ *
+ * @see Related error codes defined in errno.h
+ */
 enum {
     ERR_OK                = 0,
     ERR_NO_MEMORY         = BASE_ERR_OFFSET + ENOMEM,
