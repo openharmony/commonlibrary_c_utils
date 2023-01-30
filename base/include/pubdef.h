@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,27 +13,46 @@
  * limitations under the License.
  */
 
+ /**
+ * @file pubdef.h
+ *
+ * @brief The file contains macro definitions for some basic functions
+ * in c_utils, such as unit conversion, return maximum value, etc.
+ */
+
 #ifndef UTILS_BASE_PUBDEF_H
 #define UTILS_BASE_PUBDEF_H
 
 namespace OHOS {
 
+// Used for unit conversion from byte to megabyte
 #define B_TO_M(b) ((b) / 1024 / 1024)
+// Used for unit conversion from megabyte to byte
 #define M_TO_B(m) ((m) * 1024 * 1024)
+// Used for unit conversion from byte to kilobyte
 #define B_TO_K(b) ((b) / 1024)
+// Used for unit conversion from kilobyte to byte
 #define K_TO_B(m) ((m) * 1024)
 
+// Used for unit conversion from hour to second
 #define HOUR_TO_SECOND(h) ((h) * 3600)
+// Used for unit conversion from second to hour
 #define SECOND_TO_HOUR(s) ((s) / 3600)
 
+// Used to return the size of array
 #define ARRAY_SIZE(a) (sizeof((a)) / sizeof((a[0])))
 
+// Used to free the space pointed by pointer p
 #define FREE_AND_NIL(p) do { if (p) { delete (p); (p) = nullptr; } } while(0)
+// Used to free the array space pointed by pointer p
 #define FREE_AND_NIL_ARRAY(p) do { if (p) { delete[] (p); (p) = nullptr; } } while(0)
 
+// Used to return the maximum of two numbers
 #define MAX(x, y)  (((x) > (y)) ? (x) : (y))
+// Used to return the minimum of two numbers
 #define MIN(x, y)  (((x) < (y)) ? (x) : (y))
 
+// Used to determine whether a float number 'x' is 0
 #define EPS (1e-8)
 #define EQUAL_TO_ZERO(x) (fabs(x) <= (EPS))
 
