@@ -14,10 +14,13 @@ C++公共基础类库为标准系统提供了一些常用的C++开发工具类�
 
 ```
 commonlibrary/c_utils
-└─ base
-    ├── include       # 对各子系统开放的接口头文件
-    ├── src           # 源文件
-    └── test          # 测试代码
+├─ base
+│   ├── include       # 对各子系统开放的接口头文件
+│   ├── src           # 源文件
+│   └── test          # 测试代码
+├─ Docs
+    ├── en            # 英文文档
+    └── zh-cn         # 中文文档
 ```
 
 ## 约束
@@ -38,115 +41,59 @@ commonlibrary/c_utils
 ```
 ./build.sh --product-name rk3568 --build-target commonlibrary/c_utils/base:utilsbase
 ```
-## 使用说明
-### ashmem
-```
-sptr<Ashmem> ashmem = Ashmem::CreateAshmem(MEMORY_NAME.c_str(), MEMORY_SIZE);
-if (ashmem != nullptr) {
-    bool ret = ashmem->MapAshmem(PROT_READ | PROT_WRITE);
-}
+### 如何依赖c_utils
+1. 进入相关模块对应BUILD.gn文件
+2. 在该模块对应位置中的`external_deps`字段内添加依赖，如下：
+```gn
 
-...
+ohos_shared_library("xxxxx") {
+  ...
 
-// 当使用结束时不要忘记解映射和关闭ashmem
-ashmem->UnmapAshmem();
-ashmem->CloseAshmem();
-```
-
-### parcel
-```
-// 写入端以某种顺序写入数据
-struct TestData {
-    bool booltest;
-    int8_t int8test;
-    int16_t int16test;
-    int32_t int32test;
-    uint8_t uint8test;
-    uint16_t uint16test;
-    uint32_t uint32test;
-};
-
-...
-
-Parcel parcel(nullptr);
-struct TestData data = { true, -0x34, 0x5634, -0x12345678, 0x34, 0x5634, 0x12345678 };
-bool result = false;
-
-result = parcel.WriteBool(data.booltest);
-if (!result) {
-    // 写失败处理
-}
-
-result = parcel.WriteInt8(data.int8test);
-if (!result) {
-    // 写失败处理
-}
-
-result = parcel.WriteInt16(data.int16test);
-if (!result) {
-    // 写失败处理
-}
-
-result = parcel.WriteInt32(data.int32test);
-if (!result) {
-    // 写失败处理
-}
-
-result = parcel.WriteUint8(data.uint8test);
-if (!result) {
-    // 写失败处理
-}
-
-result = parcel.WriteUint16(data.uint16test);
-if (!result) {
-    // 写失败处理
-}
-
-result = parcel.WriteUint32(data.uint32test);
-if (!result) {
-    // 写失败处理
-}
-```
-```
-// 接收端根据写入端写入顺序读取数据
-bool readbool = parcel.ReadBool();
-
-int8_t readint8 = parcel.ReadInt8();
-
-int16_t readint16 = parcel.ReadInt16();
-
-int32_t readint32 = parcel.ReadInt32();
-
-uint8_t readuint8 = parcel.ReadUint8();
-
-uint16_t readuint16 = parcel.ReadUint16();
-
-uint32_t readuint32 = parcel.ReadUint32();
-```
-### refbase
-```
-class TestRefBase : public RefBase {
-...
-};
-...
-sptr<TestRefBase> test(new TestRefBase());
-...
-```
-### timer
-```
-void TimeOutCallback()
-{
+  external_deps = [
     ...
+    # 动态库依赖(可选)
+    "c_utils:utils",
+    # 静态库依赖(可选)
+    "c_utils:utilsbase",
+  ]
+
+  ...
 }
-...
-Utils::Timer timer("test_timer");
-uint32_t ret = timer.Setup();
-timer.Register(TimeOutCallback, 1, true);
-std::this_thread::sleep_for(std::chrono::milliseconds(15));
-timer.Shutdown();
 ```
+
+## 使用说明
+
+### [使用匿名共享内存](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-ashmem.md)
+### [使用智能指针管理动态分配内存对象](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-refbase.md)
+### [使用Parcel作为数据容器](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-parcel.md)
+### [定时器](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_timer.md)
+
+### [读写锁](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-rwlock.md)
+### [增强信号量功能](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-semaphore.md)
+### [强化线程能力](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-thread.md)
+### [线程池](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_thread_pool.md)
+
+
+### [线程安全Map](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-safeMap.md)
+### [有序Vector](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-sortedVector.md)
+### [线程安全阻塞队列](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-safe_block_queue.md)
+### [线程安全栈与队列](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-safe_queue.md)
+
+### [单例模式](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-singleton.md)
+### [观察者模式](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-observer.md)
+
+### [日期与时间](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-datetime.md)
+### [文件与目录](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-directory.md)
+### [字符串处理](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-string.md)
+### [读写文件](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-file.md)
+### [管理、传递文件描述符](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-uniquefd.md)
 
 ## Changelog
+**2023/01/31**
+1. 添加docs目录，提供c_utils内各主要功能的开发指导文档。
+2. 在源码头文件中添加注释。
+3. 修改Readme文档，开发指导文档可通过Readme中的"使用说明"章节跳转查看。
+
 **2022/10/10**
 1. 路径变更。由utils/native移动至commonlibrary/c_utils；
 2. 部件名变更。由utils_base变更为c_utils；
