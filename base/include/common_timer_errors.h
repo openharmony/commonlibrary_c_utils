@@ -13,6 +13,13 @@
  * limitations under the License.
  */
 
+ /**
+  * @file common_timer_errors.h
+  *
+  * @brief Provide value of 'Code' segment of ErrCode for 'Timer' module in
+  * commonlibrary subsystem.
+  */
+
 #ifndef UTILS_COMMON_TIMER_ERRORS_H
 #define UTILS_COMMON_TIMER_ERRORS_H
 
@@ -38,8 +45,19 @@ namespace Utils {
 using ErrCode = int;
 
 // offset of timer module error, only be used in this file.
+/**
+ * @brief Base ErrCode of module 'Timer' in commonlibrary subsystem.
+ */
 constexpr ErrCode COMMON_TIMER_ERR_OFFSET = ErrCodeOffset(SUBSYS_COMMON, MODULE_TIMER);
 
+/**
+ * @brief Value of 'Code' segment of ErrCode for 'Timer'.
+ *
+ * @var TIMER_ERR_OK Success.
+ * @var TIMER_ERR_DEAL_FAILED Deal failed.
+ * @var TIMER_ERR_BADF Bad file descriptor.
+ * @var TIMER_ERR_INVALID_VALUE Invalid value.
+ */
 enum {
     TIMER_ERR_OK                = 0,
     TIMER_ERR_DEAL_FAILED       = COMMON_TIMER_ERR_OFFSET + EAGAIN,

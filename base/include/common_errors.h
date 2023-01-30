@@ -13,6 +13,13 @@
  * limitations under the License.
  */
 
+ /**
+  * @file common_errors.h
+  *
+  * @brief Provide value of 'Module' segment of ErrCode for all modules in
+  * commonlibrary subsystem.
+  */
+
 #ifndef UTILS_COMMON_ERRORS_H
 #define UTILS_COMMON_ERRORS_H
 
@@ -31,6 +38,13 @@ namespace Utils {
  * In this file, subsystem is "SUBSYS_COMMON".
  */
 
+/**
+ * @brief Value of 'Module' segment of ErrCode for modules in commonlibrary
+ * subsystem.
+ *
+ * @var MODULE_DEFAULT Default
+ * @var MODULE_TIMER Timer(timer.h)
+ */
 enum {
     MODULE_DEFAULT              = 0,
     MODULE_TIMER                = 1
