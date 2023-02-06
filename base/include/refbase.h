@@ -345,6 +345,15 @@ public:
     void DecWeakRefCount(const void *objectId);
 
     /**
+     * @brief Get the count recorded by this WeakRefCounter object.
+     *
+     * @return Value of the count.
+     * @note This value of count is different from that in RefCounter.
+     * @see RefCounter::GetWeakRefCount()
+     */
+    int GetWeakRefCount() const;
+
+    /**
      * @brief Attempt to increment the strong reference count of
      * the corresponding RefBase object(Used in promoting a wptr to a sptr).
      *
@@ -1223,6 +1232,19 @@ public:
     T *GetRefPtr() const;
 
     /**
+     * @brief Get the count value of corresponding WeakRefCounter object.
+     *
+     * The value indicates how many wptrs share the same WeakRefCounter object.
+     *
+     * @return Value of the count.
+     * @note Only for test.
+     */
+    inline int GetWeakRefCount() const
+    {
+        return refs_->GetWeakRefCount();
+    }
+
+    /**
      * @brief Attempt to increment the strong reference count of
      * the managed object.
      *
@@ -1414,7 +1436,7 @@ wptr<T> &wptr<T>::operator=(const sptr<O> &other)
 {
     WeakRefCounter *newWeakRef = nullptr;
     if (other.GetRefPtr() != nullptr) {
-        newWeakRef = other->CreateWeakRef(other->GetRefPtr());
+        newWeakRef = other->CreateWeakRef(other.GetRefPtr());
         if (newWeakRef != nullptr) {
             newWeakRef->IncWeakRefCount(this);
         }

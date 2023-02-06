@@ -36,6 +36,11 @@ WeakRefCounter::~WeakRefCounter()
     }
 }
 
+int WeakRefCounter::GetWeakRefCount() const
+{
+    return atomicWeak_.load(std::memory_order_relaxed);
+}
+
 void* WeakRefCounter::GetRefPtr()
 {
     if ((cookie_ != nullptr) && (!refCounter_->IsRefPtrValid())) {

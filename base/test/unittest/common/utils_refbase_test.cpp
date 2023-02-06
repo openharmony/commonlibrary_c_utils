@@ -766,34 +766,139 @@ private:
 
 /*
  * @tc.name: testWptrefbase001
- * @tc.desc: Refbase
+ * @tc.desc: Copy constructor with same managed class type.
  */
 HWTEST_F(UtilsRefbaseTest, testWptrefbase001, TestSize.Level0)
 {
-    wptr<WptrTest> testObject1(new WptrTest());
-    EXPECT_EQ(testObject1->GetWptrRefCount(), 1);
 
-    wptr<WptrTest> testObject2 = testObject1;
-    EXPECT_EQ(testObject1->GetWptrRefCount(), 1);
+    // test wptr<T>::wptr(const wptr<T>&)
+    wptr<WptrTest> testOrigWptrObject(new WptrTest());
+    EXPECT_EQ(testOrigWptrObject->GetWptrRefCount(), 1);
 
-    sptr<WptrTest> testObject3(new WptrTest());
-    wptr<WptrTest> testObject4(testObject3);
-    EXPECT_EQ(testObject3->GetSptrRefCount(), 1);
-    EXPECT_EQ(testObject4->GetWptrRefCount(), 2);
+    wptr<WptrTest> testTargetWptrObject1(testOrigWptrObject);
+
+    EXPECT_EQ(testOrigWptrObject.GetRefPtr(), testTargetWptrObject1.GetRefPtr());
+    EXPECT_EQ(&(*testOrigWptrObject), &(*testTargetWptrObject1));
+    EXPECT_EQ(testTargetWptrObject1->GetWptrRefCount(), testOrigWptrObject->GetWptrRefCount());
+    EXPECT_EQ(testTargetWptrObject1.GetWeakRefCount(), testOrigWptrObject.GetWeakRefCount());
+
+    EXPECT_EQ(testTargetWptrObject1->GetWptrRefCount(), 1);
+    EXPECT_EQ(testTargetWptrObject1.GetWeakRefCount(), 2);
+
+    // test wptr<T>::operator=(const wptr<T>&)
+    wptr<WptrTest> testTargetWptrObject2(new WptrTest());
+    EXPECT_EQ(testTargetWptrObject2->GetWptrRefCount(), 1);
+
+    testTargetWptrObject2 = testOrigWptrObject;
+
+    EXPECT_EQ(testOrigWptrObject.GetRefPtr(), testTargetWptrObject2.GetRefPtr());
+    EXPECT_EQ(&(*testOrigWptrObject), &(*testTargetWptrObject2));
+    EXPECT_EQ(testTargetWptrObject2->GetWptrRefCount(), testOrigWptrObject->GetWptrRefCount());
+    EXPECT_EQ(testTargetWptrObject2.GetWeakRefCount(), testOrigWptrObject.GetWeakRefCount());
+
+    EXPECT_EQ(testTargetWptrObject2->GetWptrRefCount(), 1);
+    EXPECT_EQ(testTargetWptrObject2.GetWeakRefCount(), 3);
+
+    // test wptr<T>::wptr(const sptr<T>&)
+    sptr<WptrTest> testOrigSptrObject(new WptrTest());
+    EXPECT_EQ(testOrigSptrObject->GetSptrRefCount(), 1);
+
+    wptr<WptrTest> testTargetWptrObject3(testOrigSptrObject);
+
+    EXPECT_EQ(testOrigSptrObject.GetRefPtr(), testTargetWptrObject3.GetRefPtr());
+    EXPECT_EQ(&(*testOrigSptrObject), &(*testTargetWptrObject3));
+    EXPECT_EQ(testTargetWptrObject3->GetSptrRefCount(), testOrigSptrObject->GetSptrRefCount());
+    EXPECT_EQ(testTargetWptrObject3->GetWptrRefCount(), testOrigSptrObject->GetWptrRefCount());
+
+    EXPECT_EQ(testTargetWptrObject3->GetSptrRefCount(), 1);
+    EXPECT_EQ(testTargetWptrObject3->GetWptrRefCount(), 2);
+    EXPECT_EQ(testTargetWptrObject3.GetWeakRefCount(), 1);
+
+    // test wptr<T>::operator=(const sptr<T>&)
+    wptr<WptrTest> testTargetWptrObject4(new WptrTest());
+    EXPECT_EQ(testTargetWptrObject4->GetWptrRefCount(), 1);
+
+    testTargetWptrObject4 = testOrigSptrObject;
+
+    EXPECT_EQ(testOrigSptrObject.GetRefPtr(), testTargetWptrObject4.GetRefPtr());
+    EXPECT_EQ(&(*testOrigSptrObject), &(*testTargetWptrObject4));
+    EXPECT_EQ(testTargetWptrObject4->GetSptrRefCount(), testOrigSptrObject->GetSptrRefCount());
+    EXPECT_EQ(testTargetWptrObject4->GetWptrRefCount(), testOrigSptrObject->GetWptrRefCount());
+
+    EXPECT_EQ(testTargetWptrObject4->GetSptrRefCount(), 1);
+    EXPECT_EQ(testTargetWptrObject4->GetWptrRefCount(), 3);
+    EXPECT_EQ(testTargetWptrObject4.GetWeakRefCount(), 1);
 }
 
 /*
  * @tc.name: testWptrefbase002
- * @tc.desc: Refbase
+ * @tc.desc: Copy constructor with different managed class type.
  */
 HWTEST_F(UtilsRefbaseTest, testWptrefbase002, TestSize.Level0)
 {
-    wptr<WptrTest> testObject1(new WptrTest());
-    wptr<WptrTest> testObject2(testObject1);
-    EXPECT_EQ(testObject1.GetRefPtr(), testObject2.GetRefPtr());
+    // test wptr<T>::wptr(const wptr<O>&)
+    wptr<WptrTest2> testOrigWptrObject(new WptrTest2());
+    EXPECT_EQ(testOrigWptrObject->GetWptrRefCount(), 1);
 
-    wptr<WptrTest> testObject3;
-    EXPECT_EQ(testObject3.GetRefPtr(), nullptr);
+    wptr<WptrTest> testTargetWptrObject1(testOrigWptrObject);
+
+    EXPECT_EQ(static_cast<void *>(testOrigWptrObject.GetRefPtr()),
+              static_cast<void *>(testTargetWptrObject1.GetRefPtr()));
+    EXPECT_EQ(static_cast<void *>(&(*testOrigWptrObject)),
+              static_cast<void *>(&(*testTargetWptrObject1)));
+    EXPECT_EQ(testTargetWptrObject1->GetWptrRefCount(), testOrigWptrObject->GetWptrRefCount());
+    EXPECT_EQ(testTargetWptrObject1.GetWeakRefCount(), testOrigWptrObject.GetWeakRefCount());
+
+    EXPECT_EQ(testTargetWptrObject1->GetWptrRefCount(), 1);
+    EXPECT_EQ(testTargetWptrObject1.GetWeakRefCount(), 2);
+
+    // test wptr<T>::operator=(const wptr<O>&)
+    wptr<WptrTest> testTargetWptrObject2(new WptrTest());
+    EXPECT_EQ(testTargetWptrObject2->GetWptrRefCount(), 1);
+
+    testTargetWptrObject2 = testOrigWptrObject;
+
+    EXPECT_EQ(static_cast<void *>(testOrigWptrObject.GetRefPtr()),
+              static_cast<void *>(testTargetWptrObject2.GetRefPtr()));
+    EXPECT_EQ(static_cast<void *>(&(*testOrigWptrObject)),
+              static_cast<void *>(&(*testTargetWptrObject2)));
+    EXPECT_EQ(testTargetWptrObject2->GetWptrRefCount(), testOrigWptrObject->GetWptrRefCount());
+    EXPECT_EQ(testTargetWptrObject2.GetWeakRefCount(), testOrigWptrObject.GetWeakRefCount());
+
+    EXPECT_EQ(testTargetWptrObject2->GetWptrRefCount(), 1);
+    EXPECT_EQ(testTargetWptrObject2.GetWeakRefCount(), 3);
+
+    // test wptr<T>::wptr(const sptr<O>&)
+    sptr<WptrTest2> testOrigSptrObject(new WptrTest2());
+    EXPECT_EQ(testOrigSptrObject->GetSptrRefCount(), 1);
+
+    wptr<WptrTest> testTargetWptrObject3(testOrigSptrObject);
+
+    EXPECT_EQ(static_cast<void *>(testOrigSptrObject.GetRefPtr()),
+              static_cast<void *>(testTargetWptrObject3.GetRefPtr()));
+    EXPECT_EQ(static_cast<void *>(&(*testOrigSptrObject)), static_cast<void *>(&(*testTargetWptrObject3)));
+    EXPECT_EQ(testTargetWptrObject3->GetSptrRefCount(), testOrigSptrObject->GetSptrRefCount());
+    EXPECT_EQ(testTargetWptrObject3->GetWptrRefCount(), testOrigSptrObject->GetWptrRefCount());
+
+    EXPECT_EQ(testTargetWptrObject3->GetSptrRefCount(), 1);
+    EXPECT_EQ(testTargetWptrObject3->GetWptrRefCount(), 2);
+    EXPECT_EQ(testTargetWptrObject3.GetWeakRefCount(), 1);
+
+    // test wptr<T>::operator=(const sptr<O>&)
+    wptr<WptrTest> testTargetWptrObject4(new WptrTest());
+    EXPECT_EQ(testTargetWptrObject4->GetWptrRefCount(), 1);
+
+    testTargetWptrObject4 = testOrigSptrObject;
+
+    EXPECT_EQ(static_cast<void *>(testOrigSptrObject.GetRefPtr()),
+              static_cast<void *>(testTargetWptrObject4.GetRefPtr()));
+    EXPECT_EQ(static_cast<void *>(&(*testOrigSptrObject)), static_cast<void *>(&(*testTargetWptrObject4)));
+    EXPECT_EQ(testTargetWptrObject4->GetSptrRefCount(), testOrigSptrObject->GetSptrRefCount());
+    EXPECT_EQ(testTargetWptrObject4->GetWptrRefCount(), testOrigSptrObject->GetWptrRefCount());
+
+    EXPECT_EQ(testTargetWptrObject4->GetSptrRefCount(), 1);
+    EXPECT_EQ(testTargetWptrObject4->GetWptrRefCount(), 3);
+    EXPECT_EQ(testTargetWptrObject4.GetWeakRefCount(), 1);
 }
 
 /*
@@ -824,13 +929,12 @@ HWTEST_F(UtilsRefbaseTest, testWptrefbase004, TestSize.Level0)
 
 /*
  * @tc.name: testWptrefbase005
- * @tc.desc: Refbase
+ * @tc.desc: wptr without managed object
  */
 HWTEST_F(UtilsRefbaseTest, testWptrefbase005, TestSize.Level0)
 {
-    wptr<WptrTest2> testObject1 = new WptrTest2();
-    wptr<WptrTest> testObject2(testObject1);
-    EXPECT_EQ(testObject1->GetWptrRefCount(), 1);
+    wptr<WptrTest> testObject3;
+    EXPECT_EQ(testObject3.GetRefPtr(), nullptr);
 }
 
 /*
