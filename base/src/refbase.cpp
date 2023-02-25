@@ -70,93 +70,93 @@ bool WeakRefCounter::AttemptIncStrongRef(const void *objectId)
     return refCounter_->AttemptIncStrongRef(objectId, unuse);
 }
 
-#ifdef DEBUG_REFBASE
+#if ((defined DEBUG_REFBASE) && (!defined PRINT_TRACK_AT_ONCE))
+// RefTracker is a debug tool, used to record the trace of RefBase.
+// RefTracker will save the information about the count of RefBase,
+// including the pointer of sptr/wptr(The pointer of itself, not the pointer
+// it manages), the amount of strong/weak/refcout and the PID&TID.
+// The Tracker can live with RefCounter.
+// User should keep thread-safety of RefTracker.
+class RefTracker {
+public:
+    RefTracker(RefTracker* exTracker, const void* id, int strong, int weak, int ref, int pid, int tid);
+
+    void PrintTrace(const void* refCounterPtr);
+
+    RefTracker* PopTrace(const void* refCounterPtr);
+
+private:
+    const void* ptrID;
+    int strongRefCnt;
+    int weakRefCnt;
+    int refCnt;
+    int PID;
+    int TID;
+    RefTracker* exTrace;
+};
+
 RefTracker::RefTracker(RefTracker* exTracker, const void* id, int strong, int weak, int ref, int pid, int tid)
-    : ptrID (id), strongRefCNT (strong), weakRefCNT (weak), refCNT (ref), PID (pid), TID (tid), exTrace (exTracker)
+    : ptrID (id), strongRefCnt (strong), weakRefCnt (weak), refCnt (ref), PID (pid), TID (tid), exTrace (exTracker)
 {
 }
 
-void RefTracker::GetTrace(RefTracker* exTracker, const void* id, int strong, int weak, int ref, int pid, int tid)
+void RefTracker::PrintTrace(const void* refCounterPtr)
 {
-    ptrID = id;
-    strongRefCNT = strong;
-    weakRefCNT = weak;
-    refCNT = ref;
-    PID = pid;
-    TID = tid;
-    exTrace = exTracker;
-}
-
-void RefTracker::GetStrongTrace(RefTracker* exTracker, const void* id, int strong, int pid, int tid)
-{
-    ptrID = id;
-    strongRefCNT = strong;
-    weakRefCNT = -(INITIAL_PRIMARY_VALUE);
-    refCNT = -(INITIAL_PRIMARY_VALUE);
-    PID = pid;
-    TID = tid;
-    exTrace = exTracker;
-}
-
-void RefTracker::GetWeakTrace(RefTracker* exTracker, const void* id, int weak, int pid, int tid)
-{
-    ptrID = id;
-    strongRefCNT = -(INITIAL_PRIMARY_VALUE);
-    weakRefCNT = weak;
-    refCNT = -(INITIAL_PRIMARY_VALUE);
-    PID = pid;
-    TID = tid;
-    exTrace = exTracker;
-}
-
-void RefTracker::PrintTrace(const void* root)
-{
-    UTILS_LOGI("ptrID(%{public}lx) call %{public}lx. strongcnt: %{public}d weakcnt: %{public}d " \
+    UTILS_LOGI("%{public}p call %{public}p. strong: %{public}d weak: %{public}d " \
         "refcnt: %{public}d PID: %{public}d TID: %{public}d",
-        reinterpret_cast<size_t>(ptrID), reinterpret_cast<size_t>(root), strongRefCNT, weakRefCNT, refCNT, PID, TID);
+        ptrID, refCounterPtr, strongRefCnt, weakRefCnt, refCnt, PID, TID);
 }
 
-void RefTracker::PrintStrongTrace(const void* root)
-{
-    UTILS_LOGI("ptrID(%{public}lx) call %{public}lx. strongcnt: %{public}d PID: %{public}d TID: %{public}d",
-        reinterpret_cast<size_t>(ptrID), reinterpret_cast<size_t>(root), strongRefCNT, PID, TID);
-}
-
-void RefTracker::PrintWeakTrace(const void* root)
-{
-    UTILS_LOGI("ptrID(%{public}lx) call %{public}lx. weakcnt: %{public}d PID: %{public}d TID: %{public}d",
-        reinterpret_cast<size_t>(ptrID), reinterpret_cast<size_t>(root), weakRefCNT, PID, TID);
-}
-
-RefTracker* RefTracker::GetexTrace()
-{
-    return exTrace;
-}
-
-RefTracker* RefTracker::PopTrace(const void* root)
+RefTracker* RefTracker::PopTrace(const void* refCounterPtr)
 {
     RefTracker* ref = exTrace;
-    PrintTrace(root);
+    PrintTrace(refCounterPtr);
     delete this;
     return ref;
 }
+#endif
 
+#ifdef DEBUG_REFBASE
+#ifdef PRINT_TRACK_AT_ONCE
+void RefCounter::PrintRefs(const void* objectId)
+{
+    std::lock_guard<std::mutex> lock(trackerMutex);
+    UTILS_LOGI("%{public}p call %{public}p. strong: %{public}d weak: %{public}d " \
+        "refcnt: %{public}d", objectId, this, atomicStrong_.load(std::memory_order_relaxed),
+        atomicWeak_.load(std::memory_order_relaxed), atomicRefCount_.load(std::memory_order_relaxed));
+}
+#else
 void RefCounter::GetNewTrace(const void* objectId)
 {
     std::lock_guard<std::mutex> lock(trackerMutex);
-    RefTracker* newTracker = new RefTracker(refTracker, objectId, atomicStrong_.load(std::memory_order_relaxed),
-        atomicWeak_.load(std::memory_order_relaxed), atomicRefCount_.load(std::memory_order_relaxed),
-        getpid(), gettid());
+    RefTracker* newTracker = new RefTracker(refTracker, objectId, atomicStrong_,
+        atomicWeak_, atomicRefCount_, getpid(), gettid());
     refTracker = newTracker;
 }
 
 void RefCounter::PrintTracker()
 {
     std::lock_guard<std::mutex> lock(trackerMutex);
-    while (refTracker) {
-        refTracker = refTracker->PopTrace(this);
+    if (refTracker) {
+        UTILS_LOGI("%{public}p start backtrace", this);
+        while (refTracker) {
+            refTracker = refTracker->PopTrace(this);
+        }
+        UTILS_LOGI("%{public}p end backtrace", this);
     }
 }
+#endif
+
+#ifndef TRACK_ALL
+void RefCounter::EnableTracker()
+{
+    std::lock_guard<std::mutex> lock(trackerMutex);
+#ifdef PRINT_TRACK_AT_ONCE
+    UTILS_LOGI("%{public}p start tracking", this);
+#endif
+    enableTrack = true;
+}
+#endif
 #endif
 
 RefCounter::RefCounter()
@@ -201,14 +201,26 @@ bool RefCounter::IsRefPtrValid()
 RefCounter::~RefCounter()
 {
 #ifdef DEBUG_REFBASE
-    PrintTracker();
+    if (enableTrack) {
+#ifdef PRINT_TRACK_AT_ONCE
+        UTILS_LOGI("%{public}p end tracking", this);
+#else
+        PrintTracker();
+#endif
+    }
 #endif
 }
 
 int RefCounter::IncStrongRefCount(const void* objectId)
 {
 #ifdef DEBUG_REFBASE
-    GetNewTrace(objectId);
+    if (enableTrack) {
+#ifdef PRINT_TRACK_AT_ONCE
+        PrintRefs(objectId);
+#else
+        GetNewTrace(objectId);
+#endif
+    }
 #endif
     int curCount = atomicStrong_.load(std::memory_order_relaxed);
     if (curCount >= 0) {
@@ -224,7 +236,13 @@ int RefCounter::IncStrongRefCount(const void* objectId)
 int RefCounter::DecStrongRefCount(const void* objectId)
 {
 #ifdef DEBUG_REFBASE
-    GetNewTrace(objectId);
+    if (enableTrack) {
+#ifdef PRINT_TRACK_AT_ONCE
+        PrintRefs(objectId);
+#else
+        GetNewTrace(objectId);
+#endif
+    }
 #endif
     int curCount = GetStrongRefCount();
     if (curCount == INITIAL_PRIMARY_VALUE) {
@@ -246,7 +264,13 @@ int RefCounter::GetStrongRefCount()
 int RefCounter::IncWeakRefCount(const void* objectId)
 {
 #ifdef DEBUG_REFBASE
-    GetNewTrace(objectId);
+    if (enableTrack) {
+#ifdef PRINT_TRACK_AT_ONCE
+        PrintRefs(objectId);
+#else
+        GetNewTrace(objectId);
+#endif
+    }
 #endif
     return atomicWeak_.fetch_add(1, std::memory_order_relaxed);
 }
@@ -254,7 +278,13 @@ int RefCounter::IncWeakRefCount(const void* objectId)
 int RefCounter::DecWeakRefCount(const void* objectId)
 {
 #ifdef DEBUG_REFBASE
-    GetNewTrace(objectId);
+    if (enableTrack) {
+#ifdef PRINT_TRACK_AT_ONCE
+        PrintRefs(objectId);
+#else
+        GetNewTrace(objectId);
+#endif
+    }
 #endif
     int curCount = GetWeakRefCount();
     if (curCount > 0) {
@@ -609,5 +639,16 @@ bool RefBase::OnAttemptPromoted(const void*)
 {
     return true;
 }
+
+#if ((defined DEBUG_REFBASE) && (!defined TRACK_ALL))
+void RefBase::EnableTracker()
+{
+    refs_->EnableTracker();
+}
+#else
+void RefBase::EnableTracker()
+{
+}
+#endif
 
 }  // namespace OHOS

@@ -970,5 +970,88 @@ HWTEST_F(UtilsRefbaseTest, testWptrefbase008, TestSize.Level0)
     testObject2 = testObject1.GetRefPtr();
     EXPECT_EQ(testObject1->GetWptrRefCount(), 2);
 }
+
+/*
+ * @tc.name: testRefbaseDebug001
+ * @tc.desc: Test for single thread. Tracker can be enabled after construction
+ *           of sptr.
+ */
+HWTEST_F(UtilsRefbaseTest, testRefbaseDebug001, TestSize.Level1)
+{
+    sptr<RefBase> testObject1(new RefBase());
+    testObject1->EnableTracker();
+    sptr<RefBase> testObject2(testObject1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<RefBase> testObject3(testObject2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<RefBase> testObject4(testObject3);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+}
+
+/*
+ * @tc.name: testRefbaseDebug002
+ * @tc.desc: Test for single thread. Tracker can be enabled after construction
+ *           of wptr.
+ */
+HWTEST_F(UtilsRefbaseTest, testRefbaseDebug002, TestSize.Level1)
+{
+    wptr<RefBase> testObject1(new RefBase());
+    testObject1->EnableTracker();
+    sptr<RefBase> testObject2 = testObject1.promote();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<RefBase> testObject3(testObject2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<RefBase> testObject4(testObject3);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+}
+
+// This is a class which can be tracked when implemented.
+class TestDebug : public RefBase {
+public:
+    TestDebug()
+    {
+        EnableTracker();
+    }
+};
+
+/*
+ * @tc.name: testRefbaseDebug003
+ * @tc.desc: Test for single thread. Tracker can be enabled with construction
+ *           of sptr.
+ */
+HWTEST_F(UtilsRefbaseTest, testRefbaseDebug003, TestSize.Level1)
+{
+    sptr<TestDebug> testObject1(new TestDebug());
+    sptr<TestDebug> testObject2(testObject1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    sptr<TestDebug> testObject3;
+    testObject3 = testObject2;
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<TestDebug> testObject4(testObject3);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+}
+
+/*
+ * @tc.name: testRefbaseDebug004
+ * @tc.desc: Test for mult-thread.
+ */
+HWTEST_F(UtilsRefbaseTest, testRefbaseDebug004, TestSize.Level1)
+{
+    sptr<TestDebug> testObject1(new TestDebug());
+    std::thread subThread {[&testObject1]() {
+        sptr<TestDebug> subTestObject1(testObject1);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        wptr<TestDebug> subTestObject2(subTestObject1);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        wptr<TestDebug> subTestObject3(subTestObject2);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }};
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<TestDebug> testObject2(testObject1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<TestDebug> testObject3(testObject2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    subThread.join();
+}
 }  // namespace
 }  // namespace OHOS
