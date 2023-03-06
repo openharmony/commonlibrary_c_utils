@@ -15,6 +15,9 @@ import("//build/ohos.gni")
 ###############################################################################
 declare_args() {
   c_utils_feature_coverage = false
+  c_utils_debug_refbase = false
+  c_utils_track_all = false
+  c_utils_print_track_at_once = false
 }
 
 config("utils_config") {
@@ -50,6 +53,18 @@ config("static_utils_config") {
 
 config("utils_all_dependent_configs") {
   include_dirs = [ "include" ]
+}
+
+config("debug_refbase") {
+  defines = [ "DEBUG_REFBASE" ]
+}
+
+config("print_track_at_once") {
+  defines = [ "PRINT_TRACK_AT_ONCE" ]
+}
+
+config("track_all") {
+  defines = [ "TRACK_ALL" ]
 }
 
 sources_utils = [
@@ -105,6 +120,15 @@ ohos_static_library("utilsbase_rtti") {
 ohos_shared_library("utils") {
   sources = sources_utils
   configs = [ ":utils_coverage_config" ]
+  if (c_utils_debug_refbase) {
+    configs += [ ":debug_refbase" ]
+    if (c_utils_track_all) {
+      configs += [ ":track_all" ]
+    }
+    if (c_utils_print_track_at_once) {
+      configs += [ ":print_track_at_once" ]
+    }
+  }
   all_dependent_configs = [ ":utils_all_dependent_configs" ]
   if (current_os != "android" && current_os != "ios") {
     defines = [ "CONFIG_HILOG" ]

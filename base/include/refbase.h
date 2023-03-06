@@ -48,7 +48,7 @@ namespace OHOS {
 
 class RefBase;
 
-#ifdef DEBUG_REFBASE
+#if ((defined DEBUG_REFBASE) && (!defined PRINT_TRACK_AT_ONCE))
 class RefTracker;
 #endif
 
@@ -234,6 +234,13 @@ public:
      */
     void ExtendObjectLifetime();
 
+#if ((defined DEBUG_REFBASE) && (!defined TRACK_ALL))
+    /**
+     * @brief Enable the ability of tracking. This is a debug feature.
+     */
+    void EnableTracker();
+#endif
+
 private:
     std::atomic<int> atomicStrong_; // = (num of sptr) or Initial-value
     std::atomic<int> atomicWeak_; // = (num of sptr)+(num of WeakRefCounter)
@@ -243,54 +250,21 @@ private:
     RefPtrCallback callback_ = nullptr; // A callback function to deallocate the corresponding RefBase object
     static constexpr unsigned int FLAG_EXTEND_LIFE_TIME = 0x00000002; // Extended life-time bit to be set via logic-OR
 #ifdef DEBUG_REFBASE
-    RefTracker* refTracker = nullptr;
+#ifdef TRACK_ALL
+    bool enableTrack = true;
+#else
+    bool enableTrack = false;
+#endif
     std::mutex trackerMutex;  // To ensure refTracker be thread-safe
+#ifdef PRINT_TRACK_AT_ONCE
+    void PrintRefs(const void* objectId);
+#else
+    RefTracker* refTracker = nullptr;
     void GetNewTrace(const void* objectId);
     void PrintTracker();
 #endif
-};
-
-#ifdef DEBUG_REFBASE
-// RefTracker is a debug tool, used to record the trace of RefBase.
-// RefTracker will save the information about the count of RefBase,
-// including the pointer of sptr/wptr(The pointer of itself, not the pointer
-// it manages), the amount of strong/weak/refcout and the PID&TID.
-// The Tracker can live with RefCounter/RefBase(including its derivation).
-// User should keep thread-safety of RefTracker.
-class RefTracker {
-public:
-    RefTracker() {};
-
-    RefTracker(RefTracker* exTracker, const void* id, int strong, int weak, int ref, int pid, int tid);
-
-    void GetTrace(RefTracker* exTracker, const void* id, int strong, int weak, int ref, int pid, int tid);
-
-    // Only used for tracking the amount of Strong Reference.
-    void GetStrongTrace(RefTracker* exTracker, const void* id, int strong, int pid, int tid);
-
-    // Only used for tracking the amount of Weak Reference.
-    void GetWeakTrace(RefTracker* exTracker, const void* id, int weak, int pid, int tid);
-
-    void PrintTrace(const void* root);
-
-    void PrintStrongTrace(const void* root);
-
-    void PrintWeakTrace(const void* root);
-
-    RefTracker* GetexTrace();
-
-    RefTracker* PopTrace(const void* root);
-
-private:
-    const void* ptrID;
-    int strongRefCNT;
-    int weakRefCNT;
-    int refCNT;
-    int PID;
-    int TID;
-    RefTracker* exTrace;
-};
 #endif
+};
 
 /**
  * @ingroup SmartPointer
@@ -584,6 +558,13 @@ public:
      * @return Return true if success, otherwise return false.
      */
     virtual bool OnAttemptPromoted(const void *);
+
+    /**
+     * @brief Enable the ability to track RefBase. This function will only be
+     * implemented if the macro DEBUG_REFBASE is defined and TRACK_ALL is not
+     * defined.
+     */
+    void EnableTracker();
 
 private:
     RefCounter *refs_ = nullptr; // Pointer to the corresponding reference counter of this RefBase object
