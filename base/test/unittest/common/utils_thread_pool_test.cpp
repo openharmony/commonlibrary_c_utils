@@ -106,11 +106,13 @@ HWTEST_F(UtilsThreadPoolTest, test_04, TestSize.Level0)
 
 void TestFuncAddOneTime(int& i)
 {
+    std::lock_guard<std::mutex> lock(g_mutex);
     ++g_times;
 }
 
 void TestFuncSubOneTime(int& i)
 {
+    std::lock_guard<std::mutex> lock(g_mutex);
     --g_times;
 }
 
@@ -175,18 +177,18 @@ HWTEST_F(UtilsThreadPoolTest, test_06, TestSize.Level0)
 
 void TestFuncAddWait(int& i)
 {
+    std::unique_lock<std::mutex> lk(g_mutex);
     ++g_times;
     printf("after func:%s0%d called, :%d\n", __func__, i, g_times);
-    std::unique_lock<std::mutex> lk(g_mutex);
     g_cv.wait(lk, [] {return g_ready;});
     printf("func:%s0%d received ready signal!\n", __func__, i);
 }
 
 void TestFuncSubWait(int& i)
 {
+    std::unique_lock<std::mutex> lk(g_mutex);
     --g_times;
     printf("after func:%s0%d called, :%d\n", __func__, i, g_times);
-    std::unique_lock<std::mutex> lk(g_mutex);
     g_cv.wait(lk, [] {return g_ready;});
     printf("func:%s0%d received ready signal!\n", __func__, i);
 }
