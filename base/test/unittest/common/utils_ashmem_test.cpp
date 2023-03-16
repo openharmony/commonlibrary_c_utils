@@ -320,3 +320,50 @@ HWTEST_F(UtilsAshmemTest, test_ashmem_InvalidOperation_005, TestSize.Level0)
 
     ashmem->CloseAshmem();
 }
+
+/**
+ * @tc.name: test_ashmem_InvalidOperation_006
+ * @tc.desc: test invalid input or test invalid operation
+ * @tc.type: FUNC
+ */
+HWTEST_F(UtilsAshmemTest, test_ashmem_InvalidOperation_006, TestSize.Level0)
+{
+    sptr<Ashmem> ashmem = Ashmem::CreateAshmem(MEMORY_NAME.c_str(), MEMORY_SIZE);
+    ASSERT_TRUE(ashmem != nullptr);
+
+    bool ret = ashmem->MapReadAndWriteAshmem();
+    ASSERT_TRUE(ret);
+
+    ret = ashmem->WriteToAshmem(nullptr, sizeof(MEMORY_CONTENT), 0);
+    EXPECT_FALSE(ret);
+
+    ret = ashmem->WriteToAshmem(MEMORY_CONTENT.c_str(), sizeof(MEMORY_CONTENT), MEMORY_SIZE+1);
+    EXPECT_FALSE(ret);
+
+    ret = ashmem->WriteToAshmem(MEMORY_CONTENT.c_str(), sizeof(MEMORY_CONTENT), -1);
+    EXPECT_FALSE(ret);
+
+    ret = ashmem->WriteToAshmem(MEMORY_CONTENT.c_str(), MEMORY_SIZE+1, 0);
+    EXPECT_FALSE(ret);
+
+    ret = ashmem->WriteToAshmem(MEMORY_CONTENT.c_str(), -1, 0);
+    EXPECT_FALSE(ret);
+
+    ret = ashmem->WriteToAshmem(MEMORY_CONTENT.c_str(), sizeof(MEMORY_CONTENT), MEMORY_SIZE);
+    EXPECT_FALSE(ret);
+
+    ashmem->UnmapAshmem();
+    ashmem->CloseAshmem();
+
+    ashmem->GetAshmemSize();
+    EXPECT_FALSE(ret);
+
+    ashmem->GetProtection();
+    EXPECT_FALSE(ret);
+
+    ashmem->UnmapAshmem();
+    EXPECT_FALSE(ret);
+
+    ashmem->CloseAshmem();
+    EXPECT_FALSE(ret);
+}
