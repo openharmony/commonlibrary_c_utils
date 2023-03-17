@@ -1081,6 +1081,128 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndReadVector_004, TestSize.Level0)
     }
 }
 
+bool CallWriteVector(Parcel &parcel, const std::vector<bool> &vectorTest)
+{
+    return parcel.WriteBoolVector(vectorTest);
+}
+
+bool CallWriteVector(Parcel &parcel, const std::vector<int8_t> &vectorTest)
+{
+    return parcel.WriteInt8Vector(vectorTest);
+}
+
+bool CallWriteVector(Parcel &parcel, const std::vector<int16_t> &vectorTest)
+{
+    return parcel.WriteInt16Vector(vectorTest);
+}
+
+bool CallWriteVector(Parcel &parcel, const std::vector<int32_t> &vectorTest)
+{
+    return parcel.WriteInt32Vector(vectorTest);
+}
+
+bool CallWriteVector(Parcel &parcel, const std::vector<int64_t> &vectorTest)
+{
+    return parcel.WriteInt64Vector(vectorTest);
+}
+
+bool CallWriteVector(Parcel &parcel, const std::vector<uint8_t> &vectorTest)
+{
+    return parcel.WriteUInt8Vector(vectorTest);
+}
+
+bool CallWriteVector(Parcel &parcel, const std::vector<uint16_t> &vectorTest)
+{
+    return parcel.WriteUInt16Vector(vectorTest);
+}
+
+bool CallWriteVector(Parcel &parcel, const std::vector<uint32_t> &vectorTest)
+{
+    return parcel.WriteUInt32Vector(vectorTest);
+}
+
+bool CallWriteVector(Parcel &parcel, const std::vector<uint64_t> &vectorTest)
+{
+    return parcel.WriteUInt64Vector(vectorTest);
+}
+
+bool CallWriteVector(Parcel &parcel, const std::vector<float> &vectorTest)
+{
+    return parcel.WriteFloatVector(vectorTest);
+}
+
+bool CallWriteVector(Parcel &parcel, const std::vector<double> &vectorTest)
+{
+    return parcel.WriteDoubleVector(vectorTest);
+}
+
+bool CallWriteVector(Parcel &parcel, const std::vector<std::string> &vectorTest)
+{
+    return parcel.WriteStringVector(vectorTest);
+}
+
+bool CallWriteVector(Parcel &parcel, const std::vector<std::u16string> &vectorTest)
+{
+    return parcel.WriteString16Vector(vectorTest);
+}
+
+template <typename T>
+void ParcelWriteVector(const std::vector<T> &vectorTest)
+{
+    Parcel parcel1(nullptr);
+    Parcel parcel2(nullptr);
+    bool result;
+    result = CallWriteVector(parcel1, vectorTest);
+    EXPECT_EQ(result, true);
+
+    void *buffer = nullptr;
+    size_t size = parcel1.GetDataSize();
+    if (!SendData(buffer, size, reinterpret_cast<const uint8_t *>(parcel1.GetData()))) {
+        ASSERT_FALSE(false);
+    }
+    result = parcel2.ParseFrom(reinterpret_cast<uintptr_t>(buffer), parcel1.GetDataSize());
+    EXPECT_EQ(result, true);
+
+    result = CallWriteVector(parcel2, vectorTest);
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * @tc.name: test_parcel_WriteAndReadVector_005
+ * @tc.desc: test vector parcel write failed.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UtilsParcelTest, test_parcel_WriteAndReadVector_005, TestSize.Level0)
+{
+    vector<bool> boolVectorTest { true, false };
+    vector<int8_t> int8VectorTest { 1, 0 };
+    vector<int16_t> int16VectorTest { 1, 0 };
+    vector<int32_t> int32VectorTest { 1, 0 };
+    vector<int64_t> int64VectorTest { 1, 0 };
+    vector<uint8_t> uint8VectorTest { 1, 0 };
+    vector<uint16_t> uint16VectorTest { 1, 0 };
+    vector<uint32_t> uint32VectorTest { 1, 0 };
+    vector<uint64_t> uint64VectorTest { 1, 0 };
+    vector<float> floatVectorTest { 1.1, 0 };
+    vector<double> doubleVectorTest { 1.1, 0 };
+    vector<std::string> stringVectorTest { "true", "false" };
+    vector<std::u16string> string16VectorTest { u"true", u"false" };
+
+    ParcelWriteVector(boolVectorTest);
+    ParcelWriteVector(int8VectorTest);
+    ParcelWriteVector(int16VectorTest);
+    ParcelWriteVector(int32VectorTest);
+    ParcelWriteVector(int64VectorTest);
+    ParcelWriteVector(uint8VectorTest);
+    ParcelWriteVector(uint16VectorTest);
+    ParcelWriteVector(uint32VectorTest);
+    ParcelWriteVector(uint64VectorTest);
+    ParcelWriteVector(floatVectorTest);
+    ParcelWriteVector(doubleVectorTest);
+    ParcelWriteVector(stringVectorTest);
+    ParcelWriteVector(string16VectorTest);
+}
+
 class TestParcelable : public virtual Parcelable {
 public:
     TestParcelable() = default;
