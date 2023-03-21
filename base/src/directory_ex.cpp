@@ -289,4 +289,33 @@ bool PathToRealPath(const string& path, string& realPath)
     return true;
 }
 
+#if defined(IOS_PLATFORM) || defined(_WIN32)
+string TransformFileName(const string& fileName)
+{
+    string::size_type pos = fileName.find(".");
+    string transformfileName = "";
+    if (pos == string::npos) {
+        transformfileName = fileName;
+
+#ifdef _WIN32
+        transformfileName = transformfileName.append(".dll");
+#elif defined IOS_PLATFORM
+        transformfileName = transformfileName.append(".dylib");
+#endif
+
+        return transformfileName;
+    } else {
+        transformfileName = string(fileName).substr(0, pos + 1);
+
+#ifdef _WIN32
+        transformfileName = transformfileName.append("dll");
+#elif defined IOS_PLATFORM
+        transformfileName = transformfileName.append("dylib");
+#endif
+
+        return transformfileName;
+    }
+}
+#endif
+
 } // OHOS

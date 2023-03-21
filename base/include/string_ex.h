@@ -214,6 +214,7 @@ bool IsSameTextStr(const std::string& first, const std::string& second);
  */
 bool IsAsciiString(const std::string& str);
 
+#ifndef IOS_PLATFORM
 /**
  * @ingroup StringOperation
  * @brief Convert a string from UTF-16 to UTF-8 encoded.
@@ -231,6 +232,7 @@ std::string Str16ToStr8(const std::u16string& str16);
  * @return If converting failed, return an empty `std::u16string` object.
  */
 std::u16string Str8ToStr16(const std::string& str);
+#endif
 } // namespace OHOS
 
 #endif // STRING_EX_H
