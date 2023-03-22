@@ -133,6 +133,19 @@ ohos_unittest("UtilsFileTest") {
 }
 
 ##############################unittest##########################################
+ohos_unittest("UtilsMappedFileTest") {
+  module_out_path = module_output_path
+  sources = [ "utils_mapped_file_test.cpp" ]
+
+  configs = [ ":module_private_config" ]
+
+  deps = [
+    "//commonlibrary/c_utils/base:utils",
+    "//third_party/googletest:gtest_main",
+  ]
+}
+
+##############################unittest##########################################
 ohos_unittest("UtilsObserverTest") {
   module_out_path = module_output_path
   sources = [ "utils_observer_test.cpp" ]
@@ -304,6 +317,7 @@ group("unittest") {
     ":UtilsDateTimeTest",
     ":UtilsDirectoryTest",
     ":UtilsFileTest",
+    ":UtilsMappedFileTest",
     ":UtilsObserverTest",
     ":UtilsParcelTest",
     ":UtilsRWLockTest",
