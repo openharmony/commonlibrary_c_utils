@@ -292,5 +292,108 @@ HWTEST_F(UtilsThreadTest, testThread006, TestSize.Level0)
     // times > 10, TestRun03 return false, thread exit
     EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
 }
+
+/*
+ * @tc.name: testThread007
+ * @tc.desc: ThreadTest
+ */
+HWTEST_F(UtilsThreadTest, testThread007, TestSize.Level0)
+{
+    times = 0;
+    std::unique_ptr<TestThread> test = std::make_unique<TestThread>(0, true, TestRun03);
+    ThreadStatus status = test->Start("", THREAD_PROI_LOW, 0);
+
+    EXPECT_EQ(status == ThreadStatus::OK, true);
+    if(test->IsRunning())
+    {
+        status = test->Start("", THREAD_PROI_NORMAL, 1024);
+        EXPECT_EQ(status == ThreadStatus::INVALID_OPERATION, true);
+
+        test->NotifyExitSync();
+        EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
+    }
+
+    sleep(1); // let the new thread has chance to run
+
+    EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
+}
+
+/*
+ * @tc.name: testThread008
+ * @tc.desc: ThreadTest
+ */
+HWTEST_F(UtilsThreadTest, testThread008, TestSize.Level0)
+{
+    times = 0;
+    std::unique_ptr<TestThread> test = std::make_unique<TestThread>(0, true, TestRun03);
+
+    bool res = test->Thread::ReadyToWork();
+    EXPECT_EQ(res, true);
+
+    ThreadStatus status = test->Start("", THREAD_PROI_NORMAL, 1024);
+    EXPECT_EQ(status == ThreadStatus::OK, true);
+
+    sleep(1);
+    test->NotifyExitAsync();
+
+    sleep(1); // let the new thread has chance to run
+    EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
+}
+
+class TestThread2 : public OHOS::Thread {
+public:
+    TestThread2(const int data, ThreadRunFunc runFunc)
+        : data_(data), priority_(DEFAULT_PRIO), name_(DEFAULT_THREAD_NAME), runFunc_(runFunc)
+        {};
+
+    TestThread2() = delete;
+    ~TestThread2() {}
+
+    int data_;
+    int priority_;
+    std::string name_;
+protected:
+    bool Run() override;
+
+private:
+    ThreadRunFunc runFunc_;
+};
+
+bool TestThread2::Run()
+{
+    priority_ = getpriority(PRIO_PROCESS, 0);
+    char threadName[MAX_THREAD_NAME_LEN] = {0};
+    prctl(PR_GET_NAME, threadName, 0, 0);
+    name_ = threadName;
+
+    if (runFunc_ != nullptr) {
+        return (*runFunc_)(data_);
+    }
+
+    return false;
+}
+
+/*
+ * @tc.name: testThread009
+ * @tc.desc: ThreadTest
+ */
+HWTEST_F(UtilsThreadTest, testThread009, TestSize.Level0)
+{
+    times = 0;
+    std::unique_ptr<TestThread2> test = std::make_unique<TestThread2>(0, TestRun03);
+
+    bool res = test->ReadyToWork();
+    EXPECT_EQ(res, true);
+
+    ThreadStatus status = test->Start("", THREAD_PROI_NORMAL, 1024);
+    EXPECT_EQ(status == ThreadStatus::OK, true);
+
+    sleep(1);
+    test->NotifyExitAsync();
+
+    sleep(1); // let the new thread has chance to run
+    EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
+}
+
 }  // namespace
 }  // namespace OHOS
