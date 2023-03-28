@@ -27,9 +27,10 @@
 #include "ashmem.h"
 
 using namespace testing::ext;
-using namespace OHOS;
 using namespace std;
 
+namespace OHOS {
+namespace {
 const int MAX_PARCEL_SIZE = 1000;
 char g_data[MAX_PARCEL_SIZE];
 const int32_t MEMORY_SIZE = 1024;
@@ -367,3 +368,5 @@ HWTEST_F(UtilsAshmemTest, test_ashmem_InvalidOperation_006, TestSize.Level0)
     ashmem->CloseAshmem();
     EXPECT_FALSE(ret);
 }
+}  // namespace
+}  // namespace OHOS
