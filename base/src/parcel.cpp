@@ -1044,7 +1044,7 @@ bool Parcel::ReadString16(std::u16string &value)
     }
 
     size_t readCapacity = (static_cast<size_t>(dataLength) + 1) * sizeof(char16_t);
-    if (readCapacity <= GetReadableBytes()) {
+    if ((readCapacity > (static_cast<size_t>(dataLength))) && (readCapacity <= GetReadableBytes())) {
         const uint8_t *str = ReadBuffer(readCapacity);
         if (str != nullptr) {
             const auto *u16Str = reinterpret_cast<const char16_t *>(str);
