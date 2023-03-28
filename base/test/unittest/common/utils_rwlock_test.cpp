@@ -38,7 +38,7 @@ public:
         rwLock.LockWrite();
         for (auto it = str.begin(); it != str.end(); it++) {
             buf.push_back(*it);
-            this_thread::sleep_for(std::chrono::milliseconds(1));
+            this_thread::sleep_for(std::chrono::milliseconds(10)); // Extend time of holding the lock
         }
         rwLock.UnLockWrite();
         return;
@@ -49,7 +49,7 @@ public:
         rwLock.LockRead();
         for (auto it = buf.begin(); it != buf.end(); it++) {
             str.push_back(*it);
-            this_thread::sleep_for(std::chrono::milliseconds(1));
+            this_thread::sleep_for(std::chrono::milliseconds(10)); // Extend time of holding the lock
         }
         rwLock.UnLockRead();
         return;
@@ -65,7 +65,7 @@ const string WRITE_IN_2("write2");
 /*
  * @tc.name: testRWLock001
  * @tc.desc: RWLock here is under write-first mode. If there are some writing operation waiting,
- * reading will never happen. Reading operations will happen at the same time, when all writing operations
+ * reading will never happen. Reading operations are likely to run at the same time, when all writing operations
  * have finished.
  */
 HWTEST_F(UtilsRWLockTest, testRWLock001, TestSize.Level1)
@@ -73,17 +73,14 @@ HWTEST_F(UtilsRWLockTest, testRWLock001, TestSize.Level1)
     TestRWLock test;
 
     thread first(bind(&TestRWLock::WriteStr, ref(test), ref(WRITE_IN_1)));
-    this_thread::sleep_for(chrono::milliseconds(1));
+    this_thread::sleep_for(std::chrono::milliseconds(4)); // Try our best to make `first` get the lock
 
     string readOut1("");
     thread second(bind(&TestRWLock::ReadStr, ref(test), ref(readOut1)));
-    this_thread::sleep_for(chrono::milliseconds(1));
-
     thread third(bind(&TestRWLock::WriteStr, ref(test), ref(WRITE_IN_2)));
-    this_thread::sleep_for(chrono::milliseconds(1));
-
     string readOut2("");
     thread fourth(bind(&TestRWLock::ReadStr, ref(test), ref(readOut2)));
+
 
     first.join();
     second.join();
@@ -97,23 +94,19 @@ HWTEST_F(UtilsRWLockTest, testRWLock001, TestSize.Level1)
 /*
  * @tc.name: testRWLock002
  * @tc.desc: RWLock here is not under write-first mode. So if there are writing and reading operations in queue
- * with a writing mission running, they will compete when the writing mission completing. But what we can ensure
- * is that reading operations in queue will happen at the same time.
+ * with a writing mission running, they will compete when the writing mission completing, but reading operations are
+ * likely to run at the same time.
  */
 HWTEST_F(UtilsRWLockTest, testRWLock002, TestSize.Level1)
 {
     TestRWLock test(false);
 
     thread first(bind(&TestRWLock::WriteStr, ref(test), ref(WRITE_IN_1)));
-    this_thread::sleep_for(chrono::milliseconds(1));
+    this_thread::sleep_for(chrono::milliseconds(4));
 
     string readOut1("");
     thread second(bind(&TestRWLock::ReadStr, ref(test), ref(readOut1)));
-    this_thread::sleep_for(chrono::milliseconds(1));
-
     thread third(bind(&TestRWLock::WriteStr, ref(test), ref(WRITE_IN_2)));
-    this_thread::sleep_for(chrono::milliseconds(1));
-
     string readOut2("");
     thread fourth(bind(&TestRWLock::ReadStr, ref(test), ref(readOut2)));
 
