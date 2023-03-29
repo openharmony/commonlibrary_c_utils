@@ -218,6 +218,25 @@ HWTEST_F(UtilsStringTest, test_strsplit_03, TestSize.Level0)
     }
 }
 
+/*
+* Feature: string_ex
+* Function: SplitStr
+* SubFunction: NA
+* FunctionPoints:
+* EnvConditions: NA
+* CaseDescription: test splitting a null string with a null seperator
+*/
+HWTEST_F(UtilsStringTest, test_strsplit_04, TestSize.Level0)
+{
+    string strBase = "";
+    string strSep = "";
+    vector<string> strsRet1;
+    SplitStr(strBase, strSep, strsRet1);
+    EXPECT_EQ(strsRet1.size(), 0);
+    vector<string> strsRet2;
+    SplitStr(strBase, strSep, strsRet2, true);
+    EXPECT_EQ(strsRet2[0], "");
+}
 
 /*
 * Feature: string_ex
@@ -341,6 +360,11 @@ HWTEST_F(UtilsStringTest, test_IsSubStr_01, TestSize.Level0)
     string strSub = "for";
     bool result = IsSubStr(strBase, strSub);
     EXPECT_EQ(result, true);
+
+    strBase = "";
+    strSub = "";
+    result = IsSubStr(strBase, strSub);
+    EXPECT_EQ(result, false);
 
     strSub = "fori";
     result = IsSubStr(strBase, strSub);
