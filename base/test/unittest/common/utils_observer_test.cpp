@@ -84,6 +84,21 @@ void UtilsObserverTest::TearDown(void)
 {
 }
 
+/*
+ * @tc.name: test_Observer
+ * @tc.desc: Test add null or repeat observer to the observable object.
+ */
+HWTEST_F(UtilsObserverTest, test_Observer, TestSize.Level0)
+{
+    BookList bookList;
+    bookList.AddObserver(nullptr);
+    shared_ptr<BookObserver> bookObserver1 = make_shared<BookObserver>();
+    bookList.AddObserver(bookObserver1);
+    bookList.AddObserver(bookObserver1);
+    int ret = bookList.GetObserversCount();
+    EXPECT_EQ(ret, 1);
+}
+
 HWTEST_F(UtilsObserverTest, test_ObserverNotify, TestSize.Level0)
 {
     BookList bookList;
