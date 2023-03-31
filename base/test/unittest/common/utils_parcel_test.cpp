@@ -653,6 +653,77 @@ HWTEST_F(UtilsParcelTest, test_parcel_SetAllocator_001, TestSize.Level0)
 }
 
 /**
+ * @tc.name: test_parcel_write_001
+ * @tc.desc: test parcel write failed.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UtilsParcelTest, test_parcel_write_001, TestSize.Level0)
+{
+    Parcel parcel1;
+    parcel1.WriteBool(true);
+    Parcel parcel2;
+    void *buffer = nullptr;
+    size_t size = parcel1.GetDataSize();
+    if (!SendData(buffer, size, reinterpret_cast<const uint8_t *>(parcel1.GetData()))) {
+        ASSERT_FALSE(false);
+    }
+    parcel2.ParseFrom(reinterpret_cast<uintptr_t>(buffer), parcel1.GetDataSize());
+
+    string str8write;
+    bool result = parcel2.WriteString(str8write);
+    EXPECT_EQ(result, false);
+
+    u16string str16Write;
+    result = parcel2.WriteString16(str16Write);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteBool(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteBoolUnaligned(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteInt8(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteInt8Unaligned(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteInt32(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteInt64(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteUint8(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteUint16(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteUint8Unaligned(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteUint16Unaligned(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteUint32(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteUint64(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteFloat(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WriteDouble(false);
+    EXPECT_EQ(result, false);
+
+    result = parcel2.WritePointer(false);
+    EXPECT_EQ(result, false);
+}
+
+/**
  * @tc.name: test_parcel_WriteAndRead_001
  * @tc.desc: test parcel primary type read write.
  * @tc.type: FUNC
