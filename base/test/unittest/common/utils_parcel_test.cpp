@@ -797,10 +797,9 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_003, TestSize.Level0)
 HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_004, TestSize.Level0)
 {
     Parcel parcel1(nullptr);
-    bool result;
 
     int64_t int64test = -0x1234567887654321;
-    result = parcel1.WriteInt64(int64test);
+    bool result = parcel1.WriteInt64(int64test);
     EXPECT_EQ(result, true);
 
     uint64_t uint64test = 0x1234567887654321;
@@ -838,10 +837,9 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_004, TestSize.Level0)
 HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_String_001, TestSize.Level0)
 {
     Parcel parcel1(nullptr);
-    bool result;
 
     string strWrite = "test";
-    result = parcel1.WriteString(strWrite);
+    bool result = parcel1.WriteString(strWrite);
     EXPECT_EQ(result, true);
 
     string strWrite1 =
@@ -924,13 +922,12 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_String_002, TestSize.Level0)
  */
 HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_String_003, TestSize.Level0)
 {
-    bool result;
     Parcel parcel(nullptr);
     string test1 = "12345";
     string test2 = "23456";
     string test3 = "34567";
     string test4 = "45678";
-    result = parcel.WriteCString(nullptr);
+    bool result = parcel.WriteCString(nullptr);
     EXPECT_FALSE(result);
     result = parcel.WriteCString(test1.c_str());
     EXPECT_TRUE(result);
@@ -1055,10 +1052,9 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_String005, TestSize.Level0)
 HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_Float_001, TestSize.Level0)
 {
     Parcel parcel1(nullptr);
-    bool result;
 
     float floatwrite = 12.345678f;
-    result = parcel1.WriteFloat(floatwrite);
+    bool result = parcel1.WriteFloat(floatwrite);
     EXPECT_EQ(result, true);
 
     double doublewrite = 1345.7653;
@@ -1099,10 +1095,9 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_Float_001, TestSize.Level0)
 HWTEST_F(UtilsParcelTest, test_parcel_WriteAndRead_String_005, TestSize.Level0)
 {
     Parcel parcel1(nullptr);
-    bool result;
 
     string strwrite = "test";
-    result = parcel1.WriteString(strwrite);
+    bool result = parcel1.WriteString(strwrite);
     EXPECT_EQ(result, true);
 
     string strwrite1 =
@@ -1180,12 +1175,11 @@ void ValidateUnpadded(const struct Unpadded &left, const struct Unpadded &right)
 HWTEST_F(UtilsParcelTest, test_CalcNewCapacity_001, TestSize.Level0)
 {
     Parcel parcel;
-    bool ret;
 
     size_t newMaxCapacity;
     size_t minNewCapacity = CAPACITY_THRESHOLD;
     const string strLenThreshd = string(minNewCapacity, 't');
-    ret = parcel.WriteUnpadBuffer(static_cast<const void *>(strLenThreshd.data()), minNewCapacity);
+    bool ret = parcel.WriteUnpadBuffer(static_cast<const void *>(strLenThreshd.data()), minNewCapacity);
     EXPECT_EQ(true, ret); // calculated capacity = CAPACITY_THRESHOLD
 
     newMaxCapacity = CAPACITY_THRESHOLD - 1;
@@ -1222,11 +1216,10 @@ HWTEST_F(UtilsParcelTest, test_CalcNewCapacity_001, TestSize.Level0)
 HWTEST_F(UtilsParcelTest, test_SetDataCapacity_001, TestSize.Level0)
 {
     Parcel parcel;
-    bool result;
     struct TestData data = { true, -0x34, 0x5634, -0x12345678, 0x34, 0x5634, 0x12345678 };
 
     WriteTestData(parcel, data);
-    result = parcel.SetDataCapacity(0);
+    bool result = parcel.SetDataCapacity(0);
     EXPECT_FALSE(result);
 }
 
@@ -1238,8 +1231,8 @@ HWTEST_F(UtilsParcelTest, test_SetDataCapacity_001, TestSize.Level0)
 HWTEST_F(UtilsParcelTest, test_SetDataSize_001, TestSize.Level0)
 {
     Parcel parcel;
-    bool result;
-    result = parcel.SetDataCapacity(sizeof(bool));
+
+    bool result = parcel.SetDataCapacity(sizeof(bool));
     EXPECT_TRUE(result);
     result = parcel.WriteBool(true);
     EXPECT_TRUE(result);
@@ -1255,12 +1248,11 @@ HWTEST_F(UtilsParcelTest, test_SetDataSize_001, TestSize.Level0)
 HWTEST_F(UtilsParcelTest, test_parcel_Data_Structure_001, TestSize.Level0)
 {
     Parcel parcel(nullptr);
-    bool result;
 
     const struct Padded pad = { 'p', 0x34567890, -0x2345678998765432 };
     const struct Unpadded unpad = { 'u' };
 
-    result = parcel.WriteBuffer(static_cast<const void *>(&pad), sizeof(struct Padded));
+    bool result = parcel.WriteBuffer(static_cast<const void *>(&pad), sizeof(struct Padded));
     EXPECT_EQ(true, result);
     const struct Padded *padRead = reinterpret_cast<const struct Padded *>(parcel.ReadBuffer(sizeof(struct Padded)));
     ValidatePadded(*padRead, pad);
@@ -1299,14 +1291,13 @@ HWTEST_F(UtilsParcelTest, test_parcel_Data_Structure_001, TestSize.Level0)
 HWTEST_F(UtilsParcelTest, test_parcel_Data_Structure_002, TestSize.Level0)
 {
     Parcel parcel(nullptr);
-    bool result;
 
     const string str = "test invalid input";
     const string strOverflow = "test write with SIZE_MAX bytes";
     const string strWriteFail = string((DEFAULT_CPACITY+1)/sizeof(char), 'f');
     const string strWriteTermFail = string((DEFAULT_CPACITY-2)/sizeof(char), 't');
 
-    result = parcel.WriteBuffer(nullptr, sizeof(string));
+    bool result = parcel.WriteBuffer(nullptr, sizeof(string));
     EXPECT_EQ(false, result);
     result = parcel.WriteBufferAddTerminator(nullptr, sizeof(string), sizeof(char));
     EXPECT_EQ(false, result);
@@ -1492,11 +1483,11 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndReadVector_003, TestSize.Level0)
 {
     Parcel parcel1(nullptr);
     Parcel parcel2(nullptr);
-    bool result;
+
     vector<string> stringtest{ "test", "test for", "test for write", "test for write vector" };
     vector<u16string> string16test{ u"test", u"test for", u"test for write", u"test for write vector" };
 
-    result = parcel1.WriteStringVector(stringtest);
+    bool result = parcel1.WriteStringVector(stringtest);
     EXPECT_EQ(result, true);
     result = parcel1.WriteString16Vector(string16test);
     EXPECT_EQ(result, true);
@@ -1544,12 +1535,13 @@ HWTEST_F(UtilsParcelTest, test_parcel_WriteAndReadVector_004, TestSize.Level0)
 {
     Parcel parcel1(nullptr);
     Parcel parcel2(nullptr);
-    bool result;
+
     vector<float> floattest{ 11221.132313, 11221.45678 };
     vector<double> doubletest{ 1122.132313, 1122.45678 };
 
-    result = parcel1.WriteFloatVector(floattest);
+    bool result = parcel1.WriteFloatVector(floattest);
     EXPECT_EQ(result, true);
+
     result = parcel1.WriteDoubleVector(doubletest);
     EXPECT_EQ(result, true);
 
@@ -1639,8 +1631,7 @@ void ParcelWriteVector(const std::vector<T> &vectorTest)
 {
     Parcel parcel1(nullptr);
     Parcel parcel2(nullptr);
-    bool result;
-    result = CallWriteVector(parcel1, vectorTest);
+    bool result = CallWriteVector(parcel1, vectorTest);
     EXPECT_EQ(result, true);
 
     void *buffer = nullptr;
@@ -1804,8 +1795,7 @@ HWTEST_F(UtilsParcelTest, test_SetMaxCapacity_001, TestSize.Level0)
 {
     Parcel parcel(nullptr);
     char test[48] = {0};
-    bool ret;
-    ret = parcel.WriteBuffer(test, 48);
+    bool ret = parcel.WriteBuffer(test, 48);
     EXPECT_EQ(true, ret);
     // because default maxCap is 200 * 1024, so reset it more
     parcel.SetMaxCapacity(201 * 1024);
@@ -1824,8 +1814,7 @@ HWTEST_F(UtilsParcelTest, test_SetMaxCapacity_002, TestSize.Level0)
 {
     Parcel parcel(nullptr);
     char test[48] = {0};
-    bool ret;
-    ret = parcel.WriteInt32(5767168);
+    bool ret = parcel.WriteInt32(5767168);
     EXPECT_EQ(true, ret);
     ret = parcel.WriteBuffer(test, 48);
     EXPECT_EQ(true, ret);
