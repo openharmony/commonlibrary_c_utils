@@ -113,7 +113,6 @@ bool StrToInt(const string& str, int& value)
             (result > INT_MAX) || (result < INT_MIN)) {
         return false;
     }
-
     value = static_cast<int>(result);
     return true;
 }
@@ -240,6 +239,7 @@ bool IsAsciiString(const string& str)
     return true;
 }
 
+#ifndef IOS_PLATFORM
 u16string Str8ToStr16(const string& str)
 {
     u16string str16Value;
@@ -259,4 +259,5 @@ string Str16ToStr8(const u16string& str16)
 
     return str8Value;
 }
+#endif
 } // namespace OHOS

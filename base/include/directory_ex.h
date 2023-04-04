@@ -142,5 +142,12 @@ bool ChangeModeDirectory(const std::string& path, const mode_t& mode);
  * @return Return true if get success, else false.
  */
 bool PathToRealPath(const std::string& path, std::string& realPath);
+
+#if defined(IOS_PLATFORM) || defined(_WIN32)
+/**
+ * @brief The TransformFileName function transform the input file name for windows or mac.
+ */
+std::string TransformFileName(const std::string& fileName);
+#endif
 } // OHOS
 #endif
