@@ -76,9 +76,21 @@ HWTEST_F(UtilsDateTimeTest, testTime001, TestSize.Level0)
     struct tm curTime = {0};
     bool ret = GetSystemCurrentTime(&curTime);
     EXPECT_EQ(ret, true);
+    ret = GetSystemCurrentTime(nullptr);
+    EXPECT_EQ(ret, false);
 
     int64_t second2 = GetSecondsSince1970ToPointTime(curTime);
     EXPECT_EQ(second, second2);
+    struct tm info;
+    info.tm_year = INT32_MIN;
+    info.tm_mon = 0;
+    info.tm_mday = 0;
+    info.tm_hour = 0;
+    info.tm_min = 0;
+    info.tm_sec = 0;
+    info.tm_isdst = 0;
+    second2 = GetSecondsSince1970ToPointTime(info);
+    EXPECT_EQ(-1, second2);
 }
 
 /*
