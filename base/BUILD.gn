@@ -18,6 +18,7 @@ declare_args() {
   c_utils_debug_refbase = false
   c_utils_track_all = false
   c_utils_print_track_at_once = false
+  c_utils_debug_log_enabled = false
 }
 
 config("utils_config") {
@@ -55,6 +56,10 @@ config("utils_all_dependent_configs") {
   include_dirs = [ "include" ]
 }
 
+config("debug_log_enabled") {
+  defines = [ "DEBUG_UTILS" ]
+}
+
 config("debug_refbase") {
   defines = [ "DEBUG_REFBASE" ]
 }
@@ -77,6 +82,7 @@ sources_utils = [
   "src/semaphore_ex.cpp",
   "src/thread_pool.cpp",
   "src/file_ex.cpp",
+  "src/mapped_file.cpp",
   "src/observer.cpp",
   "src/thread_ex.cpp",
   "src/event_demultiplexer.cpp",
@@ -113,6 +119,9 @@ ohos_static_library("utilsbase") {
     all_dependent_configs = [ ":utils_all_dependent_configs" ]
     if (current_os != "android" && current_os != "ios") {
       defines = [ "CONFIG_HILOG" ]
+    }
+    if (c_utils_debug_log_enabled) {
+      configs += [ ":debug_log_enabled" ]
     }
     external_deps = [ "hilog_native:libhilog_base" ]
     public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
@@ -161,6 +170,9 @@ ohos_shared_library("utils") {
     all_dependent_configs = [ ":utils_all_dependent_configs" ]
     if (current_os != "android" && current_os != "ios") {
       defines = [ "CONFIG_HILOG" ]
+    }
+    if (c_utils_debug_log_enabled) {
+      configs += [ ":debug_log_enabled" ]
     }
     external_deps = [ "hilog_native:libhilog_base" ]
     public_deps = [ "//third_party/bounds_checking_function:libsec_shared" ]

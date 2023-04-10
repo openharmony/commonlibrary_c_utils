@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,14 +14,18 @@
  */
 
  /**
-  * @file common_errors.h
+  * @file common_mapped_file_errors.h
   *
-  * @brief Provide value of 'Module' segment of ErrCode for all modules in
+  * @brief Provide value of 'Code' segment of ErrCode for 'MappedFile' module in
   * commonlibrary subsystem.
   */
 
-#ifndef UTILS_COMMON_ERRORS_H
-#define UTILS_COMMON_ERRORS_H
+#ifndef UTILS_COMMON_TIMER_ERRORS_H
+#define UTILS_COMMON_TIMER_ERRORS_H
+
+#include <cerrno>
+#include "errors.h"
+#include "common_errors.h"
 
 namespace OHOS {
 namespace Utils {
@@ -35,21 +39,20 @@ namespace Utils {
  * |Field|Reserved|        Subsystem      |  Module      |                  Code                         |
  * +-----+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
  *
- * In this file, subsystem is "SUBSYS_COMMON".
+ * In this file, subsystem is "SUBSYS_COMMON" and module is "MODULE_MAPPED_FILE".
  */
 
+using ErrCode = int;
+
+// offset of mapped file module error, only be used in this file.
 /**
- * @brief Value of 'Module' segment of ErrCode for modules in commonlibrary
- * subsystem.
- *
- * @var MODULE_DEFAULT Default
- * @var MODULE_TIMER Timer(timer.h)
+ * @brief Base ErrCode of module 'MappedFile' in commonlibrary subsystem.
  */
+constexpr ErrCode COMMON_MAPPED_FILE_ERR_OFFSET = ErrCodeOffset(SUBSYS_COMMON, MODULE_MAPPED_FILE);
+
 enum {
-    MODULE_DEFAULT              = 0,
-    MODULE_TIMER                = 1,
-    MODULE_MAPPED_FILE         = 2,
-    // new module
+    MAPPED_FILE_ERR_OK           = COMMON_MAPPED_FILE_ERR_OFFSET + 0,
+    MAPPED_FILE_ERR_FAILED       = COMMON_MAPPED_FILE_ERR_OFFSET + 1,
 };
 
 } // Utils
