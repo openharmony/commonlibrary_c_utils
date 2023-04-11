@@ -28,6 +28,10 @@
 
 #ifndef IOS_PLATFORM
 #include <linux/types.h>
+#else
+    typedef u_int32_t __u32;
+    typedef u_int64_t __u64;
+#endif
 
 #ifdef BINDER_IPC_32BIT
     typedef __u32 binder_size_t;
@@ -35,15 +39,6 @@
 #else
     typedef __u64 binder_size_t;
     typedef __u64 binder_uintptr_t;
-#endif
-#else
-#ifdef BINDER_IPC_32BIT
-    typedef u_int32_t binder_size_t;
-    typedef u_int32_t binder_uintptr_t;
-#else
-    typedef u_int64_t binder_size_t;
-    typedef u_int64_t binder_uintptr_t;
-#endif
 #endif
 
 struct parcel_binder_object_header {
