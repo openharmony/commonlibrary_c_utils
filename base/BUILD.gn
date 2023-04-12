@@ -110,6 +110,7 @@ ohos_static_library("utilsbase") {
     configs = [ ":utils_coverage_config" ]
     all_dependent_configs = [ ":utils_all_dependent_configs" ]
     public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+    defines = [ "IOS_PLATFORM" ]
 
     subsystem_name = "commonlibrary"
     part_name = "c_utils"
@@ -152,6 +153,7 @@ ohos_shared_library("utils") {
     configs = [ ":utils_coverage_config" ]
     all_dependent_configs = [ ":utils_all_dependent_configs" ]
     public_deps = [ "//third_party/bounds_checking_function:libsec_shared" ]
+    defines = [ "IOS_PLATFORM" ]
 
     subsystem_name = "commonlibrary"
     part_name = "c_utils"
