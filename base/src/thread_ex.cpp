@@ -133,21 +133,6 @@ ThreadStatus Thread::Start(const std::string& name, int32_t priority, size_t sta
     return ThreadStatus::OK;
 }
 
-ThreadStatus Thread::Join()
-{
-    // If the two thread IDs are equal, pthread_equal() returns a non-zero value; otherwise, it returns 0.
-    if (pthread_equal(thread_, pthread_self()) != 0) {
-        return ThreadStatus::WOULD_BLOCK;
-    }
-
-    std::unique_lock<std::mutex> lk(lock_);
-    while (running_) {
-        cvThreadExited_.wait(lk);
-    }
-
-    return status_;
-}
-
 ThreadStatus Thread::NotifyExitSync()
 {
     // If the two thread IDs are equal, pthread_equal() returns a non-zero value; otherwise, it returns 0.
