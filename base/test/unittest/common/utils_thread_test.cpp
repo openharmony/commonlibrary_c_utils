@@ -304,8 +304,7 @@ HWTEST_F(UtilsThreadTest, testThread007, TestSize.Level0)
     ThreadStatus status = test->Start("", THREAD_PROI_LOW, 0);
 
     EXPECT_EQ(status == ThreadStatus::OK, true);
-    if(test->IsRunning())
-    {
+    if (test->IsRunning()) {
         status = test->Start("", THREAD_PROI_NORMAL, 1024);
         EXPECT_EQ(status == ThreadStatus::INVALID_OPERATION, true);
 

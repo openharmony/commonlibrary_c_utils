@@ -41,8 +41,7 @@ public:
 
     void NoChangeNotify()
     {
-        if (HasChanged() == false)
-        {
+        if (HasChanged() == false) {
             NotifyObservers();
         }
     }

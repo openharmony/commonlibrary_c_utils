@@ -38,7 +38,7 @@ public:
         rwLock.LockWrite();
         for (auto it = str.begin(); it != str.end(); it++) {
             buf.push_back(*it);
-            this_thread::sleep_for(std::chrono::milliseconds(10)); // Extend time of holding the lock
+            this_thread::sleep_for(std::chrono::milliseconds(10)); // 10: Extend time of holding the lock
         }
         rwLock.UnLockWrite();
         return;
@@ -49,7 +49,7 @@ public:
         rwLock.LockRead();
         for (auto it = buf.begin(); it != buf.end(); it++) {
             str.push_back(*it);
-            this_thread::sleep_for(std::chrono::milliseconds(10)); // Extend time of holding the lock
+            this_thread::sleep_for(std::chrono::milliseconds(10)); // 10: Extend time of holding the lock
         }
         rwLock.UnLockRead();
         return;

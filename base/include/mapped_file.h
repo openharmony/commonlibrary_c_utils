@@ -31,7 +31,6 @@
 namespace OHOS {
 namespace Utils {
 
-
 enum class MapMode : uint8_t {
     DEFAULT = 0,
     PRIVATE = 2,
@@ -66,7 +65,6 @@ public:
     ErrCode Resize();
     ErrCode Resize(off_t newSize, bool sync = false);
     ErrCode Clear(bool force = false);
-
 
     // info
     inline off_t Size() const
@@ -103,7 +101,6 @@ public:
     {
         return rStart_;
     }
-
 
     inline char* RegionEnd() const
     {
