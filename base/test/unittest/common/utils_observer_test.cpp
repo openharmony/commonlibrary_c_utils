@@ -39,6 +39,14 @@ public:
         NotifyObservers();
     }
 
+    void NoChangeNotify()
+    {
+        if (HasChanged() == false)
+        {
+            NotifyObservers();
+        }
+    }
+
     const set<string>& GetBooks() { return books_; }
 private:
     set<string> books_;
@@ -95,6 +103,7 @@ HWTEST_F(UtilsObserverTest, test_Observer, TestSize.Level0)
     shared_ptr<BookObserver> bookObserver1 = make_shared<BookObserver>();
     bookList.AddObserver(bookObserver1);
     bookList.AddObserver(bookObserver1);
+    bookList.NoChangeNotify();
     int ret = bookList.GetObserversCount();
     EXPECT_EQ(ret, 1);
 }
