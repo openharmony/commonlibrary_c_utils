@@ -233,6 +233,56 @@ int main()
 run -t UT -tp utils -ts UtilsRefBaseTest
 ```
 
+3. debug功能
+RefTracker作为debug工具被添加入refbase文件中，以便开发者对RefBase相关问题进行定位。该功能需要重新编译动态库替换系统原有动态库来上机使用（如是静态依赖则需开发者独立审视使能方法）。
+- 全局追踪
+
+全局追踪功能通过编译宏控制，可以追踪全局的RefBase及其子类的轨迹，但同时会对整机性能造成影响。
+全局追踪中我们提供了立即打印模式及非立即打印模式。立即打印模式会在每次引用计数发生变化时对计数进行打印。非立即打印模式会在RefBase及其子类对象析构时对轨迹进行打印。
+
+全局追踪、立即打印编译命令：
+```
+./build.sh --product-name xxx --ccache --build-target commonlibrary/c_utils/base:utils --gn-args c_utils_debug_refbase=true --gn-args c_utils_track_all=true --gn-args c_utils_print_track_at_once=true
+```
+全局追踪、非立即打印编译命令：
+```
+./build.sh --product-name xxx --ccache --build-target commonlibrary/c_utils/base:utils --gn-args c_utils_debug_refbase=true --gn-args c_utils_track_all=true
+```
+- 独立追踪
+
+独立追踪功能同样能通过编译宏控制。我们为开发者提供了RefBase::EnableTracker()接口来对某个具体实例使能追踪功能。独立追踪对性能影响很小，可以忽略不计。在独立追踪中我们能同样提供了立即打印及非立即打印模式。
+
+独立追踪、立即打印编译命令：
+```
+./build.sh --product-name xxx --ccache --build-target commonlibrary/c_utils/base:utils --gn-args c_utils_debug_refbase=true --gn-args c_utils_print_track_at_once=true
+```
+独立追踪、非立即打印编译命令：
+```
+./build.sh --product-name xxx --ccache --build-target commonlibrary/c_utils/base:utils --gn-args c_utils_debug_refbase=true
+```
+
+- 使用方法
+
+编译动态库，编译产物路径为`./out/xxx/commonlibrary/c_utils/libutils.z.so`。
+
+编译产物需要推入系统进行替换，64位系统位于`/system/lib64/`，32位系统位于`/system/lib/`。
+
+追踪结果通过log打印。格式如下：
+```
+// 立即打印
+(sptr pointer) start tracking
+(sptr pointer) call (RefBase pointer). strong: x weak: x refcnnt: x
+...
+(sptr pointer) call (RefBase pointer). strong: x weak: x refcnnt: x
+(sptr pointer) end tracking
+
+// 非立即打印
+(sptr pointer) start backtrace
+(sptr pointer) call (RefBase pointer). strong: x weak: x refcnnt: x PID: xxx TID: xxx
+...
+(sptr pointer) call (RefBase pointer). strong: x weak: x refcnnt: x PID: xxx TID: xxx
+(sptr pointer) end backtrace
+```
 
 ## 常见问题
 
