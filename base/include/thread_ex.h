@@ -128,7 +128,6 @@ private:
     Thread(const Thread&) = delete;
     Thread& operator=(const Thread&) = delete;
     static int ThreadStart(void* args);
-    ThreadStatus Join(); // pthread created as detached
 
 private:
     pthread_t thread_;  // Thread ID
