@@ -22,7 +22,15 @@ declare_args() {
 }
 
 config("utils_config") {
-  visibility = [ ":*" ]
+  visibility = [
+    ":*",
+    "//base/*",
+    "//developtools/hiperf/*",
+    "//developtools/profiler/device/plugins/ftrace_plugin/tools/device_kernel_version/default/event_formatters/*",
+    "//device/soc/hisilicon/common/hal/display/source/utils/*",
+    "//drivers/peripheral/camera/hal/utils/*",
+    "//foundation/*",
+  ]
   include_dirs = [
     "include",
     "//developtools/liblog",
@@ -46,6 +54,7 @@ config("private_securec_config") {
 
 config("static_utils_config") {
   visibility = [ ":*" ]
+  visibility += [ "//foundation/arkui/ace_engine/frameworks/bridge/test/unittest/cardfrontend/domclock:*" ]
   include_dirs = [
     "include",
     "//developtools/liblog",
