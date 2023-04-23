@@ -42,23 +42,11 @@ config("utils_config") {
 }
 
 config("utils_coverage_config") {
+  visibility = [ ":*" ]
   if (c_utils_feature_coverage) {
     cflags = [ "--coverage" ]
     ldflags = [ "--coverage" ]
   }
-}
-
-config("private_securec_config") {
-  cflags = [ "-Wno-implicit-fallthrough" ]
-}
-
-config("static_utils_config") {
-  visibility = [ ":*" ]
-  visibility += [ "//foundation/arkui/ace_engine/frameworks/bridge/test/unittest/cardfrontend/domclock:*" ]
-  include_dirs = [
-    "include",
-    "//developtools/liblog",
-  ]
 }
 
 config("utils_all_dependent_configs") {
@@ -66,18 +54,22 @@ config("utils_all_dependent_configs") {
 }
 
 config("debug_log_enabled") {
+  visibility = [ ":*" ]
   defines = [ "DEBUG_UTILS" ]
 }
 
 config("debug_refbase") {
+  visibility = [ ":*" ]
   defines = [ "DEBUG_REFBASE" ]
 }
 
 config("print_track_at_once") {
+  visibility = [ ":*" ]
   defines = [ "PRINT_TRACK_AT_ONCE" ]
 }
 
 config("track_all") {
+  visibility = [ ":*" ]
   defines = [ "TRACK_ALL" ]
 }
 
