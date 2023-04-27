@@ -22,23 +22,7 @@ declare_args() {
 }
 
 config("utils_config") {
-  visibility = [
-    ":*",
-    "//base/*",
-    "//developtools/hiperf/*",
-    "//developtools/profiler/device/plugins/ftrace_plugin/tools/device_kernel_version/default/event_formatters/*",
-    "//device/soc/hisilicon/common/hal/display/source/utils/*",
-    "//drivers/peripheral/camera/hal/utils/*",
-    "//foundation/*",
-  ]
-  include_dirs = [
-    "include",
-    "//developtools/liblog",
-  ]
-  cflags = []
-  if (current_os == "mingw") {
-    cflags += [ "-Wno-error=inconsistent-dllimport" ]
-  }
+  include_dirs = [ "include" ]
 }
 
 config("utils_coverage_config") {
@@ -109,7 +93,7 @@ ohos_static_library("utilsbase") {
   if (current_os == "ios") {
     sources = sources_utils_ios
     configs = [ ":utils_coverage_config" ]
-    all_dependent_configs = [ ":utils_all_dependent_configs" ]
+    all_dependent_configs = [ ":utils_config" ]
     public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
     defines = [ "IOS_PLATFORM" ]
 
@@ -118,7 +102,7 @@ ohos_static_library("utilsbase") {
   } else {
     sources = sources_utils
     configs = [ ":utils_coverage_config" ]
-    all_dependent_configs = [ ":utils_all_dependent_configs" ]
+    all_dependent_configs = [ ":utils_config" ]
     if (current_os != "android" && current_os != "ios") {
       defines = [ "CONFIG_HILOG" ]
     }
@@ -136,7 +120,7 @@ ohos_static_library("utilsbase") {
 ohos_static_library("utilsbase_rtti") {
   visibility = [ "//foundation/multimedia/histreamer/engine/plugin/plugins/source/video_capture:std_video_capture" ]
   sources = sources_utils
-  all_dependent_configs = [ ":utils_all_dependent_configs" ]
+  all_dependent_configs = [ ":utils_config" ]
   if (current_os != "android" && current_os != "ios") {
     defines = [ "CONFIG_HILOG" ]
   }
@@ -152,7 +136,7 @@ ohos_shared_library("utils") {
   if (current_os == "ios") {
     sources = sources_utils_ios
     configs = [ ":utils_coverage_config" ]
-    all_dependent_configs = [ ":utils_all_dependent_configs" ]
+    all_dependent_configs = [ ":utils_config" ]
     public_deps = [ "//third_party/bounds_checking_function:libsec_shared" ]
     defines = [ "IOS_PLATFORM" ]
 
@@ -170,7 +154,7 @@ ohos_shared_library("utils") {
         configs += [ ":print_track_at_once" ]
       }
     }
-    all_dependent_configs = [ ":utils_all_dependent_configs" ]
+    all_dependent_configs = [ ":utils_config" ]
     if (current_os != "android" && current_os != "ios") {
       defines = [ "CONFIG_HILOG" ]
     }
