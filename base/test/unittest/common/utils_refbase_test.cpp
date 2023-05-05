@@ -1044,10 +1044,12 @@ HWTEST_F(UtilsRefbaseTest, testRefbaseDebug001, TestSize.Level1)
     sptr<RefBase> testObject1(new RefBase());
     testObject1->EnableTracker();
     sptr<RefBase> testObject2(testObject1);
+    EXPECT_EQ(testObject2->GetSptrRefCount(), 2);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     wptr<RefBase> testObject3(testObject2);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     wptr<RefBase> testObject4(testObject3);
+    EXPECT_EQ(testObject4->GetWptrRefCount(), 3);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
@@ -1061,10 +1063,12 @@ HWTEST_F(UtilsRefbaseTest, testRefbaseDebug002, TestSize.Level1)
     wptr<RefBase> testObject1(new RefBase());
     testObject1->EnableTracker();
     sptr<RefBase> testObject2 = testObject1.promote();
+    EXPECT_EQ(testObject2->GetSptrRefCount(), 1);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     wptr<RefBase> testObject3(testObject2);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     wptr<RefBase> testObject4(testObject3);
+    EXPECT_EQ(testObject4->GetWptrRefCount(), 3);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
@@ -1088,9 +1092,11 @@ HWTEST_F(UtilsRefbaseTest, testRefbaseDebug003, TestSize.Level1)
     sptr<TestDebug> testObject2(testObject1);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     sptr<TestDebug> testObject3;
+    EXPECT_EQ(testObject2->GetSptrRefCount(), 2);
     testObject3 = testObject2;
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     wptr<TestDebug> testObject4(testObject3);
+    EXPECT_EQ(testObject4->GetWptrRefCount(), 4);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
@@ -1103,6 +1109,7 @@ HWTEST_F(UtilsRefbaseTest, testRefbaseDebug004, TestSize.Level1)
     sptr<TestDebug> testObject1(new TestDebug());
     std::thread subThread {[&testObject1]() {
         sptr<TestDebug> subTestObject1(testObject1);
+        EXPECT_EQ(testObject1->GetSptrRefCount(), 2);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         wptr<TestDebug> subTestObject2(subTestObject1);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -1115,6 +1122,7 @@ HWTEST_F(UtilsRefbaseTest, testRefbaseDebug004, TestSize.Level1)
     wptr<TestDebug> testObject3(testObject2);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     subThread.join();
+    EXPECT_EQ(testObject3->GetWptrRefCount(), 2);
 }
 }  // namespace
 }  // namespace OHOS
