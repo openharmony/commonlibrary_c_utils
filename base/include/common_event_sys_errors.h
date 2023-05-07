@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,14 +14,18 @@
  */
 
  /**
-  * @file common_errors.h
+  * @file common_event_sys_errors.h
   *
-  * @brief Provide value of 'Module' segment of ErrCode for all modules in
+  * @brief Provide value of 'Code' segment of ErrCode for 'EventSystem' module in
   * commonlibrary subsystem.
   */
 
-#ifndef UTILS_COMMON_ERRORS_H
-#define UTILS_COMMON_ERRORS_H
+#ifndef UTILS_COMMON_EVENT_SYS_ERRORS_H
+#define UTILS_COMMON_EVENT_SYS_ERRORS_H
+
+#include <cerrno>
+#include "errors.h"
+#include "common_errors.h"
 
 namespace OHOS {
 namespace Utils {
@@ -35,22 +39,25 @@ namespace Utils {
  * |Field|Reserved|        Subsystem      |  Module      |                  Code                         |
  * +-----+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
  *
- * In this file, subsystem is "SUBSYS_COMMON".
+ * In this file, subsystem is "SUBSYS_COMMON" and module is "MODULE_EVENT_SYSTEM".
  */
 
+using ErrCode = int;
+
+// offset of event system module error, only be used in this file.
 /**
- * @brief Value of 'Module' segment of ErrCode for modules in commonlibrary
- * subsystem.
- *
- * @var MODULE_DEFAULT Default
- * @var MODULE_TIMER Timer(timer.h)
+ * @brief Base ErrCode of module 'EventSystem' in commonlibrary subsystem.
  */
+constexpr ErrCode COMMON_EVENT_SYS_ERR_OFFSET = ErrCodeOffset(SUBSYS_COMMON, MODULE_EVENT_SYS);
+
 enum {
-    MODULE_DEFAULT              = 0,
-    MODULE_TIMER                = 1,
-    MODULE_MAPPED_FILE          = 2,
-    MODULE_EVENT_SYS            = 3,
-    // new module
+    EVENT_SYS_ERR_OK              = COMMON_EVENT_SYS_ERR_OFFSET + 0,
+    EVENT_SYS_ERR_FAILED          = COMMON_EVENT_SYS_ERR_OFFSET + 1,
+    EVENT_SYS_ERR_ALREADY_STARTED = COMMON_EVENT_SYS_ERR_OFFSET + 2,
+    EVENT_SYS_ERR_NOT_FOUND       = COMMON_EVENT_SYS_ERR_OFFSET + 3,
+    EVENT_SYS_ERR_BADF            = COMMON_EVENT_SYS_ERR_OFFSET + 4,
+    EVENT_SYS_ERR_BADEVENT        = COMMON_EVENT_SYS_ERR_OFFSET + 5,
+    EVENT_SYS_ERR_NOEVENT         = COMMON_EVENT_SYS_ERR_OFFSET + 6,
 };
 
 } // Utils
