@@ -23,7 +23,7 @@
 #include <vector>
 #include <set>
 #include <queue>
-#include "event.h"
+#include "io_event_common.h"
 #include "errors.h"
 #include "io_event_handler.h"
 

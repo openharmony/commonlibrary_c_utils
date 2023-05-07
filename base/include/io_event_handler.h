@@ -17,7 +17,7 @@
 #define UTILS_EVENT_HANDLER_H
 
 #include "errors.h"
-#include "event.h"
+#include "io_event_common.h"
 namespace OHOS {
 namespace Utils {
 
