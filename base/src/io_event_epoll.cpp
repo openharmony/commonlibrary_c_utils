@@ -19,7 +19,7 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 #include "utils_log.h"
-#include "event.h"
+#include "io_event_common.h"
 #include "common_event_sys_errors.h"
 #include "io_event_epoll.h"
 
@@ -46,11 +46,11 @@ ErrCode IOEventEpoll::SetUp()
 
 void IOEventEpoll::CleanUp()
 {
-    if (epollFd_ != INVALID_FD) {
+    if (epollFd_ != IO_EVENT_INVALID_FD) {
         if (close(epollFd_) != 0) {
             UTILS_LOGW("%{public}s: Failed, cannot close fd: %{public}s.", __FUNCTION__, strerror(errno));
         }
-        epollFd_ = INVALID_FD;
+        epollFd_ = IO_EVENT_INVALID_FD;
     }
 }
 

@@ -22,7 +22,8 @@
 namespace OHOS {
 namespace Utils {
 IOEventHandler::IOEventHandler()
-    :prev_(nullptr), next_(nullptr), fd_(INVALID_FD), events_(Events::EVENT_NONE), cb_(nullptr), enabled_(false) {}
+    :prev_(nullptr), next_(nullptr), fd_(IO_EVENT_INVALID_FD), events_(Events::EVENT_NONE),
+    cb_(nullptr), enabled_(false) {}
 
 IOEventHandler::IOEventHandler(int fd, EventId events, const EventCallback& cb)
     :prev_(nullptr), next_(nullptr), fd_(fd), events_(events), cb_(cb), enabled_(false) {}

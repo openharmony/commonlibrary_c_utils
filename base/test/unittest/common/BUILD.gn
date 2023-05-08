@@ -120,6 +120,19 @@ ohos_unittest("UtilsThreadTest") {
 }
 
 ##############################unittest##########################################
+ohos_unittest("UtilsEventTest") {
+  module_out_path = module_output_path
+  sources = [ "utils_event_test.cpp" ]
+
+  configs = [ ":module_private_config" ]
+
+  deps = [
+    "//commonlibrary/c_utils/base:utils",
+    "//third_party/googletest:gtest_main",
+  ]
+}
+
+##############################unittest##########################################
 ohos_unittest("UtilsFileTest") {
   module_out_path = module_output_path
   sources = [ "utils_file_test.cpp" ]
@@ -316,6 +329,7 @@ group("unittest") {
     ":UtilsAshmemTest",
     ":UtilsDateTimeTest",
     ":UtilsDirectoryTest",
+    ":UtilsEventTest",
     ":UtilsFileTest",
     ":UtilsMappedFileTest",
     ":UtilsObserverTest",

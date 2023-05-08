@@ -16,8 +16,8 @@
 #include <cstdint>
 #include <functional>
 
-#ifndef UTILS_EVENT_H
-#define UTILS_EVENT_H
+#ifndef UTILS_IO_EVENT_COMMON_H
+#define UTILS_IO_EVENT_COMMON_H
 
 namespace OHOS {
 namespace Utils {
@@ -29,7 +29,7 @@ using REventId = EventId;
 
 using EventCallback = std::function<void()>;
 
-static constexpr int INVALID_FD = -1;
+static constexpr int IO_EVENT_INVALID_FD = -1;
 
 
 namespace Events {
@@ -43,4 +43,4 @@ namespace Events {
 
 } // namespace Utils
 } // namespace OHOS
-#endif /* UTILS_EVENT_H */
+#endif /* UTILS_IO_EVENT_COMMON_H */

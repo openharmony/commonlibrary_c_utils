@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <vector>
 #include <set>
-#include "event.h"
+#include "io_event_common.h"
 #include "errors.h"
 
 namespace OHOS {
