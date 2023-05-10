@@ -12,17 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "mapped_file.h"
 
+#include <fstream>
 #include <gtest/gtest.h>
+#include <iostream>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <iostream>
-#include <fstream>
+#include "common_mapped_file_errors.h"
+#include "directory_ex.h"
 #include "errors.h"
 #include "file_ex.h"
-#include "directory_ex.h"
-#include "common_mapped_file_errors.h"
-#include "mapped_file.h"
 
 using namespace testing::ext;
 using namespace OHOS::Utils;
@@ -127,6 +127,7 @@ HWTEST_F(UtilsMappedFileTest, testDefaultMapping001, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // check status
     ASSERT_TRUE(mf.IsMapped());
@@ -145,8 +146,7 @@ HWTEST_F(UtilsMappedFileTest, testDefaultMapping001, TestSize.Level0)
 
     // 3. read from mapped file
     std::string readout;
-    char* cur = mf.Begin();
-    for (; cur <= mf.End(); cur++) {
+    for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
         readout.push_back(*cur);
     }
     EXPECT_EQ(readout, content);
@@ -191,6 +191,7 @@ HWTEST_F(UtilsMappedFileTest, testNewSharedMappingDefaultSize001, TestSize.Level
 
     // 2. map file
     MappedFile mf(filename, MapMode::DEFAULT | MapMode::CREATE_IF_ABSENT);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // check if file is created
     ASSERT_TRUE(FileExists(filename));
@@ -225,8 +226,7 @@ HWTEST_F(UtilsMappedFileTest, testNewSharedMappingDefaultSize001, TestSize.Level
     std::string toRead("Waiting to be read.");
     SaveStringToFile(filename, toRead, 0, true);
     std::string readout;
-    char* cur = mf.Begin();
-    for (; *cur != '\0'; cur++) {
+    for (char* cur = mf.Begin(); *cur != '\0'; cur++) {
         readout.push_back(*cur);
     }
     EXPECT_EQ(readout, toRead);
@@ -245,12 +245,14 @@ HWTEST_F(UtilsMappedFileTest, testNewSharedMapping001, TestSize.Level0)
     RemoveTestFile(filename);
 
     // set params
-    char* hint = reinterpret_cast<char*>(0x80000); // new mapping region will not guaranteed to be located at `hint`
+    // new mapping region will not guaranteed to be located at `hint`
+    char* hint = reinterpret_cast<char*>(0x80000); // 0x80000: hint(expected address).
     off_t size = 1024;
     off_t offset = 4 * 1024;
 
     // 1. map a non-existed file
     MappedFile mf(filename, MapMode::DEFAULT | MapMode::CREATE_IF_ABSENT, offset, size, hint);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // check if file is created
     ASSERT_TRUE(FileExists(filename));
@@ -262,8 +264,8 @@ HWTEST_F(UtilsMappedFileTest, testNewSharedMapping001, TestSize.Level0)
     // check specified size
     struct stat stb = {0};
     if (stat(filename.c_str(), &stb) == 0) {
-        EXPECT_EQ(stb.st_size, offset + size); // Exact file size should be offset + mapped size, contents will be
-                                               // zero-filled.
+        // Exact file size should be offset + mapped size, contents will be zero-filled.
+        EXPECT_EQ(stb.st_size, offset + size);
     }
     ASSERT_EQ(mf.Size(), size);
 
@@ -290,8 +292,7 @@ HWTEST_F(UtilsMappedFileTest, testNewSharedMapping001, TestSize.Level0)
     std::string toRead("Waiting to be read.");
     SaveStringToFile(filename, toRead, offset, true);
     std::string readout;
-    char* cur = mf.Begin();
-    for (; cur <= mf.End() && *cur != '\0'; cur++) {
+    for (char* cur = mf.Begin(); cur <= mf.End() && *cur != '\0'; cur++) {
         readout.push_back(*cur);
     }
     std::cout << "Read finished" << std::endl;
@@ -316,6 +317,7 @@ HWTEST_F(UtilsMappedFileTest, testPrivateMapping001, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename, MapMode::DEFAULT | MapMode::PRIVATE);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status
     ASSERT_TRUE(mf.IsMapped());
@@ -323,8 +325,7 @@ HWTEST_F(UtilsMappedFileTest, testPrivateMapping001, TestSize.Level0)
 
     // 4. read from mapped file
     std::string readout;
-    char* cur = mf.Begin();
-    for (; cur <= mf.End(); cur++) {
+    for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
         readout.push_back(*cur);
     }
     EXPECT_EQ(readout, content);
@@ -359,6 +360,7 @@ HWTEST_F(UtilsMappedFileTest, testSharedReadOnlyMapping001, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename, MapMode::DEFAULT | MapMode::READ_ONLY);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status
     ASSERT_TRUE(mf.IsMapped());
@@ -366,8 +368,7 @@ HWTEST_F(UtilsMappedFileTest, testSharedReadOnlyMapping001, TestSize.Level0)
 
     // 4. read from mapped file
     std::string readout;
-    char* cur = mf.Begin();
-    for (; cur <= mf.End(); cur++) {
+    for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
         readout.push_back(*cur);
     }
     EXPECT_EQ(readout, content);
@@ -392,6 +393,7 @@ HWTEST_F(UtilsMappedFileTest, testReMap001, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status after mapping
     ASSERT_TRUE(mf.IsMapped());
@@ -413,7 +415,6 @@ HWTEST_F(UtilsMappedFileTest, testReMap001, TestSize.Level0)
     struct stat stb = {0};
     stat(filename.c_str(), &stb);
     EXPECT_TRUE(stb.st_size == mf.Size() || mf.PageSize() == mf.Size());
-
 
     RemoveTestFile(filename);
 }
@@ -438,8 +439,20 @@ HWTEST_F(UtilsMappedFileTest, testReMap002, TestSize.Level0)
     ASSERT_TRUE(CreateTestFile(filename, content));
     ASSERT_TRUE(CreateTestFile(filename1, content1));
 
-    // 2. map file
     MappedFile mf(filename);
+
+    // Change params when unmapped.
+    ASSERT_TRUE(mf.ChangeSize(mf.Size() + 1024));
+    ASSERT_TRUE(mf.ChangeSize(MappedFile::DEFAULT_LENGTH));
+    ASSERT_TRUE(mf.ChangeOffset(mf.PageSize()));
+    ASSERT_TRUE(mf.ChangeOffset(0));
+    ASSERT_TRUE(mf.ChangePath(filename1));
+    ASSERT_TRUE(mf.ChangePath(filename));
+    ASSERT_TRUE(mf.ChangeHint(reinterpret_cast<char*>(0x89000))); // 0x89000: random address.
+    ASSERT_TRUE(mf.ChangeMode(MapMode::READ_ONLY));
+
+    // 2. map file
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status after mapping
     ASSERT_TRUE(mf.IsMapped());
@@ -452,15 +465,16 @@ HWTEST_F(UtilsMappedFileTest, testReMap002, TestSize.Level0)
 
     // 5. read from Mapped File
     std::string readout;
-    char* cur = mf.Begin();
-    for (; cur <= mf.End(); cur++) {
+    for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
         readout.push_back(*cur);
     }
     EXPECT_EQ(readout, content);
 
     // 6. change params
-    mf.ChangePath(filename1);
-    mf.ChangeSize(MappedFile::DEFAULT_LENGTH);
+    ASSERT_TRUE(mf.ChangePath(filename1));
+    ASSERT_TRUE(mf.ChangeSize(MappedFile::DEFAULT_LENGTH));
+    ASSERT_TRUE(mf.ChangeHint(reinterpret_cast<char*>(0x80000))); // 0x80000: random address.
+    ASSERT_TRUE(mf.ChangeMode(MapMode::DEFAULT | MapMode::CREATE_IF_ABSENT));
 
     // 7. check status after changing
     EXPECT_FALSE(mf.IsMapped());
@@ -478,8 +492,7 @@ HWTEST_F(UtilsMappedFileTest, testReMap002, TestSize.Level0)
 
     // 11. read from Mapped File
     std::string readout1;
-    char* cur1 = mf.Begin();
-    for (; cur1 <= mf.End(); cur1++) {
+    for (char* cur1 = mf.Begin(); cur1 <= mf.End(); cur1++) {
         readout1.push_back(*cur1);
     }
     EXPECT_EQ(readout1, content1);
@@ -510,6 +523,7 @@ HWTEST_F(UtilsMappedFileTest, testReMap003, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status after mapping
     ASSERT_TRUE(mf.IsMapped());
@@ -522,8 +536,7 @@ HWTEST_F(UtilsMappedFileTest, testReMap003, TestSize.Level0)
 
     // 5. read from Mapped File
     std::string readout;
-    char* cur = mf.Begin();
-    for (; cur <= mf.End(); cur++) {
+    for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
         readout.push_back(*cur);
     }
     EXPECT_EQ(readout, content);
@@ -548,8 +561,7 @@ HWTEST_F(UtilsMappedFileTest, testReMap003, TestSize.Level0)
 
     // 11. read from Mapped File
     std::string readout1;
-    char* cur1 = mf.Begin();
-    for (; cur1 <= mf.End(); cur1++) {
+    for (char* cur1 = mf.Begin(); cur1 <= mf.End(); cur1++) {
         readout1.push_back(*cur1);
     }
     EXPECT_EQ(readout1, content1);
@@ -574,6 +586,7 @@ HWTEST_F(UtilsMappedFileTest, testReMap004, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status after mapping
     ASSERT_TRUE(mf.IsMapped());
@@ -630,6 +643,7 @@ HWTEST_F(UtilsMappedFileTest, testReMap005, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status after mapping
     ASSERT_TRUE(mf.IsMapped());
@@ -668,6 +682,46 @@ HWTEST_F(UtilsMappedFileTest, testReMap005, TestSize.Level0)
 }
 
 /*
+ * @tc.name: testReMap006
+ * @tc.desc: Test remapping to via Resize(off_t, bool).
+ */
+HWTEST_F(UtilsMappedFileTest, testReMap006, TestSize.Level0)
+{
+    // 1. create a new file
+    std::string filename = "test_remap.txt";
+    std::string content = "Test for remapping use.";
+    filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
+    RemoveTestFile(filename);
+
+    ASSERT_TRUE(CreateTestFile(filename, content));
+
+    // 2. map file
+    off_t size = 20;
+    MappedFile mf(filename, MapMode::DEFAULT, 0, size);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
+
+    // 3. check status after mapping
+    ASSERT_TRUE(mf.IsMapped());
+    ASSERT_TRUE(mf.IsNormed());
+
+    // 4. check size
+    ASSERT_TRUE(size == mf.Size());
+
+    // 5. remap to extend region
+    ASSERT_EQ(mf.Resize(MappedFile::DEFAULT_LENGTH, true), MAPPED_FILE_ERR_OK);
+    off_t lessSize = mf.Size() - 8;
+    ASSERT_EQ(mf.Resize(lessSize, true), MAPPED_FILE_ERR_OK);
+    // check status after remapping
+    EXPECT_TRUE(mf.IsMapped());
+    EXPECT_TRUE(mf.IsNormed());
+
+    // 6. check size after remapping
+    struct stat stb = {0};
+    stat(filename.c_str(), &stb);
+    EXPECT_EQ(lessSize, mf.Size());
+}
+
+/*
  * @tc.name: testTurnNext001
  * @tc.desc: Test TurnNext() when `IsMapped()`.
  */
@@ -683,15 +737,16 @@ HWTEST_F(UtilsMappedFileTest, testTurnNext001, TestSize.Level0)
 
     struct stat stb = {0};
     ASSERT_EQ(stat(filename.c_str(), &stb), 0);
-    off_t orig = stb.st_size; // 25 bit
+    off_t orig = stb.st_size; // 23 bytes
 
     // 2. extend its size
     int fd = open(filename.c_str(), O_RDWR | O_CLOEXEC);
     ASSERT_NE(fd, -1);
-    ASSERT_EQ(ftruncate(fd, MappedFile::PageSize() + MappedFile::PageSize() / 100LL), 0);
+    ASSERT_EQ(ftruncate(fd, MappedFile::PageSize() + MappedFile::PageSize() / 100LL), 0); // 100: ratio to a page.
 
     // 3. map file
     MappedFile mf(filename, MapMode::DEFAULT, 0, orig);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 4. check status after mapping
     ASSERT_TRUE(mf.IsMapped());
@@ -708,7 +763,8 @@ HWTEST_F(UtilsMappedFileTest, testTurnNext001, TestSize.Level0)
 
     off_t endOff;
     // 6. keep turnNext within a page
-    for (unsigned int cnt = 2; cnt < (MappedFile::PageSize() / orig); cnt++) {
+    for (unsigned int cnt = 2; cnt < (MappedFile::PageSize() / orig); cnt++) { // 2: start from 2 to take the first
+                                                                               // TunrNext() calling in consideration.
         endOff = mf.EndOffset();
         EXPECT_EQ(mf.TurnNext(), MAPPED_FILE_ERR_OK);
         EXPECT_EQ(mf.StartOffset(), endOff + 1);
@@ -769,6 +825,7 @@ HWTEST_F(UtilsMappedFileTest, testTurnNext002, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
     off_t curSize = mf.Size();
     off_t curOff = mf.StartOffset();
 
@@ -803,6 +860,7 @@ HWTEST_F(UtilsMappedFileTest, testTurnNext003, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status after mapping
     ASSERT_TRUE(mf.IsMapped());
@@ -844,6 +902,7 @@ HWTEST_F(UtilsMappedFileTest, testTurnNext004, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status after mapping
     ASSERT_TRUE(mf.IsMapped());
@@ -853,6 +912,74 @@ HWTEST_F(UtilsMappedFileTest, testTurnNext004, TestSize.Level0)
     EXPECT_EQ(mf.TurnNext(), ERR_INVALID_OPERATION);
 
     RemoveTestFile(filename);
+}
+
+/*
+ * @tc.name: testTurnNext005
+ * @tc.desc: Test TurnNext() with file size less than one page.
+ */
+HWTEST_F(UtilsMappedFileTest, testTurnNext005, TestSize.Level0)
+{
+    // 1. create a new file
+    std::string filename = "test_remap.txt";
+    std::string content = "Test for remapping use.00";
+    filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
+    RemoveTestFile(filename);
+
+    ASSERT_TRUE(CreateTestFile(filename, content));
+
+    struct stat stb = {0};
+    ASSERT_EQ(stat(filename.c_str(), &stb), 0);
+    off_t orig = stb.st_size; // 25 bytes
+
+    // 2. extend its size
+    int fd = open(filename.c_str(), O_RDWR | O_CLOEXEC);
+    ASSERT_NE(fd, -1);
+    ASSERT_EQ(ftruncate(fd, MappedFile::PageSize() + 10), 0); // 10: remain contents less than 25bits.
+
+    // 3. map file
+    MappedFile mf(filename, MapMode::DEFAULT, 0, orig);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
+
+    // 4. check status after mapping
+    ASSERT_TRUE(mf.IsMapped());
+    ASSERT_TRUE(mf.IsNormed());
+
+    // 5. turn next mapped region with the same size as the file's initial size.
+    EXPECT_EQ(mf.TurnNext(), MAPPED_FILE_ERR_OK);
+
+    off_t endOff;
+    // 6. keep turnNext within a page
+    for (unsigned int cnt = 2; cnt < (MappedFile::PageSize() / orig); cnt++) { // 2: start from 2 to take the first
+                                                                               // TunrNext() calling in consideration.
+        endOff = mf.EndOffset();
+        EXPECT_EQ(mf.TurnNext(), MAPPED_FILE_ERR_OK);
+        EXPECT_EQ(mf.StartOffset(), endOff + 1);
+        EXPECT_EQ(mf.Size(), orig);
+    }
+    std::cout << "==Last TurnNext() with The Same Size==" << std::endl;
+    PrintStatus(mf);
+
+    // 7. this turn will reach the bottom of a page
+    endOff = mf.EndOffset();
+    char* rEnd = mf.RegionEnd();
+    char* end = mf.End();
+    EXPECT_EQ(mf.TurnNext(), MAPPED_FILE_ERR_OK);
+    EXPECT_EQ(mf.StartOffset(), endOff + 1);
+    EXPECT_EQ(mf.Size(), static_cast<off_t>(rEnd - end));
+    std::cout << "==Reached Bottom of A Page==" << std::endl;
+    PrintStatus(mf);
+
+    // 8. this turn will trigger a remapping
+    endOff = mf.EndOffset();
+    EXPECT_EQ(mf.TurnNext(), MAPPED_FILE_ERR_OK);
+    EXPECT_TRUE(mf.IsMapped());
+    EXPECT_EQ(mf.StartOffset(), endOff + 1);
+    EXPECT_EQ(mf.Size(), 10);
+    EXPECT_EQ(mf.RegionStart(), mf.Begin());
+    EXPECT_EQ(static_cast<off_t>(mf.RegionEnd() - mf.RegionStart()) + 1LL, mf.PageSize());
+    std::cout << "==Remap A New Page==" << std::endl;
+    PrintStatus(mf);
 }
 
 /*
@@ -872,10 +999,16 @@ HWTEST_F(UtilsMappedFileTest, testInvalidMap001, TestSize.Level0)
     // 2. map file
     off_t offset = 100; // Specify offset that is not multiple of page-size.
     MappedFile mf(filename, MapMode::DEFAULT, offset);
+    ASSERT_NE(mf.Map(), MAPPED_FILE_ERR_OK);
+
+    MappedFile mf1(filename, MapMode::DEFAULT, -1);
+    ASSERT_NE(mf1.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status
     EXPECT_FALSE(mf.IsMapped());
     EXPECT_FALSE(mf.IsNormed()); // mapping will fail in normalize stage.
+    EXPECT_FALSE(mf1.IsMapped());
+    EXPECT_FALSE(mf1.IsNormed()); // mapping will fail in normalize stage.
 
     RemoveTestFile(filename);
 }
@@ -897,6 +1030,7 @@ HWTEST_F(UtilsMappedFileTest, testInvalidMap002, TestSize.Level0)
     // 2. map file
     off_t offset = 4 * 1024; // Specify offset excessing the substantial size of the file.
     MappedFile mf(filename, MapMode::DEFAULT, offset);
+    ASSERT_NE(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status
     EXPECT_FALSE(mf.IsMapped());
@@ -918,10 +1052,199 @@ HWTEST_F(UtilsMappedFileTest, testInvalidMap003, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
+    ASSERT_NE(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status
     EXPECT_FALSE(mf.IsMapped());
     EXPECT_FALSE(mf.IsNormed()); // mapping will fail in normalize stage.
+
+    RemoveTestFile(filename);
+}
+
+/*
+ * @tc.name: testInvalidMap004
+ * @tc.desc: Test mapping with invalid size.
+ */
+HWTEST_F(UtilsMappedFileTest, testInvalidMap004, TestSize.Level0)
+{
+    // 1. create a new file
+    std::string filename = "test_invalid_4.txt";
+    std::string content = "Test for invalid use.";
+    filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
+    RemoveTestFile(filename);
+
+    ASSERT_TRUE(CreateTestFile(filename, content));
+
+    // 2. map file
+    MappedFile mf(filename, MapMode::DEFAULT, 0, -2); // -2: less than DEFAULT_LENGTH(-1)
+    ASSERT_EQ(mf.Map(), ERR_INVALID_VALUE);
+
+    // 3. map again with another invalid param.
+    MappedFile mf1(filename, MapMode::DEFAULT, 0, 0);
+    ASSERT_EQ(mf1.Map(), ERR_INVALID_VALUE);
+
+    // 3. check status
+    EXPECT_FALSE(mf.IsMapped());
+    EXPECT_FALSE(mf.IsNormed()); // mapping will fail in normalize stage.
+    EXPECT_FALSE(mf1.IsMapped());
+    EXPECT_FALSE(mf1.IsNormed()); // mapping will fail in normalize stage.
+
+    RemoveTestFile(filename);
+}
+
+/*
+ * @tc.name: testInvalidMap005
+ * @tc.desc: Test mapping an already mapped file.
+ */
+HWTEST_F(UtilsMappedFileTest, testInvalidMap005, TestSize.Level0)
+{
+    // 1. create a new file
+    std::string filename = "test_invalid_6.txt";
+    std::string content = "Test for invalid use.";
+    filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
+    RemoveTestFile(filename);
+
+    ASSERT_TRUE(CreateTestFile(filename, content));
+
+    // 2. map file
+    MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
+    ASSERT_EQ(mf.Map(), ERR_INVALID_OPERATION); // Map again.
+
+    // 3. check status
+    EXPECT_TRUE(mf.IsMapped());
+    EXPECT_TRUE(mf.IsNormed());
+
+    RemoveTestFile(filename);
+}
+
+/*
+ * @tc.name: testInvalidMap006
+ * @tc.desc: Test resize with invalid params.
+ */
+HWTEST_F(UtilsMappedFileTest, testInvalidMap006, TestSize.Level0)
+{
+    // 1. create a new file
+    std::string filename = "test_invalid_7.txt";
+    std::string content = "Test for invalid use.";
+    filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
+    RemoveTestFile(filename);
+
+    ASSERT_TRUE(CreateTestFile(filename, content));
+
+    // 2. map file
+    MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
+
+    // 3. check status
+    ASSERT_TRUE(mf.IsMapped());
+    ASSERT_TRUE(mf.IsNormed());
+
+    // 4. resize
+    EXPECT_EQ(mf.Resize(0), ERR_INVALID_OPERATION);
+    EXPECT_EQ(mf.Resize(-2), ERR_INVALID_OPERATION); // -2: less than DEFAULT_LENGTH(-1).
+    EXPECT_EQ(mf.Resize(mf.Size()), ERR_INVALID_OPERATION);
+
+    // 5. Unmap first then resize.
+    ASSERT_EQ(mf.Unmap(), MAPPED_FILE_ERR_OK);
+    EXPECT_EQ(mf.Resize(mf.Size() + 8), ERR_INVALID_OPERATION);
+
+    RemoveTestFile(filename);
+}
+
+/*
+ * @tc.name: testInvalidMap007
+ * @tc.desc: Test resize with no param changed.
+ */
+HWTEST_F(UtilsMappedFileTest, testInvalidMap007, TestSize.Level0)
+{
+    // 1. create a new file
+    std::string filename = "test_invalid_8.txt";
+    std::string content = "Test for invalid use.";
+    filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
+    RemoveTestFile(filename);
+
+    ASSERT_TRUE(CreateTestFile(filename, content));
+
+    // 2. map file
+    MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
+
+    // 3. check status
+    ASSERT_TRUE(mf.IsMapped());
+    ASSERT_TRUE(mf.IsNormed());
+
+    // 4. resize
+    EXPECT_EQ(mf.Resize(), ERR_INVALID_OPERATION);
+
+    RemoveTestFile(filename);
+}
+
+/*
+ * @tc.name: testInvalidMap008
+ * @tc.desc: Test TurnNext() with params changed.
+ */
+HWTEST_F(UtilsMappedFileTest, testInvalidMap008, TestSize.Level0)
+{
+    // 1. create a new file
+    std::string filename = "test_invalid_9.txt";
+    std::string content = "Test for invalid use.";
+    filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
+    RemoveTestFile(filename);
+
+    ASSERT_TRUE(CreateTestFile(filename, content));
+
+    // 2. map file
+    MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
+
+    // 3. check status
+    ASSERT_TRUE(mf.IsMapped());
+    ASSERT_TRUE(mf.IsNormed());
+
+    // 5. Change params
+    ASSERT_TRUE(mf.ChangeSize(mf.Size() + 1));
+
+    // 6. check status
+    ASSERT_FALSE(mf.IsMapped());
+    ASSERT_FALSE(mf.IsNormed());
+
+    // 4. turn next.
+    EXPECT_EQ(mf.TurnNext(), ERR_INVALID_OPERATION);
+
+    RemoveTestFile(filename);
+}
+
+/*
+ * @tc.name: testInvalidMap009
+ * @tc.desc: Test ChangeXX() with invalid params.
+ */
+HWTEST_F(UtilsMappedFileTest, testInvalidMap009, TestSize.Level0)
+{
+    // 1. create a new file
+    std::string filename = "test_invalid_10.txt";
+    std::string content = "Test for invalid use.";
+    filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
+    RemoveTestFile(filename);
+
+    ASSERT_TRUE(CreateTestFile(filename, content));
+
+    // 2. create MappedFile
+    MappedFile mf(filename);
+
+    // 3. map file
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
+
+    // 4. check status
+    ASSERT_TRUE(mf.IsMapped());
+    ASSERT_TRUE(mf.IsNormed());
+
+    // 5. Change params
+    ASSERT_FALSE(mf.ChangeOffset(mf.StartOffset()));
+    ASSERT_FALSE(mf.ChangeSize(mf.Size()));
+    ASSERT_FALSE(mf.ChangeHint(mf.GetHint()));
+    ASSERT_FALSE(mf.ChangeMode(mf.GetMode()));
+    ASSERT_FALSE(mf.ChangePath(mf.GetPath()));
 
     RemoveTestFile(filename);
 }
@@ -944,6 +1267,7 @@ HWTEST_F(UtilsMappedFileTest, testAutoAdjustedMode001, TestSize.Level0)
     MapMode mode = static_cast<MapMode>(1) | static_cast<MapMode>(16) |
                    MapMode::PRIVATE | MapMode::READ_ONLY; // bits out of the scope will be ignored.
     MappedFile mf(filename, mode);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status
     EXPECT_TRUE(mf.IsMapped());
@@ -972,6 +1296,7 @@ HWTEST_F(UtilsMappedFileTest, testAutoAdjustedSize001, TestSize.Level0)
     // 2. map file
     off_t size = 5 * 1024; // Specified size excessing the last page of the file.
     MappedFile mf(filename, MapMode::DEFAULT, 0, size);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status
     EXPECT_TRUE(mf.IsMapped());
@@ -1010,6 +1335,7 @@ HWTEST_F(UtilsMappedFileTest, testAutoAdjustedSize002, TestSize.Level0)
         off_t offset = 4 * 1024;
         off_t size = 5 * 1024; // Specified size excessing the last page of the file.
         MappedFile mf(filename, MapMode::DEFAULT, offset, size);
+        ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
         // 4. check status
         EXPECT_TRUE(mf.IsMapped());
@@ -1043,6 +1369,7 @@ HWTEST_F(UtilsMappedFileTest, testMoveMappedFile001, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     off_t size = mf.Size();
     off_t offset = mf.StartOffset();
@@ -1074,8 +1401,7 @@ HWTEST_F(UtilsMappedFileTest, testMoveMappedFile001, TestSize.Level0)
 
     // 5. read from mapped file
     std::string readout;
-    char* cur = mfNew.Begin();
-    for (; cur <= mfNew.End(); cur++) {
+    for (char* cur = mfNew.Begin(); cur <= mfNew.End(); cur++) {
         readout.push_back(*cur);
     }
     EXPECT_EQ(readout, content);
@@ -1110,6 +1436,7 @@ HWTEST_F(UtilsMappedFileTest, testMoveMappedFile002, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     off_t size = mf.Size();
     off_t offset = mf.StartOffset();
@@ -1143,8 +1470,7 @@ HWTEST_F(UtilsMappedFileTest, testMoveMappedFile002, TestSize.Level0)
     ASSERT_EQ(mfNew.Map(), MAPPED_FILE_ERR_OK);
     // 6. read from mapped file
     std::string readout;
-    char* cur = mfNew.Begin();
-    for (; cur <= mfNew.End(); cur++) {
+    for (char* cur = mfNew.Begin(); cur <= mfNew.End(); cur++) {
         readout.push_back(*cur);
     }
     EXPECT_EQ(readout, content);
@@ -1185,7 +1511,9 @@ HWTEST_F(UtilsMappedFileTest, testMoveMappedFile003, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
     MappedFile mf1(filename1);
+    ASSERT_EQ(mf1.Map(), MAPPED_FILE_ERR_OK);
 
     off_t size = mf1.Size();
     off_t offset = mf1.StartOffset();
@@ -1208,8 +1536,7 @@ HWTEST_F(UtilsMappedFileTest, testMoveMappedFile003, TestSize.Level0)
 
     // 5. read from mapped file
     std::string readout;
-    char* cur = mf.Begin();
-    for (; cur <= mf.End(); cur++) {
+    for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
         readout.push_back(*cur);
     }
     EXPECT_EQ(readout, content1);
@@ -1251,7 +1578,9 @@ HWTEST_F(UtilsMappedFileTest, testMoveMappedFile004, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
     MappedFile mf1(filename1);
+    ASSERT_EQ(mf1.Map(), MAPPED_FILE_ERR_OK);
 
     off_t size = mf1.Size();
     off_t offset = mf1.StartOffset();
@@ -1275,8 +1604,7 @@ HWTEST_F(UtilsMappedFileTest, testMoveMappedFile004, TestSize.Level0)
     ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
     // 6. read from mapped file
     std::string readout;
-    char* cur = mf.Begin();
-    for (; cur <= mf.End(); cur++) {
+    for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
         readout.push_back(*cur);
     }
     EXPECT_EQ(readout, content1);
@@ -1295,7 +1623,6 @@ HWTEST_F(UtilsMappedFileTest, testMoveMappedFile004, TestSize.Level0)
     RemoveTestFile(filename);
     RemoveTestFile(filename1);
 }
-
 
 }  // namespace
 }  // namespace OHOS
