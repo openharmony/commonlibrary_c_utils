@@ -35,13 +35,6 @@ EventReactor::~EventReactor()
 {
 }
 
-void EventReactor::RemoveEventHandler(EventHandler* handler)
-{
-    if ((handler != nullptr) && (handler->GetEventReactor() == this) && (demultiplexer_ != nullptr)) {
-        demultiplexer_->RemoveEventHandler(handler);
-    }
-}
-
 void EventReactor::UpdateEventHandler(EventHandler* handler)
 {
     if ((handler != nullptr) && (handler->GetEventReactor() == this) && (demultiplexer_ != nullptr)) {

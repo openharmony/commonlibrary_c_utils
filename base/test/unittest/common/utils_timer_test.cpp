@@ -337,5 +337,41 @@ HWTEST_F(UtilsTimerTest, testTimer011, TestSize.Level0)
     timer.Shutdown();
     EXPECT_GE(g_data1, 8); /* 12 for max */
 }
+
+/*
+ * @tc.name: testTimer012
+ * @tc.desc: Test double setup.
+ */
+HWTEST_F(UtilsTimerTest, testTimer012, TestSize.Level0)
+{
+    g_data1 = 0;
+    Utils::Timer timer("test_timer");
+    uint32_t ret = timer.Setup();
+    EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
+    ret = timer.Setup();
+    EXPECT_EQ(Utils::TIMER_ERR_INVALID_VALUE, ret);
+
+    timer.Shutdown();
+}
+
+/*
+ * @tc.name: testTimer013
+ * @tc.desc: Test uncommon operations.
+ */
+HWTEST_F(UtilsTimerTest, testTimer013, TestSize.Level0)
+{
+    g_data1 = 0;
+    Utils::Timer timer("test_timer", -1);
+    uint32_t ret = timer.Setup();
+    EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    timer.Shutdown();
+
+    Utils::Timer timer1("test_timer_1");
+    ret = timer1.Setup();
+    EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    timer1.Shutdown(false);
+}
 }  // namespace
 }  // namespace OHOS

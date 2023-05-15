@@ -38,7 +38,6 @@ public:
     void Polling(int timeout);
 
     uint32_t UpdateEventHandler(EventHandler* handler);
-    uint32_t RemoveEventHandler(EventHandler* handler);
 
 private:
     uint32_t Update(int operation, EventHandler* handler);

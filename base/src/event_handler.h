@@ -40,16 +40,11 @@ public:
     uint32_t Events() const { return (events_); }
 
     void EnableRead();
-    void EnableWrite();
-    void DisableWrite();
     void DisableAll();
 
     const EventReactor* GetEventReactor() const { return reactor_; }
 
-    void SetCloseCallback(const Callback& closeCallback) { closeCallback_ = closeCallback; }
-    void SetErrorCallback(const Callback& errorCallback) { errorCallback_ = errorCallback; }
     void SetReadCallback(const Callback& readCallback) { readCallback_ = readCallback; }
-    void SetWriteCallback(const Callback& writeCallback) { writeCallback_ = writeCallback; }
 
     void HandleEvents(uint32_t events);
 
@@ -62,9 +57,6 @@ private:
     EventReactor*   reactor_;
 
     Callback  readCallback_;
-    Callback  writeCallback_;
-    Callback  closeCallback_;
-    Callback  errorCallback_;
 };
 
 }
