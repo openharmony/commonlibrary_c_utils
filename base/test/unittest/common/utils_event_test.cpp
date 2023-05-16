@@ -80,6 +80,7 @@ void TestCallback() {}
  */
 HWTEST_F(UtilsEventTest, testIOEventHandler001, TestSize.Level0)
 {
+    g_data = 0;
     // 1. Create io event handler
     std::shared_ptr<IOEventHandler> handler = std::make_shared<IOEventHandler>(-1);
 
@@ -122,6 +123,7 @@ HWTEST_F(UtilsEventTest, testIOEventHandler001, TestSize.Level0)
  */
 HWTEST_F(UtilsEventTest, testIOEventHandler002, TestSize.Level0)
 {
+    g_data = 0;
     // 1. Create io event handler
     std::shared_ptr<IOEventHandler> handler = std::make_shared<IOEventHandler>(-1);
 
@@ -154,6 +156,57 @@ HWTEST_F(UtilsEventTest, testIOEventHandler002, TestSize.Level0)
     // 8. Remove the handler
     handler->Stop(reactor.get());
     EXPECT_EQ(reactor->FindHandler(handler.get()), EVENT_SYS_ERR_NOT_FOUND);
+
+    // 9. Add handler, then delete handler. handler will remove itself from the reactor during deconstruction.
+    ASSERT_TRUE(handler->Start(reactor.get()));
+    handler.reset();
+}
+
+/*
+ * @tc.name: testIOEventReactor001
+ * @tc.desc: test basic interfaces of IOEventReactor.
+ */
+HWTEST_F(UtilsEventTest, testIOEventReactor001, TestSize.Level0)
+{
+    g_data = 0;
+    // Get fd
+    int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+    ASSERT_NE(fd, -1);
+
+    // 1. Create io event handlers
+    std::shared_ptr<IOEventHandler> handler1 = std::make_shared<IOEventHandler>(fd);
+    std::shared_ptr<IOEventHandler> handler2 = std::make_shared<IOEventHandler>(fd);
+    std::shared_ptr<IOEventHandler> handler3 = std::make_shared<IOEventHandler>(-1); // -1: invalid fd
+    std::shared_ptr<IOEventHandler> handler4 = std::make_shared<IOEventHandler>(fd);
+
+    // 2. Create a reactor but not run
+    std::shared_ptr<IOEventReactor> reactor = std::make_shared<IOEventReactor>();
+    ASSERT_EQ(reactor->SetUp(), EVENT_SYS_ERR_OK);
+
+    // 3. Add handler
+    EXPECT_EQ(reactor->AddHandler(handler1.get()), EVENT_SYS_ERR_OK);
+    EXPECT_EQ(reactor->AddHandler(handler2.get()), EVENT_SYS_ERR_OK);
+    EXPECT_NE(reactor->AddHandler(handler3.get()), EVENT_SYS_ERR_OK);
+    EXPECT_NE(reactor->AddHandler(nullptr), EVENT_SYS_ERR_OK);
+
+    // 4. Remove handler
+    EXPECT_NE(reactor->RemoveHandler(nullptr), EVENT_SYS_ERR_OK);
+    EXPECT_NE(reactor->RemoveHandler(handler4.get()), EVENT_SYS_ERR_OK);
+    EXPECT_EQ(reactor->RemoveHandler(handler2.get()), EVENT_SYS_ERR_OK);
+
+    // 5. Update handler
+    EXPECT_NE(reactor->UpdateHandler(nullptr), EVENT_SYS_ERR_OK);
+    EXPECT_NE(reactor->UpdateHandler(handler3.get()), EVENT_SYS_ERR_OK);
+    EXPECT_EQ(reactor->UpdateHandler(handler1.get()), EVENT_SYS_ERR_OK);
+    EXPECT_EQ(reactor->UpdateHandler(handler4.get()), EVENT_SYS_ERR_OK);
+
+    // 6. Find handler
+    EXPECT_NE(reactor->FindHandler(nullptr), EVENT_SYS_ERR_OK);
+    EXPECT_NE(reactor->FindHandler(handler3.get()), EVENT_SYS_ERR_OK);
+
+    // 7. Clean handler
+    EXPECT_NE(reactor->Clean(-1), EVENT_SYS_ERR_OK);
+    EXPECT_EQ(reactor->Clean(fd), EVENT_SYS_ERR_OK);
 }
 
 TimerFdHandler::TimerFdHandler(int fd, const TimerEventCallback& cb)
@@ -223,6 +276,7 @@ void TimerFdHandler::TimeOut()
  */
 HWTEST_F(UtilsEventTest, testEvent001, TestSize.Level0)
 {
+    g_data = 0;
     // 1. Open timer
     int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
     ASSERT_NE(fd, -1);
@@ -250,6 +304,128 @@ HWTEST_F(UtilsEventTest, testEvent001, TestSize.Level0)
     EXPECT_GE(g_data, 1);
 
     // 8. terminate the event-loop (aka Run())
+    reactor->Terminate();
+    loopThread.join();
+}
+
+/*
+ * @tc.name: testEvent002
+ * @tc.desc: test changing event to EVENT_NONE.
+ */
+HWTEST_F(UtilsEventTest, testEvent002, TestSize.Level0)
+{
+    g_data = 0;
+    // 1. Open timer
+    int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+    ASSERT_NE(fd, -1);
+    // 2. Create timer event handler
+    std::shared_ptr<TimerFdHandler> handler = std::make_shared<TimerFdHandler>(fd, &TimerCallback1);
+
+    // 3. Create reactor for event loop
+    std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
+    ASSERT_EQ(reactor->SetUp(), EVENT_SYS_ERR_OK);
+
+    // 4. Initialize timer handler and add it to reactor
+    ASSERT_TRUE(handler->Initialize(10));
+    ASSERT_TRUE(handler->Start(reactor.get()));
+
+    // 5. Run event loop
+    std::thread loopThread([&reactor]{
+        reactor->Run(-1);
+    });
+
+    // 6. Change settings
+    reactor->DisableHandling();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    reactor->EnableHandling();
+    handler->SetEvents(Events::EVENT_NONE);
+
+    // 7. Wait for event handling
+    std::this_thread::sleep_for(std::chrono::milliseconds(16));
+
+    // 8. Check result, execute once at least
+    EXPECT_EQ(g_data, 0);
+
+    // 9. terminate the event-loop (aka Run())
+    reactor->Terminate();
+    loopThread.join();
+}
+
+/*
+ * @tc.name: testEvent003
+ * @tc.desc: test disable single event.
+ */
+HWTEST_F(UtilsEventTest, testEvent003, TestSize.Level0)
+{
+    g_data = 0;
+    // 1. Open timer
+    int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+    ASSERT_NE(fd, -1);
+    // 2. Create timer event handler
+    std::shared_ptr<TimerFdHandler> handler = std::make_shared<TimerFdHandler>(fd, &TimerCallback1);
+
+    // 3. Create reactor for event loop
+    std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
+    ASSERT_EQ(reactor->SetUp(), EVENT_SYS_ERR_OK);
+
+    // 4. Initialize timer handler and add it to reactor
+    ASSERT_TRUE(handler->Initialize(10));
+    ASSERT_TRUE(handler->Start(reactor.get()));
+
+    // 5. Run event loop
+    std::thread loopThread([&reactor]{
+        reactor->Run(-1);
+    });
+
+    // 6. Change settings
+    reactor->EnableHandling();
+    ASSERT_TRUE(handler->Stop(reactor.get())); // block to get lock, so no need to wait.
+
+    // 7. Check result, execute once at least
+    EXPECT_EQ(g_data, 0);
+
+    // 8. terminate the event-loop (aka Run())
+    reactor->Terminate();
+    loopThread.join();
+}
+
+/*
+ * @tc.name: testEvent004
+ * @tc.desc: test removing callback.
+ */
+HWTEST_F(UtilsEventTest, testEvent004, TestSize.Level0)
+{
+    g_data = 0;
+    // 1. Open timer
+    int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+    ASSERT_NE(fd, -1);
+    // 2. Create timer event handler
+    std::shared_ptr<TimerFdHandler> handler = std::make_shared<TimerFdHandler>(fd, &TimerCallback1);
+
+    // 3. Create reactor for event loop
+    std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
+    ASSERT_EQ(reactor->SetUp(), EVENT_SYS_ERR_OK);
+
+    // 4. Initialize timer handler and add it to reactor
+    ASSERT_TRUE(handler->Initialize(10));
+    ASSERT_TRUE(handler->Start(reactor.get()));
+
+    // 5. Run event loop
+    std::thread loopThread([&reactor]{
+        reactor->Run(-1);
+    });
+
+    // 6. Change settings
+    reactor->EnableHandling();
+    handler->SetCallback(nullptr);
+
+    // 7. Wait for event handling
+    std::this_thread::sleep_for(std::chrono::milliseconds(16));
+
+    // 8. Check result, execute once at least
+    EXPECT_EQ(g_data, 0);
+
+    // 9. terminate the event-loop (aka Run())
     reactor->Terminate();
     loopThread.join();
 }
@@ -638,10 +814,10 @@ void TimeOutCallback2()
 }
 
 /*
- * @tc.name: testEvent002
+ * @tc.name: testNewTimer001
  * @tc.desc: test basic function of timer implemented by new event-system.
  */
-HWTEST_F(UtilsEventTest, testEvent002, TestSize.Level0)
+HWTEST_F(UtilsEventTest, testNewTimer001, TestSize.Level0)
 {
     g_data1 = 0;
     Timer timer("test_timer");
@@ -654,10 +830,10 @@ HWTEST_F(UtilsEventTest, testEvent002, TestSize.Level0)
 }
 
 /*
- * @tc.name: testEvent003
+ * @tc.name: testNewTimer002
  * @tc.desc: test basic function of timer implemented by new event-system.
  */
-HWTEST_F(UtilsEventTest, testEvent003, TestSize.Level0)
+HWTEST_F(UtilsEventTest, testNewTimer002, TestSize.Level0)
 {
     g_data1 = 0;
     g_data2 = 0;
@@ -673,10 +849,10 @@ HWTEST_F(UtilsEventTest, testEvent003, TestSize.Level0)
 }
 
 /*
- * @tc.name: testEvent004
+ * @tc.name: testNewTimer003
  * @tc.desc: test basic function of timer implemented by new event-system.
  */
-HWTEST_F(UtilsEventTest, testEvent004, TestSize.Level0)
+HWTEST_F(UtilsEventTest, testNewTimer003, TestSize.Level0)
 {
     g_data1 = 0;
     Timer timer("test_timer");
@@ -723,10 +899,10 @@ void A::StopTimer()
 }
 
 /*
- * @tc.name: testEvent005
+ * @tc.name: testNewTimer004
  * @tc.desc: test wrapper of the timer implemented by new event-system.
  */
-HWTEST_F(UtilsEventTest, testEvent005, TestSize.Level0)
+HWTEST_F(UtilsEventTest, testNewTimer004, TestSize.Level0)
 {
     A a(10);
     EXPECT_TRUE(a.Init());
@@ -737,10 +913,10 @@ HWTEST_F(UtilsEventTest, testEvent005, TestSize.Level0)
 }
 
 /*
- * @tc.name: testEvent006
+ * @tc.name: testNewTimer005
  * @tc.desc: test abnormal case of timer implemented by new event-system.
  */
-HWTEST_F(UtilsEventTest, testEvent006, TestSize.Level0)
+HWTEST_F(UtilsEventTest, testNewTimer005, TestSize.Level0)
 {
     g_data1 = 0;
     Timer timer("test_timer", -1);
@@ -761,10 +937,10 @@ HWTEST_F(UtilsEventTest, testEvent006, TestSize.Level0)
 }
 
 /*
- * @tc.name: testEvent007
+ * @tc.name: testNewTimer006
  * @tc.desc: sleep test for ivi of timer implemented by new event-system.
  */
-HWTEST_F(UtilsEventTest, testEvent007, TestSize.Level0)
+HWTEST_F(UtilsEventTest, testNewTimer006, TestSize.Level0)
 {
     g_data1 = 0;
     Timer timer("test_timer");
@@ -783,7 +959,7 @@ HWTEST_F(UtilsEventTest, testEvent007, TestSize.Level0)
 }
 
 /*
- * @tc.name: testEvent008
+ * @tc.name: testNewTimer007
  * @tc.desc: recursive test of timer implemented by new event-system.
  */
 void DoFunc(Timer &timer, int &count)
@@ -814,7 +990,7 @@ void DoFunc2(Timer &timer, int &count)
     g_data1++;
 }
 
-HWTEST_F(UtilsEventTest, testEvent008, TestSize.Level0)
+HWTEST_F(UtilsEventTest, testNewTimer007, TestSize.Level0)
 {
     g_data1 = 0;
     Timer timer("test_timer");
@@ -833,10 +1009,10 @@ HWTEST_F(UtilsEventTest, testEvent008, TestSize.Level0)
 }
 
 /*
- * @tc.name: testEvent09
+ * @tc.name: testNewTimer008
  * @tc.desc: test execute-once and execute-periodly tasks.
  */
-HWTEST_F(UtilsEventTest, testEvent09, TestSize.Level0)
+HWTEST_F(UtilsEventTest, testNewTimer008, TestSize.Level0)
 {
     g_data1 = 0;
     Timer timer("test_timer");

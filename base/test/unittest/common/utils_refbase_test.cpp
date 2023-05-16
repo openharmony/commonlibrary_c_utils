@@ -736,6 +736,47 @@ HWTEST_F(UtilsRefbaseTest, testRefbase006, TestSize.Level0)
     EXPECT_EQ(g_sptrCount, 0);
 }
 
+/*
+ * @tc.name: testRefbase007
+ * @tc.desc: test count of refcounter.
+ */
+HWTEST_F(UtilsRefbaseTest, testRefbase007, TestSize.Level0)
+{
+    sptr<RefBase> testObject1(new RefBase());
+    EXPECT_EQ(testObject1->GetRefCounter()->GetRefCount(), 1);
+    wptr<RefBase> testObject2(testObject1);
+    EXPECT_EQ(testObject1->GetRefCounter()->GetRefCount(), 2); // 2: Refbase and WeakRefCounter
+}
+
+/*
+ * @tc.name: testRefbase008
+ * @tc.desc: test move constructor.
+ */
+HWTEST_F(UtilsRefbaseTest, testRefbase008, TestSize.Level0)
+{
+    RefBase baseObject1{};
+    EXPECT_EQ(baseObject1.GetRefCounter()->GetRefCount(), 1);
+
+    RefBase baseObject2{};
+    EXPECT_EQ(baseObject2.GetRefCounter()->GetRefCount(), 1);
+    baseObject2 = std::move(baseObject1);
+    EXPECT_EQ(baseObject2.GetRefCounter()->GetRefCount(), 1);
+    EXPECT_EQ(baseObject1.GetRefCounter(), nullptr);
+    EXPECT_EQ(baseObject1.GetSptrRefCount(), 0);
+    EXPECT_EQ(baseObject1.GetWptrRefCount(), 0);
+
+    RefBase baseObject3{};
+    EXPECT_EQ(baseObject3.GetRefCounter()->GetRefCount(), 1);
+    baseObject3 = std::move(baseObject2);
+    EXPECT_EQ(baseObject3.GetRefCounter()->GetRefCount(), 1);
+    EXPECT_EQ(baseObject2.GetRefCounter(), nullptr);
+    EXPECT_EQ(baseObject2.GetSptrRefCount(), 0);
+    EXPECT_EQ(baseObject2.GetWptrRefCount(), 0);
+
+    baseObject2 = std::move(baseObject1);
+    EXPECT_EQ(baseObject1.GetRefCounter(), baseObject2.GetRefCounter());
+}
+
 class WptrTest : public RefBase {
 public:
     WptrTest()
@@ -969,6 +1010,28 @@ HWTEST_F(UtilsRefbaseTest, testWptrefbase008, TestSize.Level0)
     wptr<WptrTest2> testObject2;
     testObject2 = testObject1.GetRefPtr();
     EXPECT_EQ(testObject1->GetWptrRefCount(), 2);
+}
+
+/*
+ * @tc.name: testSptrWptrefbase001
+ * @tc.desc: test interaction between sptr and wptr.
+ */
+HWTEST_F(UtilsRefbaseTest, testSptrWptrefbase001, TestSize.Level0)
+{
+    wptr<RefBase> testObject1(new RefBase());
+    EXPECT_EQ(testObject1->GetWptrRefCount(), 1);
+    {
+        sptr<RefBase> testObject2{};
+        testObject2 = testObject1;
+        EXPECT_EQ(testObject2->GetSptrRefCount(), 1);
+        EXPECT_EQ(testObject2->GetWptrRefCount(), 2); // 2: sptr and WeakRefCounter
+
+        sptr<RefBase> testObject3 = testObject1.promote();
+        EXPECT_EQ(testObject2->GetSptrRefCount(), 2); // 2: 2 sptrs
+        EXPECT_EQ(testObject2->GetWptrRefCount(), 3); // 3: 2 sptrs and WeakRefCounter
+        testObject2->ExtendObjectLifetime();
+    }
+    EXPECT_EQ(testObject1->GetWptrRefCount(), 1);
 }
 
 /*
