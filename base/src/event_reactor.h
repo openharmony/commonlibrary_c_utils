@@ -63,7 +63,6 @@ public:
     }
 
     void UpdateEventHandler(EventHandler* handler);
-    void RemoveEventHandler(EventHandler* handler);
 
     uint32_t ScheduleTimer(const TimerCallback& cb, uint32_t interval /* ms */, int& timerFd, bool once);
     void CancelTimer(int timerFd);

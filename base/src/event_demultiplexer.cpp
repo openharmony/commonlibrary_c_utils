@@ -85,26 +85,6 @@ uint32_t EventDemultiplexer::UpdateEventHandler(EventHandler* handler)
     return Update(EPOLL_CTL_MOD, handler);
 }
 
-uint32_t EventDemultiplexer::RemoveEventHandler(EventHandler* handler)
-{
-    if (handler == nullptr) {
-        return TIMER_ERR_INVALID_VALUE;
-    }
-
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-    auto itor = eventHandlers_.find(handler->GetHandle());
-    if (itor == eventHandlers_.end()) {
-        return TIMER_ERR_OK;
-    }
-
-    eventHandlers_.erase(itor);
-    if (static_cast<int>(eventHandlers_.size()) < maxEvents_) {
-        maxEvents_ = eventHandlers_.size() / HALF_OF_MAX_EVENT;
-    }
-
-    return Update(EPOLL_CTL_DEL, handler);
-}
-
 uint32_t EventDemultiplexer::Update(int operation, EventHandler* handler)
 {
     struct epoll_event event;
@@ -148,20 +128,8 @@ void EventDemultiplexer::Polling(int timeout /* ms */)
 
 uint32_t EventDemultiplexer::Epoll2Reactor(uint32_t epollEvents)
 {
-    if ((epollEvents & EPOLLHUP) && !(epollEvents & EPOLLIN)) {
-        return EventReactor::CLOSE_EVENT;
-    }
-
-    if (epollEvents & EPOLLERR) {
-        return EventReactor::ERROR_EVENT;
-    }
-
     if (epollEvents & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
         return EventReactor::READ_EVENT;
-    }
-
-    if (epollEvents & EPOLLOUT) {
-        return EventReactor::WRITE_EVENT;
     }
 
     return EventReactor::NONE_EVENT;
@@ -174,10 +142,6 @@ uint32_t EventDemultiplexer::Reactor2Epoll(uint32_t reactorEvent)
             return TIMER_ERR_OK;
         case EventReactor::READ_EVENT:
             return EPOLLIN | EPOLLPRI;
-        case EventReactor::WRITE_EVENT:
-            return EPOLLOUT;
-        case EventReactor::READ_EVENT | EventReactor::WRITE_EVENT:
-            return EPOLLIN | EPOLLPRI | EPOLLOUT;
         default:
             UTILS_LOGD("invalid event %{public}u.", reactorEvent);
             return TIMER_ERR_DEAL_FAILED;

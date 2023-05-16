@@ -31,17 +31,6 @@ void EventHandler::EnableRead()
     Update();
 }
 
-void EventHandler::EnableWrite()
-{
-    events_ |= EventReactor::WRITE_EVENT;
-    Update();
-}
-
-void EventHandler::DisableWrite()
-{
-    events_ &= ~EventReactor::WRITE_EVENT;
-    Update();
-}
 void EventHandler::DisableAll()
 {
     events_ = EventReactor::NONE_EVENT;
@@ -50,27 +39,9 @@ void EventHandler::DisableAll()
 
 void EventHandler::HandleEvents(uint32_t events)
 {
-    if (events & (EventReactor::CLOSE_EVENT)) {
-        if (closeCallback_) {
-            closeCallback_();
-        }
-    }
-
-    if (events & (EventReactor::ERROR_EVENT)) {
-        if (errorCallback_) {
-            errorCallback_();
-        }
-    }
-
     if (events & (EventReactor::READ_EVENT)) {
         if (readCallback_) {
             readCallback_();
-        }
-    }
-
-    if (events & (EventReactor::WRITE_EVENT)) {
-        if (writeCallback_) {
-            writeCallback_();
         }
     }
 }
