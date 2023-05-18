@@ -45,7 +45,7 @@ public:
     /**
      * @brief Add the specified observer to the set of observers.
      *
-     * If `o` is valid and does not exist in the observer set, the observer 
+     * If `o` is valid and does not exist in the observer set, the observer
      * will be added, otherwise this function will return directly.
      */
     void AddObserver(const std::shared_ptr<Observer>& o);
@@ -70,7 +70,7 @@ public:
     /**
      * @brief Notify all observers, and pass the data 'arg' to the observer.
      *
-     * If the `changed_` is true, call the `Update()` function to notify all 
+     * If the `changed_` is true, call the `Update()` function to notify all
      * observers to respond.
      *
      * @param arg Parameters and data maybe used for Observer::Update().
