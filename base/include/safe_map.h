@@ -65,7 +65,7 @@ public:
     /**
      * @brief Determine whether the map is empty or not.
      *
-     * when multithread calling Empty() return a tmp status, some threads may 
+     * when multithread calling Empty() return a tmp status, some threads may
      * insert just after Empty() call.
      *
      * @return Return true if it is empty, otherwise returns false.
@@ -81,7 +81,7 @@ public:
      *
      * @param key The key to be inserted.
      * @param value The value to be inserted.
-     * @return Return true if the insertion is successful, otherwise returns 
+     * @return Return true if the insertion is successful, otherwise returns
      * false.
      */
     bool Insert(const K& key, const V& value)
@@ -96,7 +96,7 @@ public:
      *
      * @param key The key to be inserted.
      * @param value The value to be inserted.
-     * @note Delete and then insert when the key exists, ensuring that the 
+     * @note Delete and then insert when the key exists, ensuring that the
      * final value is inserted.
      */
     void EnsureInsert(const K& key, const V& value)
@@ -134,7 +134,7 @@ public:
     }
 
     /**
-     * @brief Search for elements in the map and replace the `oldValue` 
+     * @brief Search for elements in the map and replace the `oldValue`
      * corresponding to the key with `newValue`.
      *
      * @param Key The key to be found.
@@ -185,7 +185,7 @@ public:
     /**
      * @brief Iterate through the elements in the map.
      *
-     * @param callback A specific function that performs custom operations on 
+     * @param callback A specific function that performs custom operations on
      * each KV key-value pair.
      */
     void Iterate(const SafeMapCallBack& callback)

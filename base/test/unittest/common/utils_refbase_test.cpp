@@ -811,7 +811,6 @@ private:
  */
 HWTEST_F(UtilsRefbaseTest, testWptrefbase001, TestSize.Level0)
 {
-
     // test wptr<T>::wptr(const wptr<T>&)
     wptr<WptrTest> testOrigWptrObject(new WptrTest());
     EXPECT_EQ(testOrigWptrObject->GetWptrRefCount(), 1);

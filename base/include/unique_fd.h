@@ -125,7 +125,7 @@ public:
      * @brief Release the management of current fd, set it to -1.
      *
      * @return Return the original fd before release.
-     * @note Released fd need to be taken over by another UniqueFdAddDeletor 
+     * @note Released fd need to be taken over by another UniqueFdAddDeletor
      * object, otherwise it must be closed manually.
      */
     int Release()
