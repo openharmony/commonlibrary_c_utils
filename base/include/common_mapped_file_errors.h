@@ -24,12 +24,11 @@
 #define UTILS_COMMON_TIMER_ERRORS_H
 
 #include <cerrno>
-#include "errors.h"
 #include "common_errors.h"
+#include "errors.h"
 
 namespace OHOS {
 namespace Utils {
-
 /**
  * ErrCode layout
  *

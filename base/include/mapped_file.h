@@ -23,8 +23,9 @@
 #define UTILS_BASE_MAPPED_FILE_H
 
 #include <cstdint>
-#include <string>
+#include <sys/stat.h>
 #include <fcntl.h>
+#include <string>
 #include <unistd.h>
 #include "errors.h"
 
@@ -94,7 +95,7 @@ public:
 
     inline char* End() const
     {
-        return data_ == nullptr? nullptr : data_ + size_ - 1;
+        return data_ == nullptr ? nullptr : data_ + size_ - 1;
     }
 
     inline char* RegionStart() const
@@ -149,9 +150,9 @@ private:
         return (input % PageSize() == 0) ? input : (input / PageSize() + 1) * PageSize();
     }
 
-    bool ValidMappedSize(off_t &targetSize, const struct stat &stat);
+    bool ValidMappedSize(off_t& targetSize, const struct stat& stat);
     bool NormalizeSize();
-    bool NormalizeMode();
+    void NormalizeMode();
     bool OpenFile();
     bool SyncFileSize(off_t newSize);
     void Reset();
@@ -169,9 +170,9 @@ private:
     off_t offset_;
     MapMode mode_;
     int fd_ = -1;
-    int mapProt_;
-    int mapFlag_;
-    int openFlag_;
+    int mapProt_ = 0;
+    int mapFlag_ = 0;
+    int openFlag_ = 0;
     const char *hint_;
 };
 
