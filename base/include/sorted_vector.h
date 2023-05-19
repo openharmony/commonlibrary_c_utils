@@ -79,7 +79,7 @@ public:
     inline bool IsEmpty() const { return vec_.empty(); }
 
     /**
-     * @brief Return how many items can be stored before reallocating new 
+     * @brief Return how many items can be stored before reallocating new
      * storage space.
      */
     inline size_t Capacity() const { return vec_.capacity(); }
@@ -87,7 +87,7 @@ public:
     /**
      * @brief Set the vector's capacity to `size`.
      *
-     * @return Return `size` if the vector's capacity is changed to `size`, 
+     * @return Return `size` if the vector's capacity is changed to `size`,
      * otherwise return `CAPACITY_NOT_CHANGED`(-1).
      */
     ssize_t SetCapcity(size_t size)
@@ -102,13 +102,13 @@ public:
 
     // Cstyle access
     /**
-     * @brief Return a const pointer to the first item of a vector, which is 
+     * @brief Return a const pointer to the first item of a vector, which is
      * used to access the item.
      */
     inline const TYPE* Array() const { return vec_.data(); }
 
     /**
-     * @brief Return a non-const pointer to the first item of a vector that is 
+     * @brief Return a non-const pointer to the first item of a vector that is
      * used to access the item of the vector.
      *
      * @note When use it , you should make sure it is sorted.
@@ -159,8 +159,8 @@ public:
      * @brief Return the item value of a vector.
      *
      * @param index `index` value.
-     * @return If `index` is less than 0, the value of 
-     * vector[vector.size() + `index`] is returned, otherwise the value of 
+     * @return If `index` is less than 0, the value of
+     * vector[vector.size() + `index`] is returned, otherwise the value of
      * vector[`index`] is returned.
      */
     const TYPE& MirrorItemAt(ssize_t index) const
@@ -175,7 +175,7 @@ public:
     /**
      * @brief Add a new 'item' in the correct place.
      *
-     * @return Return the position of the new item on success, otherwise it 
+     * @return Return the position of the new item on success, otherwise it
      * returns `ADD_FAIL`(-1)
      */
     ssize_t Add(const TYPE& item);
@@ -203,11 +203,11 @@ public:
     size_t Merge(const SortedVector<TYPE, AllowDuplicate>& sortedVector);
 
     /**
-     * @brief If `index` is less than the vector's size, delete the item at 
+     * @brief If `index` is less than the vector's size, delete the item at
      * `index`.
      *
      * @param index `index` value.
-     * @return If `index` is greater than or equal to the size of the vector, 
+     * @return If `index` is greater than or equal to the size of the vector,
      * the iterator of the last item is returned, otherwise the iterator of the
      * next item of the deleted item is returned.
      */
@@ -220,7 +220,7 @@ public:
     }
 
     /**
-     * @brief An iterator that returns a vector starting item of a non-const 
+     * @brief An iterator that returns a vector starting item of a non-const
      * type.
      */
     iterator Begin()
@@ -237,7 +237,7 @@ public:
     }
 
     /**
-     * @brief Return an iterator for an item at the end of a vector of a 
+     * @brief Return an iterator for an item at the end of a vector of a
      * non-const type.
      */
     iterator End()
@@ -246,7 +246,7 @@ public:
     }
 
     /**
-     * @brief Return an iterator for the item at the end of a vector of type 
+     * @brief Return an iterator for the item at the end of a vector of type
      * const.
      */
     const_iterator End() const

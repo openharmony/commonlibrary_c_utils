@@ -25,11 +25,10 @@ namespace OHOS {
 /**
  * @brief Get the full absolute path to the current program.
  *
- * /proc/self/exe represents the current program, and its source path can be 
- * read with the readlink function to get the absolute path of the current 
+ * /proc/self/exe represents the current program, and its source path can be
+ * read with the readlink function to get the absolute path of the current
  * program.
  */
-std::string GetCurrentProcFullFileName();
 std::string GetCurrentProcFullFileName();
 
 /**
@@ -48,7 +47,7 @@ std::string ExtractFilePath(const std::string& fileFullName);
 std::string ExtractFileName(const std::string& fileFullName);
 
 /**
- * @brief Obtain the filename extension to the corresponding file by the full 
+ * @brief Obtain the filename extension to the corresponding file by the full
  * path.
  */
 std::string ExtractFileExt(const std::string& fileName);
@@ -56,7 +55,7 @@ std::string ExtractFileExt(const std::string& fileName);
 /**
  * @brief Exclude the end '/' from the strPath.
  *
- * Determine whether the path has ended with '/', and returns the path after 
+ * Determine whether the path has ended with '/', and returns the path after
  * removing '/', otherwise returns the path directly.
  */
 std::string ExcludeTrailingPathDelimiter(const std::string& path);
@@ -64,7 +63,7 @@ std::string ExcludeTrailingPathDelimiter(const std::string& path);
 /**
  * @brief Include the end '/' from the strPath.
  *
- * Determine whether the path has ended with "/", and returns the path after 
+ * Determine whether the path has ended with "/", and returns the path after
  * adding '/', otherwise returns the path directly.
  */
 std::string IncludeTrailingPathDelimiter(const std::string& path);
@@ -89,7 +88,7 @@ bool IsEmptyFolder(const std::string& path);
  *
  * Parent directory can be created at the same time when it does not exist.
  *
- * @note If there are problems such as 'Permission Denied', the creation may 
+ * @note If there are problems such as 'Permission Denied', the creation may
  * also fail.
  * @return Return true if create success, else false.
  */
@@ -101,7 +100,7 @@ bool ForceCreateDirectory(const std::string& path);
  * All subdirs and files will also be deleted.
  *
  * @note It is not necessarily successful to delete.
- * @note If there are problems such as 'Permission Denied', the deletion may 
+ * @note If there are problems such as 'Permission Denied', the deletion may
  * also fail.
  * @return Return true if delete success, else false.
  */
@@ -128,7 +127,7 @@ uint64_t GetFolderSize(const std::string& path);
 bool ChangeModeFile(const std::string& fileName, const mode_t& mode);
 
 /**
- * @brief Change authority of the directory specified by path and all of its 
+ * @brief Change authority of the directory specified by path and all of its
  * subdirectories.
  *
  * @param mode Specify the changed permissions, see chmod().
