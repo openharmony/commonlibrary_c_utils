@@ -42,6 +42,20 @@ bool MappedFile::ValidMappedSize(off_t& targetSize, const struct stat& stb)
 
     return true;
 }
+bool MappedFile::NormalizePath()
+{
+    char canonicalPath[PATH_MAX];
+    if (realpath(path_.c_str(), canonicalPath) == nullptr) {
+        if (errno != ENOENT) {
+            UTILS_LOGE("%{public}s get realpath failed.", __FUNCTION__);
+            return false;
+        }
+    } else {
+        path_ = canonicalPath;
+    }
+
+    return true;
+}
 
 bool MappedFile::NormalizeSize()
 {
@@ -52,6 +66,10 @@ bool MappedFile::NormalizeSize()
     }
 
     errno = 0;
+    if (!NormalizePath()) {
+        UTILS_LOGE("%{public}s normalize path failed. %{public}s", __FUNCTION__, strerror(errno));
+        return false;
+    }
     if (!FileExists(path_)) {
         if ((mode_ & MapMode::CREATE_IF_ABSENT) == MapMode::DEFAULT) {
             UTILS_LOGE("%{public}s: Failed. %{public}s", __FUNCTION__, strerror(errno));
@@ -152,6 +170,10 @@ bool MappedFile::OpenFile()
     }
 
     if (isNewFile_) {
+        if (!NormalizePath()) {
+            UTILS_LOGE("%{public}s normalize path failed. %{public}s", __FUNCTION__, strerror(errno));
+            return false;
+        }
         if (ftruncate(fd, EndOffset() + 1) == -1) {
             UTILS_LOGD("%{public}s: Failed. Cannot change file size: %{public}s.", __FUNCTION__, strerror(errno));
             if (close(fd) == -1) {
