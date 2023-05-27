@@ -12,34 +12,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "mapped_file.h"
 
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include "common_mapped_file_errors.h"
 #include "errors.h"
 #include "file_ex.h"
 #include "utils_log.h"
-#include "common_mapped_file_errors.h"
-#include "mapped_file.h"
 
 namespace OHOS {
 namespace Utils {
 off_t MappedFile::pageSize_ = static_cast<off_t>(sysconf(_SC_PAGESIZE));
 
 MappedFile::MappedFile(std::string& path, MapMode mode, off_t offset, off_t size, const char *hint)
-    :path_(path), size_(size), offset_(offset), mode_(mode), hint_(hint)
-{
-    if (Map() != MAPPED_FILE_ERR_OK) {
-        UTILS_LOGW("%{public}s: Mapping Failed.", __FUNCTION__);
-    }
-}
+    :path_(path), size_(size), offset_(offset), mode_(mode), hint_(hint) {}
 
-bool MappedFile::ValidMappedSize(off_t &targetSize, const struct stat &stb)
+bool MappedFile::ValidMappedSize(off_t& targetSize, const struct stat& stb)
 {
     off_t max = RoundSize(stb.st_size) - offset_; // Avoid mapped size excessing
-                                                 // that of the file more than a page,
-    if (max > 0) {                               // since write operation on it may raise signal 7.
+                                                  // that of the file more than a page,
+    if (max > 0) {                                // since write operation on it may raise signal 7.
         targetSize = targetSize > max ? max : targetSize;
     } else {
         return false;
@@ -51,7 +46,7 @@ bool MappedFile::ValidMappedSize(off_t &targetSize, const struct stat &stb)
 bool MappedFile::NormalizeSize()
 {
     if (size_ == 0 || size_ < DEFAULT_LENGTH) {
-        UTILS_LOGD("%{public}s: Failed. Invalid mapping size: %{public}lld",
+        UTILS_LOGE("%{public}s: Failed. Invalid mapping size: %{public}lld",
                    __FUNCTION__, static_cast<long long>(size_));
         return false;
     }
@@ -59,7 +54,7 @@ bool MappedFile::NormalizeSize()
     errno = 0;
     if (!FileExists(path_)) {
         if ((mode_ & MapMode::CREATE_IF_ABSENT) == MapMode::DEFAULT) {
-            UTILS_LOGD("%{public}s: Failed. %{public}s", __FUNCTION__, strerror(errno));
+            UTILS_LOGE("%{public}s: Failed. %{public}s", __FUNCTION__, strerror(errno));
             return false;
         }
 
@@ -82,7 +77,7 @@ bool MappedFile::NormalizeSize()
 
         // Get valid size
         if (!ValidMappedSize(size_, stb)) {
-            UTILS_LOGD("%{public}s: Failed. Invalid params. Specified size: %{public}lld, File size: %{public}lld", \
+            UTILS_LOGE("%{public}s: Failed. Invalid params. Specified size: %{public}lld, File size: %{public}lld", \
                        __FUNCTION__, static_cast<long long>(size_), static_cast<long long>(stb.st_size));
             return false;
         }
@@ -91,7 +86,7 @@ bool MappedFile::NormalizeSize()
     return true;
 }
 
-bool MappedFile::NormalizeMode()
+void MappedFile::NormalizeMode()
 {
     mode_ &= (MapMode::PRIVATE | MapMode::READ_ONLY | MapMode::CREATE_IF_ABSENT);
 
@@ -119,35 +114,30 @@ bool MappedFile::NormalizeMode()
             openFlag_ |= O_CREAT;
         }
     }
-
-    return true;
 }
 
 ErrCode MappedFile::Normalize()
 {
     if (isNormed_) {
-        UTILS_LOGD("%{public}s: Failed. Already normalized.", __FUNCTION__);
+        UTILS_LOGD("%{public}s: Already normalized.", __FUNCTION__);
         return ERR_INVALID_OPERATION;
     }
 
     // resolve params for mapping region
     // offset
     if (offset_ < 0 || (offset_ % PageSize() != 0)) {
-        UTILS_LOGD("%{public}s: Failed. Invalid offset: %{public}lld", __FUNCTION__, static_cast<long long>(offset_));
+        UTILS_LOGE("%{public}s: Failed. Invalid offset: %{public}lld", __FUNCTION__, static_cast<long long>(offset_));
         return ERR_INVALID_VALUE;
     }
 
     // size
     if (!NormalizeSize()) {
-        UTILS_LOGD("%{public}s: Failed. Cannot normalize size.", __FUNCTION__);
+        UTILS_LOGE("%{public}s: Failed. Cannot normalize size.", __FUNCTION__);
         return ERR_INVALID_VALUE;
     }
 
     // Set open flags, mapping types and protections
-    if (!NormalizeMode()) {
-        UTILS_LOGD("%{public}s: Failed. Cannot normalize mode.", __FUNCTION__);
-        return ERR_INVALID_VALUE;
-    }
+    NormalizeMode();
 
     isNormed_ = true;
     return MAPPED_FILE_ERR_OK;
@@ -157,7 +147,7 @@ bool MappedFile::OpenFile()
 {
     int fd = open(path_.c_str(), openFlag_, S_IRWXU | S_IRGRP | S_IROTH);
     if (fd == -1) {
-        UTILS_LOGD("%{public}s: Failed. Cannot open file - %{public}s.", __FUNCTION__, strerror(errno));
+        UTILS_LOGE("%{public}s: Failed. Cannot open file - %{public}s.", __FUNCTION__, strerror(errno));
         return false;
     }
 
@@ -222,11 +212,11 @@ ErrCode MappedFile::Map()
     } while (true);
 
     if (data == MAP_FAILED) {
-        UTILS_LOGD("%{public}s: Mapping Failed. %{public}s", __FUNCTION__, strerror(errno));
+        UTILS_LOGE("%{public}s: Mapping Failed. %{public}s", __FUNCTION__, strerror(errno));
         return MAPPED_FILE_ERR_FAILED;
     }
 
-    rStart_ = reinterpret_cast<char *>(data);
+    rStart_ = reinterpret_cast<char*>(data);
     // set region boundary.
     rEnd_ = rStart_ + (RoundSize(size_) - 1LL);
     // set segment start
@@ -245,12 +235,6 @@ ErrCode MappedFile::Unmap()
 
     if (!isNormed_) {
         UTILS_LOGW("%{public}s. Try unmapping with params changed.", __FUNCTION__);
-    }
-
-    if (reinterpret_cast<off_t>(rStart_) % PageSize() != 0) {
-        UTILS_LOGD("%{public}s: Failed. Invalid addr. Region start addr: %{public}p",
-                   __FUNCTION__, reinterpret_cast<void*>(rStart_));
-        return ERR_INVALID_VALUE;
     }
 
     if (munmap(rStart_, static_cast<size_t>(size_)) == -1) {
@@ -275,10 +259,6 @@ bool MappedFile::SyncFileSize(off_t newSize)
         } else if (offset_ + newSize <= stb.st_size) {
             UTILS_LOGW("%{public}s: Failed. Unextend file size, no need to sync.", __FUNCTION__);
         } else {
-            if (fd_ == -1) {
-                UTILS_LOGD("%{public}s: Failed. Invalid fd.", __PRETTY_FUNCTION__);
-                return false;
-            }
             if (ftruncate(fd_, offset_ + newSize) == -1) {
                 UTILS_LOGD("%{public}s: Failed. Cannot extend file size: %{public}s.", __FUNCTION__, strerror(errno));
                 return false;
@@ -289,21 +269,28 @@ bool MappedFile::SyncFileSize(off_t newSize)
     return true;
 }
 
-
 ErrCode MappedFile::Resize(off_t newSize, bool sync)
 {
+    if (newSize == DEFAULT_LENGTH) {
+        struct stat stb = {0};
+        if (stat(path_.c_str(), &stb) != 0) {
+            UTILS_LOGW("%{public}s: Failed. Get file size failed! Mapped size will be that of a page.", __FUNCTION__);
+            newSize = PageSize();
+        }
+
+        if (newSize == DEFAULT_LENGTH) {
+            newSize = stb.st_size;
+        }
+    }
+
     if (newSize == 0 || newSize < DEFAULT_LENGTH || newSize == size_) {
         UTILS_LOGD("%{public}s: Failed. Cannot remap with the same /negative size.", __FUNCTION__);
         return ERR_INVALID_OPERATION;
     }
 
     if (!isMapped_) {
-        UTILS_LOGD("%{public}s: Failed. Cannot remap with no mapped file exists.", __FUNCTION__);
-        return ERR_INVALID_OPERATION;
-    }
-
-    if (!isNormed_) {
-        UTILS_LOGD("%{public}s: Failed. Cannot remap with params unnormalized.", __FUNCTION__);
+        UTILS_LOGD("%{public}s: Failed. Invalid status. mapped:%{public}d, normed:%{public}d", \
+                   __FUNCTION__, isMapped_, isNormed_);
         return ERR_INVALID_OPERATION;
     }
 
@@ -365,11 +352,11 @@ ErrCode MappedFile::TurnNext()
     }
 
     struct stat stb = {0};
-    if (stat(path_.c_str(), &stb) != 0) {
+    int ret = stat(path_.c_str(), &stb);
+    if (ret != 0) {
         UTILS_LOGD("%{public}s: Failed. Get file size failed.", __FUNCTION__);
         return MAPPED_FILE_ERR_FAILED;
     }
-
     if (EndOffset() + 1 >= stb.st_size) {
         UTILS_LOGD("%{public}s: Failed. No contents remained.", __FUNCTION__);
         return ERR_INVALID_OPERATION;
@@ -382,8 +369,9 @@ ErrCode MappedFile::TurnNext()
 
     // if mapped, rStart_ and rEnd_ are viable
     if (isMapped_) {
+        char* curEnd = End();
         // case 1: remap needed
-        if (End() == rEnd_) {
+        if (curEnd == rEnd_) {
             // check if larger than exact file size.
             if (EndOffset() + 1 + size_ > stb.st_size) {
                 size_ = stb.st_size - EndOffset() - 1;
@@ -393,8 +381,11 @@ ErrCode MappedFile::TurnNext()
             offset_ += oldSize;
 
             ErrCode res = Unmap();
-            if (res != MAPPED_FILE_ERR_OK || (res = Resize()) != MAPPED_FILE_ERR_OK) {
-                UTILS_LOGD("%{public}s Failed. Fail to UnMap/Resize.", __FUNCTION__);
+            if (res == MAPPED_FILE_ERR_OK) {
+                res = Resize();
+            }
+            if (res != MAPPED_FILE_ERR_OK) {
+                UTILS_LOGE("%{public}s Failed. Fail to UnMap/Resize.", __FUNCTION__);
                 // restore
                 offset_ = oldOff;
                 size_ = oldSize;
@@ -405,10 +396,9 @@ ErrCode MappedFile::TurnNext()
         }
 
         // case 2: no need to remap, but to adjust boundary.
-        if (End() + oldSize > rEnd_) { // otherwise else keep original "size_"
-            size_ = rEnd_ - End();
+        if (curEnd + oldSize > rEnd_) { // otherwise keep original "size_"
+            size_ = rEnd_ - curEnd;
         }
-
         data_ += oldSize;
         offset_ += oldSize;
         return MAPPED_FILE_ERR_OK;
@@ -445,7 +435,7 @@ ErrCode MappedFile::Clear(bool force)
 {
     if (isMapped_) {
         ErrCode res = Unmap();
-        if (!force && res != MAPPED_FILE_ERR_OK && res != ERR_INVALID_OPERATION) {
+        if (!force && res != MAPPED_FILE_ERR_OK) {
             UTILS_LOGD("%{public}s failed. UnMapping Failed.", __FUNCTION__);
             return res;
         }
@@ -464,14 +454,14 @@ MappedFile::~MappedFile()
 {
     if (isMapped_) {
         ErrCode res = Unmap();
-        if (res != MAPPED_FILE_ERR_OK && res != ERR_INVALID_OPERATION) {
+        if (res != MAPPED_FILE_ERR_OK) {
             UTILS_LOGW("%{public}s: File unmapping failed, it will be automatically  \
                        unmapped when the process is terminated.", __FUNCTION__);
         }
     }
 
     if (fd_ != -1 && close(fd_) == -1) {
-        UTILS_LOGW("%{public}s: Failed. Cannot close the file: %{public}s.", \
+        UTILS_LOGE("%{public}s: Failed. Cannot close the file: %{public}s.", \
                    __FUNCTION__, strerror(errno));
     }
 }
@@ -518,9 +508,9 @@ bool MappedFile::ChangeOffset(off_t val)
             isNormed_ = false;
 
             return true;
-        } else {
-            UTILS_LOGW("%{public}s: Change params failed. Unmapping failed.", __FUNCTION__);
         }
+
+        UTILS_LOGW("%{public}s: Change params failed. Unmapping failed.", __FUNCTION__);
     }
     return false;
 }
@@ -533,9 +523,9 @@ bool MappedFile::ChangeSize(off_t val)
             isNormed_ = false;
 
             return true;
-        } else {
-            UTILS_LOGW("%{public}s: Change params failed. Unmapping failed.", __FUNCTION__);
         }
+
+        UTILS_LOGW("%{public}s: Change params failed. Unmapping failed.", __FUNCTION__);
     }
     return false;
 }
