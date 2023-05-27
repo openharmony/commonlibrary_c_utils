@@ -123,8 +123,8 @@ int64_t GetDaysSince1970ToNow();
 /**
  * @brief Get current timezone.
  *
- * @param timezone Today the world is divided into 24 timezones, they are 
- * medium timezone (zero timezone), east 1-12 timezone, west 1-12 timezone.The 
+ * @param timezone Today the world is divided into 24 timezones, they are
+ * medium timezone (zero timezone), east 1-12 timezone, west 1-12 timezone.The
  * East time zone is +1 to +12 and the West time zone is -1 to -12.
  * @return return true if get success, else false.
  */

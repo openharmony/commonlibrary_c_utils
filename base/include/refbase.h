@@ -347,7 +347,7 @@ private:
  * @ingroup SmartPointer
  * @brief A base class which can be managed by a smart pointer.
  *
- * @note All classes which intend to be managed by smart pointers should be 
+ * @note All classes which intend to be managed by smart pointers should be
  * derived from RefBase.
  */
 class RefBase {
