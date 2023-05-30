@@ -22,5 +22,31 @@ pub mod ffi {
     #[allow(dead_code)]
     unsafe extern "C++" {
         include!("commonlibrary/c_utils/base/include/file_ex.h");
+        /// Read contents as a string from the specified file.
+        pub fn RustLoadStringFromFile(filePath: &String, content: &mut String) -> bool;
+
+        /// Write contents of a string to the specified file.
+        pub fn RustSaveStringToFile(filePath: &String, content: &String, truncated: bool) -> bool;
+
+        /// Read contents as a string from the file specified by its fd.
+        pub fn RustLoadStringFromFd(fd: i32, content: &mut String) -> bool;
+
+        /// Write contents of a string to the file specified by its fd.
+        pub fn RustSaveStringToFd(fd: i32, content: &String) -> bool;
+
+        /// Read contents as a vector from the specified file.
+        pub fn RustLoadBufferFromFile(filePath: &String, content: &mut Vec<c_char>) -> bool;
+
+        /// Write contents of a vector to the specified file.
+        pub fn RustSaveBufferToFile(filePath: &String, content: &Vec<c_char>, truncated: bool) -> bool;
+
+        /// Check if the specified file exists.
+        pub fn RustFileExists(fileName: &String) -> bool;
+
+        /// Check if the file contains specified contents in string.
+        pub fn RustStringExistsInFile(fileName: &String, subStr: &String, caseSensitive: bool) -> bool;
+
+        /// Get amount of the specified string in the file.
+        pub fn RustCountStrInFile(fileName: &String, subStr: &String, caseSensitive: bool) -> i32;
     }
 }

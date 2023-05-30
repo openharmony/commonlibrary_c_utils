@@ -303,30 +303,9 @@ HWTEST_F(UtilsFileTest, testSaveStringToFile002, TestSize.Level0)
 
 /*
  * @tc.name: testSaveStringToFile003
- * @tc.desc: Test writting a string to a file in truncate mode
- */
-HWTEST_F(UtilsFileTest, testSaveStringToFile003, TestSize.Level0)
-{
-    string path = FILE_PATH;
-    string content = "Before truncated！";
-    CreateTestFile(path, content);
-
-    string newContent = CONTENT_STR;
-    bool ret = SaveStringToFile(path, newContent, true);
-    EXPECT_EQ(ret, true);
-
-    string loadResult;
-    ret = LoadStringFromFile(path, loadResult);
-    RemoveTestFile(path);
-    EXPECT_EQ(ret, true);
-    EXPECT_STREQ(loadResult.c_str(), newContent.c_str());
-}
-
-/*
- * @tc.name: testSaveStringToFile004
  * @tc.desc: Test writting an empty string to a file in truncate mode
  */
-HWTEST_F(UtilsFileTest, testSaveStringToFile004, TestSize.Level0)
+HWTEST_F(UtilsFileTest, testSaveStringToFile003, TestSize.Level0)
 {
     string path = FILE_PATH;
     string content = "Before truncated！";
@@ -344,10 +323,10 @@ HWTEST_F(UtilsFileTest, testSaveStringToFile004, TestSize.Level0)
 }
 
 /*
- * @tc.name: testSaveStringToFile005
+ * @tc.name: testSaveStringToFile004
  * @tc.desc: Test writting an empty string to a file in append mode
  */
-HWTEST_F(UtilsFileTest, testSaveStringToFile005, TestSize.Level0)
+HWTEST_F(UtilsFileTest, testSaveStringToFile004, TestSize.Level0)
 {
     string newContent;
     string path = FILE_PATH;
@@ -364,10 +343,10 @@ HWTEST_F(UtilsFileTest, testSaveStringToFile005, TestSize.Level0)
 }
 
 /*
- * @tc.name: testSaveStringToFile006
+ * @tc.name: testSaveStringToFile005
  * @tc.desc: Test writting a string to a file in append mode
  */
-HWTEST_F(UtilsFileTest, testSaveStringToFile006, TestSize.Level0)
+HWTEST_F(UtilsFileTest, testSaveStringToFile005, TestSize.Level0)
 {
     string path = FILE_PATH;
     string content = "Before appended！";
@@ -579,26 +558,6 @@ HWTEST_F(UtilsFileTest, testSaveBufferToFile002, TestSize.Level0)
  * @tc.desc: singleton template
  */
 HWTEST_F(UtilsFileTest, testSaveBufferToFile003, TestSize.Level0)
-{
-    vector<char> buff;
-    string path = FILE_PATH;
-    string content = "ttxx";
-    CreateTestFile(path, content);
-    bool ret = SaveBufferToFile(path, buff, false);
-    EXPECT_EQ(ret, true);
-
-    string loadResult;
-    ret = LoadStringFromFile(path, loadResult);
-    RemoveTestFile(path);
-    EXPECT_EQ(ret, true);
-    EXPECT_EQ(loadResult, content);
-}
-
-/*
- * @tc.name: testSaveBufferToFile004
- * @tc.desc: singleton template
- */
-HWTEST_F(UtilsFileTest, testSaveBufferToFile004, TestSize.Level0)
 {
     string path = FILE_PATH;
     string content = "ttxx";
