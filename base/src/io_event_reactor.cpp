@@ -265,9 +265,6 @@ void IOEventReactor::HandleAll(const std::vector<std::pair<int, EventId>>& event
         int fd = events[idx].first;
         EventId event = events[idx].second;
 
-        if (event == Events::EVENT_NONE) {
-            continue;
-        }
         UTILS_LOGD("%{public}s: Processing. Handling event: %{public}d, with fd: %{public}zu.", \
                    __FUNCTION__, event, fd);
 

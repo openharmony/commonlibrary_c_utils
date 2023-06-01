@@ -189,24 +189,63 @@ HWTEST_F(UtilsEventTest, testIOEventReactor001, TestSize.Level0)
     EXPECT_NE(reactor->AddHandler(handler3.get()), EVENT_SYS_ERR_OK);
     EXPECT_NE(reactor->AddHandler(nullptr), EVENT_SYS_ERR_OK);
 
-    // 4. Remove handler
+    // 4. Add handler from the handler side.
+    EXPECT_NE(handler1->Start(reactor.get()), EVENT_SYS_ERR_OK); // already started.
+    EXPECT_NE(handler3->Start(reactor.get()), EVENT_SYS_ERR_OK); // Bad fd.
+
+    // 5. Remove handler
     EXPECT_NE(reactor->RemoveHandler(nullptr), EVENT_SYS_ERR_OK);
+    EXPECT_NE(reactor->RemoveHandler(handler3.get()), EVENT_SYS_ERR_OK); // Bad fd.
     EXPECT_NE(reactor->RemoveHandler(handler4.get()), EVENT_SYS_ERR_OK);
     EXPECT_EQ(reactor->RemoveHandler(handler2.get()), EVENT_SYS_ERR_OK);
 
-    // 5. Update handler
+    // 6. Remove handler from the handler side.
+    EXPECT_NE(handler2->Stop(reactor.get()), EVENT_SYS_ERR_OK); // Not found.
+
+    // 7. Update handler
     EXPECT_NE(reactor->UpdateHandler(nullptr), EVENT_SYS_ERR_OK);
     EXPECT_NE(reactor->UpdateHandler(handler3.get()), EVENT_SYS_ERR_OK);
     EXPECT_EQ(reactor->UpdateHandler(handler1.get()), EVENT_SYS_ERR_OK);
     EXPECT_EQ(reactor->UpdateHandler(handler4.get()), EVENT_SYS_ERR_OK);
 
-    // 6. Find handler
+    // 8. Update handler from the handler side.
+    EXPECT_NE(handler2->Update(reactor.get()), EVENT_SYS_ERR_OK); // Not found.
+    EXPECT_NE(handler3->Update(reactor.get()), EVENT_SYS_ERR_OK); // Bad fd.
+
+    // 9. Find handler
     EXPECT_NE(reactor->FindHandler(nullptr), EVENT_SYS_ERR_OK);
     EXPECT_NE(reactor->FindHandler(handler3.get()), EVENT_SYS_ERR_OK);
 
-    // 7. Clean handler
+    // 10. Clean handler
     EXPECT_NE(reactor->Clean(-1), EVENT_SYS_ERR_OK);
     EXPECT_EQ(reactor->Clean(fd), EVENT_SYS_ERR_OK);
+}
+
+/*
+ * @tc.name: testIOEventReactor002
+ * @tc.desc: test change event but not update.
+ */
+HWTEST_F(UtilsEventTest, testIOEventReactor002, TestSize.Level0)
+{
+    g_data = 0;
+    // 1. Open timer
+    int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+    ASSERT_NE(fd, -1);
+
+    // 2. Create io event handlers
+    std::shared_ptr<IOEventHandler> handler1 = std::make_shared<IOEventHandler>(fd);
+    std::shared_ptr<IOEventHandler> handler2 = std::make_shared<IOEventHandler>(fd);
+
+    // 3. Create a reactor but not run
+    std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
+    ASSERT_EQ(reactor->SetUp(), EVENT_SYS_ERR_OK);
+
+    // 4. Add handler
+    EXPECT_EQ(reactor->AddHandler(handler1.get()), EVENT_SYS_ERR_OK);
+    EXPECT_EQ(reactor->AddHandler(handler2.get()), EVENT_SYS_ERR_OK);
+
+    // 5. release one handler
+    handler2.reset(); // will be removed from the inner list.
 }
 
 TimerFdHandler::TimerFdHandler(int fd, const TimerEventCallback& cb)
@@ -343,7 +382,7 @@ HWTEST_F(UtilsEventTest, testEvent002, TestSize.Level0)
     // 7. Wait for event handling
     std::this_thread::sleep_for(std::chrono::milliseconds(16));
 
-    // 8. Check result, execute once at least
+    // 8. Check result, no execution
     EXPECT_EQ(g_data, 0);
 
     // 9. terminate the event-loop (aka Run())
@@ -381,7 +420,7 @@ HWTEST_F(UtilsEventTest, testEvent003, TestSize.Level0)
     reactor->EnableHandling();
     ASSERT_TRUE(handler->Stop(reactor.get())); // block to get lock, so no need to wait.
 
-    // 7. Check result, execute once at least
+    // 7. Check result, no execution
     EXPECT_EQ(g_data, 0);
 
     // 8. terminate the event-loop (aka Run())
@@ -422,7 +461,89 @@ HWTEST_F(UtilsEventTest, testEvent004, TestSize.Level0)
     // 7. Wait for event handling
     std::this_thread::sleep_for(std::chrono::milliseconds(16));
 
-    // 8. Check result, execute once at least
+    // 8. Check result, no execution
+    EXPECT_EQ(g_data, 0);
+
+    // 9. terminate the event-loop (aka Run())
+    reactor->Terminate();
+    loopThread.join();
+}
+
+/*
+ * @tc.name: testEvent005
+ * @tc.desc: test change event but not update.
+ */
+HWTEST_F(UtilsEventTest, testEvent005, TestSize.Level0)
+{
+    g_data = 0;
+    // 1. Open timer
+    int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+    ASSERT_NE(fd, -1);
+    // 2. Create timer event handler
+    std::shared_ptr<TimerFdHandler> handler = std::make_shared<TimerFdHandler>(fd, &TimerCallback1);
+
+    // 3. Create reactor for event loop
+    std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
+    ASSERT_EQ(reactor->SetUp(), EVENT_SYS_ERR_OK);
+
+    // 4. Initialize timer handler and add it to reactor
+    ASSERT_TRUE(handler->Initialize(15));
+    ASSERT_TRUE(handler->Start(reactor.get()));
+
+    // 5. Run event loop
+    std::thread loopThread([&reactor]{
+        reactor->Run(-1);
+    });
+
+    // 6. Change settings but not update
+    handler->SetEvents(Events::EVENT_WRITE);
+    reactor->EnableHandling();
+
+    // 7. Wait for event handling
+    std::this_thread::sleep_for(std::chrono::milliseconds(16));
+
+    // 8. Check result, no execution
+    EXPECT_EQ(g_data, 0);
+
+    // 9. terminate the event-loop (aka Run())
+    reactor->Terminate();
+    loopThread.join();
+}
+
+/*
+ * @tc.name: testEvent006
+ * @tc.desc: test release the handler when started.
+ */
+HWTEST_F(UtilsEventTest, testEvent006, TestSize.Level0)
+{
+    g_data = 0;
+    // 1. Open timer
+    int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+    ASSERT_NE(fd, -1);
+    // 2. Create timer event handler
+    std::shared_ptr<TimerFdHandler> handler = std::make_shared<TimerFdHandler>(fd, &TimerCallback1);
+
+    // 3. Create reactor for event loop
+    std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
+    ASSERT_EQ(reactor->SetUp(), EVENT_SYS_ERR_OK);
+
+    // 4. Initialize timer handler and add it to reactor
+    ASSERT_TRUE(handler->Initialize(15));
+    ASSERT_TRUE(handler->Start(reactor.get()));
+
+    // 5. Run event loop
+    std::thread loopThread([&reactor]{
+        reactor->Run(-1);
+    });
+
+    // 6. release eventhandler
+    handler.reset();
+    reactor->EnableHandling();
+
+    // 7. Wait for event handling
+    std::this_thread::sleep_for(std::chrono::milliseconds(16));
+
+    // 8. Check result, no execution
     EXPECT_EQ(g_data, 0);
 
     // 9. terminate the event-loop (aka Run())
