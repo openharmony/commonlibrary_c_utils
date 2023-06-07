@@ -16,7 +16,7 @@
  /**
  * @file thread_ex.h
  *
- * @brief The file contains interfaces of the Thread class
+ * @brief Provides interfaces of the <b>Thread</b> class
  * implemented in c_utils.
  */
 
@@ -47,77 +47,81 @@ constexpr int INVALID_PTHREAD_T = -1;
 constexpr int MAX_THREAD_NAME_LEN = 15;
 
 /**
- * @brief A thread class provided by c_utils, include functions such as
- * creating threads and getting thread ID.
+ * @brief Provides interfaces for creating a thread
+ * and obtaining a thread ID.
  */
 class Thread {
 public:
 
 /**
- * @brief Construct a Thread object, but does not start the thread.
+ * @brief A constructor used to create a <b>Thread</b> object, without
+ * starting the thread.
  */
     Thread();
     virtual ~Thread();
 
 /**
- * @brief Create and start a child thread, and execute Run() in a loop.
- * Loop stops when Run() returns false or notifies to exit by
- * `NotifyExitSync()` or `NotifyExitAsync()` from another thread.
+ * @brief Creates and starts a child thread, and executes
+ * <b>Run()</b> in a loop.
+ * The loop stops when <b>Run()</b> returns <b>false</b> or it is notified
+ * to exit by `NotifyExitSync()` or `NotifyExitAsync()` from another thread.
  *
- * @param name The thread name.
- * @param priority Thread priority.
- * @param stack The size of the thread stack.
- * @return Return OK if the call is successful;
- * return INVALID_OPERATION when the thread already exists;
- * return UNKNOWN_ERROR when thread creation fails.
- * @see NotifyExitSync() NotifyExitAsync()
+ * @param name Indicates the name of the thread.
+ * @param priority Indicates the thread priority.
+ * @param stack Indicates the size of the thread stack.
+ * @return Returns <b>OK</b> if the call is successful;
+ * returns <b>INVALID_OPERATION</b> if the thread already exists;
+ * returns <b>UNKNOWN_ERROR</b> if the thread creation fails.
+ * @see {@link NotifyExitSync()} or {@link NotifyExitAsync()}
  */
     ThreadStatus Start(const std::string& name, int32_t priority = THREAD_PROI_NORMAL, size_t stack = 0);
 
 /**
- * @brief Synchronously notify this Thread object to exit.
+ * @brief Synchronously instructs this <b>Thread</b> object to exit.
  *
- * The current thread is blocked, waiting for the child thread to finish.
+ * This method can be called only by another thread to instruct this
+ * <b>Thread</b> object to exit. The calling thread will be blocked until this
+ * <b>Thread</b> object exits.
  */
     ThreadStatus NotifyExitSync();
 
 /**
- * @brief Asynchronously notify this Thread object to exit.
+ * @brief Asynchronously instructs this <b>Thread</b> object to exit.
  *
- * That is, whether the child thread exits does not block
- * the current thread. Notifies the child thread to stop
- *  and the current thread to continue running.
+ * This method can be called only by another thread to instruct this
+ * <b>Thread</b> object to exit. However, the calling thread will not be blocked
+ * when this <b>Thread</b> object exits.
  */
     virtual void NotifyExitAsync();
 
 /**
- * @brief Determine whether the thread is ready.
+ * @brief Checks whether the thread is ready.
  */
     virtual bool ReadyToWork();
 
 /**
- * @brief Get the flag of the thread exitPending.
+ * @brief Checks whether there is any thread waiting for exit.
  *
- * If the flag is true, other waiting threads who have called
- * `NotifyExitSync()` are woken up when the current thread
- * finishes running and exits.
+ * If <b>true</b> is returned, the waiting threads who have called
+ * `NotifyExitSync()` will be woken up when the current thread finishes
+ * running and exits.
  *
- * @return Returns true, indicating that another thread may be
- * blocking to wait for the current thread to complete;
- * Otherwise return false.
+ * @return Returns <b>true</b> if there is any thread that is
+ * blocked to wait for the current thread to exit.
+ * Returns <b>false</b> otherwise.
  */
     bool IsExitPending() const;
 
 /**
- * @brief Determine whether the thread is running.
+ * @brief Checks whether the thread is running.
  *
- * @return Return true if the thread is running,
- * otherwise, return false.
+ * @return Returns <b>true</b> if the thread is running;
+ * returns <b>false</b> otherwise.
  */
     bool IsRunning() const;
 
 /**
- * @brief Get the thread ID.
+ * @brief Obtains the thread ID.
  */
     pthread_t GetThread() const { return thread_; }
 
@@ -135,7 +139,7 @@ private:
     std::condition_variable cvThreadExited_;
     ThreadStatus status_;
     volatile bool exitPending_;
-    volatile bool running_; // flag of thread runing
+    volatile bool running_; // flag of thread running
 };
 
 } // namespace OHOS

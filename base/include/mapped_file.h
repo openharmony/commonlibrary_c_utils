@@ -16,7 +16,7 @@
 /**
  * @file mapped_file.h
  *
- * @brief Provide classes for memory-mapped file implemented in c_utils.
+ * @brief Provides classes for memory-mapped files implemented in c_utils.
  */
 
 #ifndef UTILS_BASE_MAPPED_FILE_H

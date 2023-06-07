@@ -16,14 +16,14 @@
 /**
  * @file semaphore_ex.h
  *
- * @brief This file contains interfaces of Semaphore in c_utils,
+ * @brief Provides interfaces of semaphores in c_utils,
  * including nameless and named semaphores.
  *
- * The semaphore is an atomic counter, which can act as a lock,
- * to achieve mutual exclusion, synchronization and other functions;
- * Used in a multithreaded environment, it is possible to ensure that
- * a critical pieces of code is not called concurrently or maximum number
- * of threads entering the code section is restricted.
+ * A semaphore is an atomic counter, which can act as a lock
+ * to achieve mutual exclusion, synchronization, and other functions.
+ * Used in a multithreaded environment, it prevents concurrent
+ * calling of a critical piece of code or restricts the maximum number
+ * of threads entering the code section.
  */
 
 #ifndef SEMAPHORE_EX_H
@@ -40,47 +40,47 @@
 
 namespace OHOS {
 /**
- * @brief Semaphore. This class is a counter to implement functions such as
- * mutual exclusion between processes/threads, synchronization, etc.
+ * @brief Provides interfaces for operating semaphores.
  *
+ * A semaphore is a counter used to implement functions, such as
+ * mutual exclusion between processes/threads, synchronization, and more.
  * The difference between nameless semaphores and named semaphores lies
  * in the form of creation and destruction.
- * The semaphore exists only in memory, requiring that the process/thread
+ * Semaphores exist only in memory. The process/thread
  * using the semaphore must access the memory where the semaphore is located.
  * Therefore, the nameless semaphore can only be in the thread of
  * the same process, or threads in different processes that have mapped
- * the same memory to their address space, that is, the nameless semaphore
+ * the same memory to their address space, that is, the nameless semaphores
  * can only be accessed through shared memory.
  */
 class Semaphore : public NoCopyable {
 public:
 /**
- * @brief Construct a semaphore object.
+ * @brief A constructor used to create a semaphore object.
  *
- * @param Value The initial value of the semaphore object.
+ * @param Value Indicates the initial value of the semaphore object.
  */
     explicit Semaphore(int value = 1) : count_(value) {}
 
 /**
- * @brief Acquire semaphore operation, i.e. semaphore -1.
+ * @brief Acquires the semaphore.
  *
- * When the semaphore is >= 0 after decrement, the current thread continues.
- * When semaphore is < 0 after decrement, the current thread blocks.
+ * If the current semaphore count >= 0, the current thread continues.
+ * If the current semaphore count < 0, the current thread will be blocked.
  */
     void Wait();
 
 /**
- * @brief Release semaphore operation, i.e. semaphore +1.
+ * @brief Releases the semaphore.
  *
- * When the semaphore is > 0 after increment, it means that
- * there is no blocked thread.
- * When the semaphore is <= 0 after increment, it means that there are still
+ * If the current semaphore count > 0, there is no blocked thread.
+ * If the current semaphore count <= 0, there are still
  * blocked threads. Then this method will wake one of them up.
  */
     void Post();
 
 private:
-    int count_;   // The initial value of the Semaphore object
+    int count_;   // Initial value of the semaphore object.
     std::mutex mutex_;
     std::condition_variable cv_;
 };

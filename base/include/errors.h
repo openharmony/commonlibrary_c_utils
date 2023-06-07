@@ -16,7 +16,7 @@
  /**
   * @file errors.h
   *
-  * @brief Provide format of error code in OpenHarmony.
+  * @brief Provides format of error code in OpenHarmony.
   */
 
 #ifndef UTILS_BASE_ERRORS_H
@@ -39,7 +39,8 @@ namespace OHOS {
 using ErrCode = int;
 
 /**
- * @brief Value of 'Subsystem' segment of ErrCode for every subsystem.
+ * @brief Enumerates the values of the <b>Subsystem</b> segment
+ * of ErrCode for every subsystem.
  */
 enum {
     SUBSYS_COMMON                = 0,
@@ -97,13 +98,13 @@ enum {
 
 // be used to init the subsystem errorno.
 /**
- * @brief Generate base error code for a specified module in specified
- * subsystem.
+ * @brief Generates the base error codes for a specified module
+ * in specified subsystem.
  *
- * @param subsystem Value of 'Subsystem' segment.
- * @param module Value of 'Module' segment,
- * which is 0 by default.
- * @return Return base ErrCode for specified module.
+ * @param subsystem Indicates the subsystem.
+ * @param module Indicates the module.
+ * The default value is 0.
+ * @return Returns the base error codes of the specified module.
  */
 constexpr ErrCode ErrCodeOffset(unsigned int subsystem, unsigned int module = 0)
 {
@@ -114,14 +115,14 @@ constexpr ErrCode ErrCodeOffset(unsigned int subsystem, unsigned int module = 0)
 
 // offset of common error, only be used in this file.
 /**
- * @brief Base ErrCode of common(valid for all modules)
- * in commonlibrary subsystem.
+ * @brief Provides the common base error codes, which apply to all modules,
+ * in the commonlibrary subsystem.
  */
 constexpr ErrCode BASE_ERR_OFFSET = ErrCodeOffset(SUBSYS_COMMON);
 
 /**
- * @brief Value of common 'Code' segment of ErrCode
- * in commonlibrary subsystem.
+ * @brief Enumerates the common base error codes
+ * in the commonlibrary subsystem.
  *
  * @see Related error codes defined in errno.h
  */

@@ -16,10 +16,10 @@
 /**
  * @file flat_obj.h
  *
- * @brief Define types and structures for reading and writing object in parcel.
+ * @brief Defines types and structures for reading and writing objects in parcels.
  *
- * Types are platform-sensitive. Structures is only used for checking the
- * validity of data in parcel, not for saving and using of data.
+ * Types are platform-sensitive. Structures are only used for checking the
+ * validity of data in parcels, not for saving and using of data.
  */
 #ifndef UTILS_BASE_FLAT_OBJ_H
 #define UTILS_BASE_FLAT_OBJ_H

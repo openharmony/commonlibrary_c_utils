@@ -22,7 +22,7 @@
 namespace OHOS {
 
 /**
- * @brief A thread-safe map implementation is provided.
+ * @brief Provides interfaces for thread-safe map operations.
  */
 template <typename K, typename V>
 class SafeMap {
@@ -51,10 +51,11 @@ public:
     }
 
     /**
-     * @brief Get the size of the map.
+     * @brief Obtains the map size.
      *
-     * when multithread calling Size() return a tmp status, some threads may
-     * insert just after Size() call.
+     * In the multithread scenario, the map size returned is a tmp status,
+     * because elements may be inserted or removed by other threads after
+     * <b>Size()</b> is called.
      */
     int Size()
     {
@@ -63,12 +64,14 @@ public:
     }
 
     /**
-     * @brief Determine whether the map is empty or not.
+     * @brief Checks whether the map is empty.
      *
-     * when multithread calling Empty() return a tmp status, some threads may
-     * insert just after Empty() call.
+     * In the multithread scenario, the value returned by <b>Empty()</b> is a
+     * tmp status, because elements may be inserted or removed by other threads
+     * after <b>Empty()</b> is called.
      *
-     * @return Return true if it is empty, otherwise returns false.
+     * @return Returns <b>true</b> if the map is empty;
+     * returns <b>false</b> otherwise.
      */
     bool IsEmpty()
     {
@@ -77,12 +80,12 @@ public:
     }
 
     /**
-     * @brief Insert a new element into the map.
+     * @brief Inserts an element to the map.
      *
-     * @param key The key to be inserted.
-     * @param value The value to be inserted.
-     * @return Return true if the insertion is successful, otherwise returns
-     * false.
+     * @param key Indicates the key of the key-value (KV) pair to insert.
+     * @param value Indicates the value of the KV pair to insert.
+     * @return Returns <b>true</b> if the KV pair is inserted; returns
+     * <b>false</b> otherwise.
      */
     bool Insert(const K& key, const V& value)
     {
@@ -92,12 +95,12 @@ public:
     }
 
     /**
-     * @brief Insert elements into the map.
+     * @brief Forcibly inserts an element to the map.
      *
-     * @param key The key to be inserted.
-     * @param value The value to be inserted.
-     * @note Delete and then insert when the key exists, ensuring that the
-     * final value is inserted.
+     * @param key Indicates the key of the KV pair to insert.
+     * @param value Indicates the value of the KV pair to insert.
+     * @note If the key to insert already exists, delete and then insert
+     * the KV pair to ensure that the value is inserted.
      */
     void EnsureInsert(const K& key, const V& value)
     {
@@ -113,11 +116,12 @@ public:
     }
 
     /**
-     * @brief Search for elements in the map.
+     * @brief Searches for an element in the map.
      *
-     * @param Key The key to be found.
-     * @param value The value corresponding to the found key.
-     * @return Return true when the key exists, otherwise returns false.
+     * @param Key Indicates the key to search.
+     * @param value Indicates the value of the KV pair to search.
+     * @return Returns <b>true</b> if the KV pair is found;
+     * returns <b>false</b> otherwise.
      */
     bool Find(const K& key, V& value)
     {
@@ -134,13 +138,13 @@ public:
     }
 
     /**
-     * @brief Search for elements in the map and replace the `oldValue`
-     * corresponding to the key with `newValue`.
+     * @brief Replaces the value of a KV pair.
      *
-     * @param Key The key to be found.
-     * @param oldValue The value corresponding to the found key.
-     * @param newValue The new value to insert.
-     * @return Return true when the key exists, otherwise returns false.
+     * @param Key Indicates the key of the KV pair.
+     * @param oldValue Indicates the value to be replaced.
+     * @param newValue Indicates the new value of the KV pair.
+     * @return Returns <b>true</b> if the key is replaced;
+     * returns <b>false</b> otherwise.
      */
     bool FindOldAndSetNew(const K& key, V& oldValue, const V& newValue)
     {
@@ -160,9 +164,9 @@ public:
     }
 
     /**
-     * @brief Delete key-value pairs whose key is key in the map.
+     * @brief Erases a KV pair.
      *
-     * @param Key The key to be deleted.
+     * @param Key Indicates the key of the KV pair to erase.
      */
     void Erase(const K& key)
     {
@@ -171,7 +175,7 @@ public:
     }
 
     /**
-     * @brief Delete all key-value pairs stored in the map.
+     * @brief Deletes all KV pairs from the map.
      */
     void Clear()
     {
@@ -183,10 +187,10 @@ public:
     using SafeMapCallBack = std::function<void(const K, V&)>;
 
     /**
-     * @brief Iterate through the elements in the map.
+     * @brief Iterates over the elements of the map.
      *
-     * @param callback A specific function that performs custom operations on
-     * each KV key-value pair.
+     * @param callback Called to perform the custom operations on
+     * each KV pair.
      */
     void Iterate(const SafeMapCallBack& callback)
     {

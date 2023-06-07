@@ -16,8 +16,8 @@
  /**
   * @file common_errors.h
   *
-  * @brief Provide value of 'Module' segment of ErrCode for all modules in
-  * commonlibrary subsystem.
+  * @brief Provides values of the <b>Module</b> segment in <b>ErrCode</b>
+  * for all modules in the commonlibrary subsystem.
   */
 
 #ifndef UTILS_COMMON_ERRORS_H
@@ -35,12 +35,12 @@ namespace Utils {
  * |Field|Reserved|        Subsystem      |  Module      |                  Code                         |
  * +-----+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
  *
- * In this file, subsystem is "SUBSYS_COMMON".
+ * In this file, the subsystem is "SUBSYS_COMMON".
  */
 
 /**
- * @brief Value of 'Module' segment of ErrCode for modules in commonlibrary
- * subsystem.
+ * @brief Enumerates the values of the <b>Module</b> segment of ErrCode
+ * for modules in the commonlibrary subsystem.
  *
  * @var MODULE_DEFAULT Default
  * @var MODULE_TIMER Timer(timer.h)

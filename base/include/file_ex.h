@@ -15,15 +15,16 @@
 
 /** @file file_ex.h
 *
-*  @brief Provide global file operation functions implemented in c_utils.
+*  @brief Provides global file operation functions implemented in c_utils.
 */
 
 /**
 * @defgroup FileReadWrite
 * @{
-* @brief To read from and write to files.
+* @brief Provides interfaces for reading data from and writing data to files.
 *
-* Include reading from or writting to files and searching for specified strings.
+* You can use the interfaces to read data from a file, write data to a file,
+* and search for the specified string.
 */
 
 #ifndef UTILS_BASE_FILE_EX_H
@@ -35,96 +36,107 @@
 namespace OHOS {
 /**
  * @ingroup FileReadWrite
- * @brief Read contents as a string from the specified file.
+ * @brief Reads a string from a file.
  *
- * @param filePath Path of the specified file.
- * @param content Target `std::string` object to store the result.
- * @return Return true on success, false if any error occurs.
- * @note Maximum size of the file is 32MB.
+ * @param filePath Indicates the path of the target file.
+ * @param content Indicates the <b>std::string</b> object used to hold
+ * the data read.
+ * @return Returns <b>true</b> if the string is read successfully;
+ * returns <b>false</b> otherwise.
+ * @note The maximum file size is 32 MB.
  */
 bool LoadStringFromFile(const std::string& filePath, std::string& content);
 
 /**
  * @ingroup FileReadWrite
- * @brief Write contents of a string to the specified file.
+ * @brief Writes a string to a file.
  *
- * @param filePath Path of the specified file.
- * @param content Target `std::string` object to be written to the file.
- * @param truncated Specify if truncated the original file.
- * @return Return true on success, false if any error occurs.
+ * @param filePath Indicates the path of the target file.
+ * @param content Indicates the <b>std::string</b> object to write.
+ * @param truncated Indicates whether to truncate the original file.
+ * @return Returns <b>true</b> if the string is written successfully;
+ * returns <b>false</b> otherwise.
  */
 bool SaveStringToFile(const std::string& filePath, const std::string& content, bool truncated = true);
 
 /**
  * @ingroup FileReadWrite
- * @brief Read contents as a string from the file specified by its fd.
+ * @brief Reads a string from a file specified by its file descriptor (FD).
  *
- * @param fd File descriptor of the specified file.
- * @param content Target `std::string` object to store the result.
- * @return Return true on success, false if any error occurs.
+ * @param fd Indicates the FD of the file to read.
+ * @param content Indicates the <b>std::string</b> object used to hold
+ * the data read.
+ * @return Returns <b>true</b> if the string is read successfully;
+ * returns <b>false</b> otherwise.
  */
 bool LoadStringFromFd(int fd, std::string& content);
 
 /**
  * @ingroup FileReadWrite
- * @brief Write contents of a string to the file specified by its fd.
+ * @brief Writes a string to a file specified by its FD.
  *
- * @param fd File descriptor of the specified file.
- * @param content Target `std::string` object to be written to the file.
- * @return Return true on success, false if any error occurs.
+ * @param fd Indicates the FD of the file to write.
+ * @param content Indicates the <b>std::string</b> object to write.
+ * @return Returns <b>true</b> if the string is written successfully;
+ * returns <b>false</b> otherwise.
  */
 bool SaveStringToFd(int fd, const std::string& content);
 
 /**
  * @ingroup FileReadWrite
- * @brief Read contents as a vector from the specified file.
+ * @brief Reads data as a vector from a file.
  *
- * @param filePath Path of the specified file.
- * @param content Target `std::vector` object to store the result.
- * @return Return true on success, false if any error occurs.
+ * @param filePath Indicates the path of the target file.
+ * @param content Indicates the <b>std::vector</b> object used to hold
+ * the data read.
+ * @return Returns <b>true</b> if the data is read successfully;
+ * returns <b>false</b> otherwise.
  */
 bool LoadBufferFromFile(const std::string& filePath, std::vector<char>& content);
 
 /**
  * @ingroup FileReadWrite
- * @brief Write contents of a vector to the specified file.
+ * @brief Writes data of a vector to a file.
  *
- * @param filePath Path of the specified file.
- * @param content Target `std::vector` object to be written to the file.
- * @return Return true on success, false if any error occurs.
+ * @param filePath Indicates the path of the target file.
+ * @param content Indicates the <b>std::vector</b> object to write.
+ * @return Returns <b>true</b> if the data is written successfully;
+ * returns <b>false</b> otherwise.
  */
 bool SaveBufferToFile(const std::string& filePath, const std::vector<char>& content, bool truncated = true);
 
 /**
  * @ingroup FileReadWrite
- * @brief Check if the specified file exists
+ * @brief Checks whether a file exists.
  *
- * @param filePath Path of the specified file.
- * @return Return true on success,
- * false if any error(e.g. Permission Denied) occurs.
+ * @param filePath Indicates the file to check.
+ * @return Returns <b>true</b> if the file exists; returns <b>false</b>
+ * if any error (e.g. Permission Denied) occurs.
  */
 bool FileExists(const std::string& fileName);
 
 /**
  * @ingroup FileReadWrite
- * @brief Check if the file contains specified contents in string.
+ * @brief Checks whether a file contains the specified string.
  *
- * @param fileName Path of the specified file.
- * @param subStr Specified `std::string` object
- * @param caseSensitive Specify if case-sensitive
- * @return Return true if the file contains the specified string,
- * false if any error occurs.
+ * @param fileName Indicates the path of the target file.
+ * @param subStr Indicates the <b>std::string</b> object to check.
+ * @param caseSensitive Indicates whether the string is case-sensitive.
+ * @return Returns <b>true</b> if the file contains the specified string;
+ * returns <b>false</b> otherwise.
  */
 bool StringExistsInFile(const std::string& fileName, const std::string& subStr, bool caseSensitive = true);
 
 /**
  * @ingroup FileReadWrite
- * @brief Get amount of the specified string in the file.
+ * @brief Obtains the number of occurrences of the specified string in a file.
+
  *
- * @param fileName Path of the specified file.
- * @param subStr Specified `std::string` object
- * @param caseSensitive Specify if case-sensitive
- * @return Return the amount, return 0 if `subStr` is null.
+ * @param fileName Indicates the path of the target file.
+ * @param subStr Indicates the <b>std::string</b> object to search.
+ * @param caseSensitive Indicates whether the string is case-sensitive.
+ * @return Returns the number of occurrences of the string in the file;
+ * returns <b>0</b> if <b>subStr</b> is null.
  */
 int  CountStrInFile(const std::string& fileName, const std::string& subStr, bool caseSensitive = true);
 }
