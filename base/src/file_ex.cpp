@@ -32,6 +32,80 @@ using namespace std;
 const int MAX_FILE_LENGTH = 32 * 1024 * 1024;
 
 namespace OHOS {
+#ifdef UTILS_CXX_RUST
+bool RustLoadStringFromFile(const rust::String& filePath, rust::String& content)
+{
+    std::string tmpPath(filePath);
+    std::string tmpcontent(content);
+    if (LoadStringFromFile(tmpPath,tmpcontent)) {
+        content = tmpcontent;
+        return true;
+    }
+    return false;
+}
+
+bool RustLoadStringFromFd(int fd, rust::String& content)
+{
+    std::string tmpcontent(content);
+    if (LoadStringFromFd(fd, tmpcontent)) {
+        content = tmpcontent;
+        return true;
+    }
+    return false;
+}
+
+bool RustLoadBufferFromFile(const rust::String& filePath, rust::vec<char>& content)
+{
+    std::string tmpPath(filePath);
+    std::vector<char> tmpcontent(content.begin(), content.end());
+    if(LoadBufferFromFile(tmpPath, tmpcontent)) {
+        std::copy(tmpcontent.begin(), tmpcontent.end(), std::back_inserter(content));
+        return true;
+    }
+    return false;
+}
+
+bool RustSaveBufferToFile(const rust::String& filePath, const rust::vec<char>& content, bool truncated)
+{
+    std::string tmpPath(filePath);
+    std::vector<char> tmpcontent(content.begin(), content.end());
+    return SaveBufferToFile(tmpPath, tmpcontent, truncated);
+}
+
+bool RustSaveStringToFile(const rust::String& filePath, const rust::String& content, bool truncated)
+{
+    std::string tmpPath(filePath);
+    std::string tmpcontent(content);
+    return SaveStringToFile(tmpPath, tmpcontent, truncated);
+}
+
+bool RustSaveStringToFd(int fd, const rust::String& content)
+{
+    std::string tmpcontent(content);
+    return SaveStringToFd(fd, tmpcontent);
+}
+
+bool RustFileExists(const rust::String& fileName)
+{
+    std::string tmpname(fileName);
+    return FileExists(tmpname);
+}
+
+bool RustStringExistsInFile(const rust::String& fileName, const rust::String& subStr, bool caseSensitive)
+{
+    std::string tmpname(fileName);
+    std::string tmpstr(subStr);
+    return StringExistsInFile(tmpname, tmpstr, caseSensitive);
+}
+
+int  RustCountStrInFile(const rust::String& fileName, const rust::String& subStr, bool caseSensitive)
+{
+    std::string tmpname(fileName);
+    std::string tmpstr(subStr);
+    return CountStrInFile(tmpname, tmpstr, caseSensitive);
+}
+
+#endif
 
 bool LoadStringFromFile(const string& filePath, string& content)
 {

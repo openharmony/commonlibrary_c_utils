@@ -22,3 +22,6 @@ pub mod ashmem;
 /// Module File_ex. Provides interfaces to operate on file.
 /// Includes reading from or writting to files and searching for specified strings.
 pub mod file_ex;
+
+/// Module Directory_ex. Provides interfaces to operate on directory.
+pub mod directory_ex;

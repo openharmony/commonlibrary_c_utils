@@ -181,6 +181,7 @@ ohos_shared_library("utils") {
 rust_cxx("cxx_rust_gen") {
   sources = [
     "src/rust/ashmem.rs",
+    "src/rust/directory_ex.rs",
     "src/rust/file_ex.rs",
   ]
 }
@@ -188,6 +189,7 @@ rust_cxx("cxx_rust_gen") {
 ohos_static_library("utils_static_cxx_rust") {
   sources = [
     "src/ashmem.cpp",
+    "src/directory_ex.cpp",
     "src/file_ex.cpp",
     "src/refbase.cpp",
   ]
@@ -211,6 +213,7 @@ ohos_static_library("utils_static_cxx_rust") {
 ohos_rust_shared_library("utils_rust") {
   sources = [
     "src/rust/ashmem.rs",
+    "src/rust/directory_ex.rs",
     "src/rust/file_ex.rs",
     "src/rust/lib.rs",
   ]
