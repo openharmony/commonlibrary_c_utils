@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import("//build/ohos.gni")
-import("//build/templates/rust/rust_cxx.gni")  # used for templates rust_cxx()
 
 ###############################################################################
 declare_args() {
@@ -178,59 +177,63 @@ ohos_shared_library("utils") {
 }
 
 ########## modules for `c_utils` in rust ##########
-rust_cxx("cxx_rust_gen") {
-  sources = [
-    "src/rust/ashmem.rs",
-    "src/rust/directory_ex.rs",
-    "src/rust/file_ex.rs",
-  ]
-}
+# rust compiler is not supportted on mac
+if (host_os != "mac") {
+  import("//build/templates/rust/rust_cxx.gni")  # used for templates rust_cxx()
+  rust_cxx("cxx_rust_gen") {
+    sources = [
+      "src/rust/ashmem.rs",
+      "src/rust/directory_ex.rs",
+      "src/rust/file_ex.rs",
+    ]
+  }
 
-ohos_static_library("utils_static_cxx_rust") {
-  sources = [
-    "src/ashmem.cpp",
-    "src/directory_ex.cpp",
-    "src/file_ex.cpp",
-    "src/refbase.cpp",
-  ]
-  sources += get_target_outputs(":cxx_rust_gen")
-  defines = [ "UTILS_CXX_RUST" ]
-  include_dirs = [
-    "include",
-    "${target_gen_dir}",
-    "//third_party/rust/crates/cxx/include",
-  ]
-  deps = [
-    ":cxx_rust_gen",
-    "//build/rust/tests:cxx_cppdeps",
-  ]
-  public_deps = [ "//third_party/bounds_checking_function:libsec_shared" ]
+  ohos_static_library("utils_static_cxx_rust") {
+    sources = [
+      "src/ashmem.cpp",
+      "src/directory_ex.cpp",
+      "src/file_ex.cpp",
+      "src/refbase.cpp",
+    ]
+    sources += get_target_outputs(":cxx_rust_gen")
+    defines = [ "UTILS_CXX_RUST" ]
+    include_dirs = [
+      "include",
+      "${target_gen_dir}",
+      "//third_party/rust/crates/cxx/include",
+    ]
+    deps = [
+      ":cxx_rust_gen",
+      "//build/rust/tests:cxx_cppdeps",
+    ]
+    public_deps = [ "//third_party/bounds_checking_function:libsec_shared" ]
 
-  subsystem_name = "commonlibrary"
-  part_name = "c_utils"
-}
+    subsystem_name = "commonlibrary"
+    part_name = "c_utils"
+  }
 
-ohos_rust_shared_library("utils_rust") {
-  sources = [
-    "src/rust/ashmem.rs",
-    "src/rust/directory_ex.rs",
-    "src/rust/file_ex.rs",
-    "src/rust/lib.rs",
-  ]
-  deps = [
-    ":utils_static_cxx_rust",
-    "//third_party/rust/crates/cxx:lib",
-  ]
+  ohos_rust_shared_library("utils_rust") {
+    sources = [
+      "src/rust/ashmem.rs",
+      "src/rust/directory_ex.rs",
+      "src/rust/file_ex.rs",
+      "src/rust/lib.rs",
+    ]
+    deps = [
+      ":utils_static_cxx_rust",
+      "//third_party/rust/crates/cxx:lib",
+    ]
 
-  crate_root = "src/rust/lib.rs"
-  crate_name = "utils_rust"
-  crate_type = "dylib"
-  output_extension = "dylib.so"
-  subsystem_name = "commonlibrary"
-  part_name = "c_utils"
-  install_images = [
-    "system",
-    "updater",
-  ]
+    crate_root = "src/rust/lib.rs"
+    crate_name = "utils_rust"
+    crate_type = "dylib"
+    output_extension = "dylib.so"
+    subsystem_name = "commonlibrary"
+    part_name = "c_utils"
+    install_images = [
+      "system",
+      "updater",
+    ]
+  }
 }
 ###############################################################################
