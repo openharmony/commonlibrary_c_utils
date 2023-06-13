@@ -20,7 +20,7 @@ group("unittest") {
   deps += [ "unittest/common:unittest" ]
 
   # rust compiler is not supportted on mac
-  if (host_os != "mac") {
+  if (host_os == "linux" && !is_asan) {
     deps += [ "unittest/rust:unittest" ]
   }
 }
