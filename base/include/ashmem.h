@@ -273,6 +273,14 @@ private:
     mutable int32_t memorySize_; // Size of the Ashmem region.
     mutable int flag_; // Protection flag of the Ashmem region in user space.
     mutable void *startAddr_; // Start address of the Ashmem region.
+    bool CheckValid(int32_t size, int32_t offset, int cmd);
+    #endif
+private:
+    #ifdef UTILS_CXX_RUST
+    mutable int memoryFd_; // File descriptor of the Ashmem region.
+    mutable int32_t memorySize_; // Size of the Ashmem region.
+    mutable int flag_; // Protection flag of the Ashmem region in user space.
+    mutable void *startAddr_; // Start address of the Ashmem region.
     #else
     int memoryFd_; // File descriptor of the Ashmem region.
     int32_t memorySize_; // Size of the Ashmem region.
