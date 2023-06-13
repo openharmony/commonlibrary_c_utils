@@ -19,10 +19,9 @@ group("unittest") {
 
   deps += [ "unittest/common:unittest" ]
 
-  if (is_phone_product) {
-    deps += [
-      # "unittest/phone:unittest",
-    ]
+  # rust compiler is not supportted on mac
+  if (host_os != "mac") {
+    deps += [ "unittest/rust:unittest" ]
   }
 }
 ###############################################################################

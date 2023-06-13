@@ -35,6 +35,34 @@
 namespace OHOS {
 static pthread_mutex_t g_ashmemLock = PTHREAD_MUTEX_INITIALIZER;
 
+#ifdef UTILS_CXX_RUST
+std::shared_ptr<Ashmem> CreateAshmemStd(const char *name, int32_t size)
+{
+    if ((name == nullptr) || (size <= 0)) {
+        UTILS_LOGE("%{public}s: Parameter is invalid, size= %{public}d", __func__, size);
+        return std::shared_ptr<Ashmem>{};
+    }
+
+    int fd = AshmemCreate(name, size);
+    if (fd < 0) {
+        UTILS_LOGE("%{public}s: Failed to exec AshmemCreate, fd= %{public}d", __func__, size);
+        return std::shared_ptr<Ashmem>{};
+    }
+
+    return std::make_shared<Ashmem>(fd, size);
+}
+
+const c_void* AsVoidPtr(const char* inPtr)
+{
+    return static_cast<const c_void*>(inPtr);
+}
+
+const char* AsCharPtr(const c_void* inPtr)
+{
+    return static_cast<const char*>(inPtr);
+}
+#endif
+
 static int AshmemOpenLocked()
 {
     int fd = TEMP_FAILURE_RETRY(open("/dev/ashmem", O_RDWR | O_CLOEXEC));
@@ -117,12 +145,14 @@ int AshmemGetSize(int fd)
     return TEMP_FAILURE_RETRY(ioctl(fd, ASHMEM_GET_SIZE, NULL));
 }
 
-Ashmem::Ashmem(int fd, int size) : memoryFd_(fd), memorySize_(size), flag_(0), startAddr_(nullptr)
+Ashmem::Ashmem(int fd, int32_t size) : memoryFd_(fd), memorySize_(size), flag_(0), startAddr_(nullptr)
 {
 }
 
 Ashmem::~Ashmem()
 {
+    UnmapAshmem();
+    CloseAshmem();
 }
 
 sptr<Ashmem> Ashmem::CreateAshmem(const char *name, int32_t size)
@@ -141,7 +171,27 @@ sptr<Ashmem> Ashmem::CreateAshmem(const char *name, int32_t size)
     return new Ashmem(fd, size);
 }
 
+bool Ashmem::SetProtection(int protectionType) const
+{
+    int result = AshmemSetProt(memoryFd_, protectionType);
+    return result >= 0;
+}
+
+int Ashmem::GetProtection() const
+{
+    return TEMP_FAILURE_RETRY(ioctl(memoryFd_, ASHMEM_GET_PROT_MASK));
+}
+
+int32_t Ashmem::GetAshmemSize() const
+{
+    return AshmemGetSize(memoryFd_);
+}
+
+#ifdef UTILS_CXX_RUST
+void Ashmem::CloseAshmem() const
+#else
 void Ashmem::CloseAshmem()
+#endif
 {
     if (memoryFd_ > 0) {
         ::close(memoryFd_);
@@ -152,7 +202,11 @@ void Ashmem::CloseAshmem()
     startAddr_ = nullptr;
 }
 
+#ifdef UTILS_CXX_RUST
+bool Ashmem::MapAshmem(int mapType) const
+#else
 bool Ashmem::MapAshmem(int mapType)
+#endif
 {
     void *startAddr = ::mmap(nullptr, memorySize_, mapType, MAP_SHARED, memoryFd_, 0);
     if (startAddr == MAP_FAILED) {
@@ -166,17 +220,29 @@ bool Ashmem::MapAshmem(int mapType)
     return true;
 }
 
+#ifdef UTILS_CXX_RUST
+bool Ashmem::MapReadAndWriteAshmem() const
+#else
 bool Ashmem::MapReadAndWriteAshmem()
+#endif
 {
     return MapAshmem(PROT_READ | PROT_WRITE);
 }
 
+#ifdef UTILS_CXX_RUST
+bool Ashmem::MapReadOnlyAshmem() const
+#else
 bool Ashmem::MapReadOnlyAshmem()
+#endif
 {
     return MapAshmem(PROT_READ);
 }
 
+#ifdef UTILS_CXX_RUST
+void Ashmem::UnmapAshmem() const
+#else
 void Ashmem::UnmapAshmem()
+#endif
 {
     if (startAddr_ != nullptr) {
         ::munmap(startAddr_, memorySize_);
@@ -185,23 +251,11 @@ void Ashmem::UnmapAshmem()
     flag_ = 0;
 }
 
-bool Ashmem::SetProtection(int protectionType)
-{
-    int result = AshmemSetProt(memoryFd_, protectionType);
-    return result >= 0;
-}
-
-int Ashmem::GetProtection()
-{
-    return TEMP_FAILURE_RETRY(ioctl(memoryFd_, ASHMEM_GET_PROT_MASK));
-}
-
-int32_t Ashmem::GetAshmemSize()
-{
-    return AshmemGetSize(memoryFd_);
-}
-
+#ifdef UTILS_CXX_RUST
+bool Ashmem::WriteToAshmem(const void *data, int32_t size, int32_t offset) const
+#else
 bool Ashmem::WriteToAshmem(const void *data, int32_t size, int32_t offset)
+#endif
 {
     if (data == nullptr) {
         return false;
@@ -222,7 +276,11 @@ bool Ashmem::WriteToAshmem(const void *data, int32_t size, int32_t offset)
     return true;
 }
 
+#ifdef UTILS_CXX_RUST
+const void *Ashmem::ReadFromAshmem(int32_t size, int32_t offset) const
+#else
 const void *Ashmem::ReadFromAshmem(int32_t size, int32_t offset)
+#endif
 {
     if (!CheckValid(size, offset, PROT_READ)) {
         UTILS_LOGE("%{public}s: invalid input or not map", __func__);
@@ -232,7 +290,7 @@ const void *Ashmem::ReadFromAshmem(int32_t size, int32_t offset)
     return reinterpret_cast<const char *>(startAddr_) + offset;
 }
 
-bool Ashmem::CheckValid(int32_t size, int32_t offset, int cmd)
+bool Ashmem::CheckValid(int32_t size, int32_t offset, int cmd) const
 {
     if (startAddr_ == nullptr) {
         return false;

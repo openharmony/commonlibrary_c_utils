@@ -23,6 +23,69 @@ using namespace std;
 
 namespace OHOS {
 
+#ifdef UTILS_CXX_RUST
+rust::String RustGetCurrentProcFullFileName()
+{
+    return rust::String(GetCurrentProcFullFileName());
+}
+
+rust::String RustGetCurrentProcPath()
+{
+    return rust::String(GetCurrentProcPath());
+}
+
+rust::String RustExtractFilePath(const rust::String& fileFullName)
+{
+    std::string tmpName = std::string(fileFullName);
+    return rust::String(ExtractFilePath(tmpName));
+}
+
+rust::String RustExtractFileName(const rust::String& fileFullName)
+{
+    std::string tmpName = std::string(fileFullName);
+    return rust::String(ExtractFileName(tmpName));
+}
+
+rust::String RustExtractFileExt(const rust::String& fileName)
+{
+    std::string tmpName = std::string(fileName);
+    return rust::String(ExtractFileExt(tmpName));
+}
+
+rust::String RustExcludeTrailingPathDelimiter(const rust::String& path)
+{
+    std::string tmpPath = std::string(path);
+    return rust::String(ExcludeTrailingPathDelimiter(tmpPath));
+}
+
+rust::String RustIncludeTrailingPathDelimiter(const rust::String& path)
+{
+    std::string tmpPath = std::string(path);
+    return rust::String(IncludeTrailingPathDelimiter(tmpPath));
+}
+
+bool RustPathToRealPath(const rust::String& path, rust::String& realPath)
+{
+    std::string tmpPath = std::string(path);
+    std::string tmpResolved;
+
+    if (PathToRealPath(tmpPath, tmpResolved)) {
+        realPath = tmpResolved;
+        return true;
+    }
+
+    return false;
+}
+
+void RustGetDirFiles(const rust::String& path, rust::vec<rust::String>& files)
+{
+    std::string tmpPath(path);
+    std::vector<std::string> tmpFiles(files.begin(), files.end());
+    GetDirFiles(tmpPath, tmpFiles);
+    std::copy(tmpFiles.begin(), tmpFiles.end(), std::back_inserter(files));
+}
+#endif
+
 string GetCurrentProcFullFileName()
 {
     char procFile[PATH_MAX + 1] = {0};
@@ -96,7 +159,7 @@ void GetDirFiles(const string& path, vector<string>& files)
             break;
         }
 
-        // current dir OR parent dir
+        // current dir or parent dir
         if ((strcmp(ptr->d_name, ".") == 0) || (strcmp(ptr->d_name, "..") == 0)) {
             continue;
         } else if (ptr->d_type == DT_DIR) {
@@ -146,7 +209,7 @@ bool ForceRemoveDirectory(const string& path)
             break;
         }
 
-        // current dir OR parent dir
+        // current dir or parent dir
         if (strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0) {
             continue;
         }
@@ -235,7 +298,7 @@ bool ChangeModeDirectory(const string& path, const mode_t& mode)
             break;
         }
 
-        // current dir OR parent dir
+        // current dir or parent dir
         if (strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0) {
             continue;
         }

@@ -32,8 +32,22 @@
 
 #include <string>
 #include <vector>
+#ifdef UTILS_CXX_RUST
+#include "cxx.h"
+#endif
 
 namespace OHOS {
+#ifdef UTILS_CXX_RUST
+bool RustLoadStringFromFile(const rust::String& filePath, rust::String& content);
+bool RustLoadStringFromFd(int fd, rust::String& content);
+bool RustLoadBufferFromFile(const rust::String& filePath, rust::vec<char>& content);
+bool RustSaveBufferToFile(const rust::String& filePath, const rust::vec<char>& content, bool truncated);
+bool RustSaveStringToFile(const rust::String& filePath, const rust::String& content, bool truncated);
+bool RustSaveStringToFd(int fd, const rust::String& content);
+bool RustFileExists(const rust::String& fileName);
+bool RustStringExistsInFile(const rust::String& fileName, const rust::String& subStr, bool caseSensitive);
+int  RustCountStrInFile(const rust::String& fileName, const rust::String& subStr, bool caseSensitive);
+#endif
 /**
  * @ingroup FileReadWrite
  * @brief Reads a string from a file.

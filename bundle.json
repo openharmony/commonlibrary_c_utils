@@ -21,12 +21,15 @@
       "components": [
         "hilog_native"
       ],
-      "third_party": []
+      "third_party": [
+        "bounds_checking_function"
+      ]
     },
     "build": {
       "sub_component": [
         "//commonlibrary/c_utils/base:utils",
-        "//commonlibrary/c_utils/base:utilsbase"
+        "//commonlibrary/c_utils/base:utilsbase",
+        "//commonlibrary/c_utils/base:utils_rust"
       ],
       "inner_kits": [
         {
@@ -93,6 +96,13 @@
               "unique_fd.h"
             ],
             "header_base": "//commonlibrary/c_utils/base/include"
+          }
+        },
+        {
+          "name": "//commonlibrary/c_utils/base:utils_rust",
+          "header": {
+            "header_files": [],
+            "header_base": []
           }
         }
       ],

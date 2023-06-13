@@ -151,6 +151,7 @@ private:
     }
 
     bool ValidMappedSize(off_t& targetSize, const struct stat& stat);
+    bool NormalizePath();
     bool NormalizeSize();
     void NormalizeMode();
     bool OpenFile();

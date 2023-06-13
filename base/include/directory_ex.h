@@ -19,8 +19,23 @@
 #include <string>
 #include <vector>
 #include <sys/stat.h>
+#ifdef UTILS_CXX_RUST
+#include "cxx.h"
+#endif
 
 namespace OHOS {
+
+#ifdef UTILS_CXX_RUST
+rust::String RustGetCurrentProcFullFileName();
+rust::String RustGetCurrentProcPath();
+rust::String RustExtractFilePath(const rust::String& fileFullName);
+rust::String RustExtractFileName(const rust::String& fileFullName);
+rust::String RustExtractFileExt(const rust::String& fileName);
+rust::String RustExcludeTrailingPathDelimiter(const rust::String& path);
+rust::String RustIncludeTrailingPathDelimiter(const rust::String& path);
+bool RustPathToRealPath(const rust::String& path, rust::String& realPath);
+void RustGetDirFiles(const rust::String& path, rust::vec<rust::String>& files);
+#endif
 
 /**
  * @brief Obtains the full absolute path of this program.

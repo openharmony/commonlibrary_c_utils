@@ -25,10 +25,22 @@
 
 #include <cstddef>
 #include <linux/ashmem.h>
+#ifdef UTILS_CXX_RUST
+#include <memory>
+#endif
 #include "refbase.h"
 #include "parcel.h"
 
 namespace OHOS {
+class Ashmem;
+
+#ifdef UTILS_CXX_RUST
+using c_void = void;
+const c_void* AsVoidPtr(const char* inPtr);
+const char* AsCharPtr(const c_void* inPtr);
+std::shared_ptr<Ashmem> CreateAshmemStd(const char *name, int32_t size);
+#endif
+
 /**
  * @brief Creates an <b>Ashmem</b> region in the kernel.
  *
@@ -85,6 +97,57 @@ public:
      */
     static sptr<Ashmem> CreateAshmem(const char *name, int32_t size);
 
+    /**
+     * @brief Construct a new Ashmem object.
+     *
+     * @param fd File descriptor of an ashmem in kenrel.
+     * @param size Size of the corresponding ashmem region in kernel.
+     */
+    Ashmem(int fd, int32_t size);
+    ~Ashmem() override;
+
+    /**
+     * @brief Get file descriptor of the corresponding ashmem in kernel.
+     *
+     * @return Corresponding file descriptor of this Ashmem object. It will be
+     * 0 when ashmem is closed.
+     */
+    int GetAshmemFd() const
+    {
+        return memoryFd_;
+    };
+
+    /**
+     * @brief Set the protection flag of ashmem region in kernel.
+     *
+     * @param protectionType Value of protection flag.
+     * @return True if set successful.
+     */
+    bool SetProtection(int protectionType) const;
+
+    /**
+     * @brief Get the protection flag of ashmem region in kernel.
+     *
+     * @return Value of protection flag. Refer to linux manual.
+     */
+    int GetProtection() const;
+
+    /**
+     * @brief Get the size of ashmem region in kernel.
+     *
+     * @return Value of size.
+     */
+    int32_t GetAshmemSize() const;
+
+    #ifdef UTILS_CXX_RUST
+    void CloseAshmem() const;
+    bool MapAshmem(int mapType) const;
+    bool MapReadAndWriteAshmem() const;
+    bool MapReadOnlyAshmem() const;
+    void UnmapAshmem() const;
+    bool WriteToAshmem(const void *data, int32_t size, int32_t offset) const;
+    const void *ReadFromAshmem(int32_t size, int32_t offset) const;
+    #else
     /**
      * @brief Closes this <b>Ashmem</b> region (through the file descriptor).
      *
@@ -203,13 +266,21 @@ public:
     {
         return memoryFd_;
     };
-    
+
 private:
+    #ifdef UTILS_CXX_RUST
+    mutable int memoryFd_; // File descriptor of the Ashmem region.
+    mutable int32_t memorySize_; // Size of the Ashmem region.
+    mutable int flag_; // Protection flag of the Ashmem region in user space.
+    mutable void *startAddr_; // Start address of the Ashmem region.
+    #else
     int memoryFd_; // File descriptor of the Ashmem region.
     int32_t memorySize_; // Size of the Ashmem region.
     int flag_; // Protection flag of the Ashmem region in user space.
     void *startAddr_; // Start address of the Ashmem region.
-    bool CheckValid(int32_t size, int32_t offset, int cmd);
+    #endif
+
+    bool CheckValid(int32_t size, int32_t offset, int cmd) const;
 };
 } // namespace OHOS
 #endif

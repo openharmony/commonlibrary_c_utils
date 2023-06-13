@@ -53,11 +53,7 @@ void UtilsUniqueFd::TearDownTestCase(void)
     std::string testStr;
     inputfile >> testStr;
     inputfile.close();
-    if (remove(testfilename) == 0) {
-        ;
-    } else {
-        FAIL();
-    }
+    EXPECT_EQ(remove(testfilename), 0);
 }
 
 HWTEST_F(UtilsUniqueFd, testUtilsUniqueFd, TestSize.Level0)
@@ -65,18 +61,14 @@ HWTEST_F(UtilsUniqueFd, testUtilsUniqueFd, TestSize.Level0)
     int fd = open("NOTHISFILE", O_RDWR, 0666);
 
     UniqueFd ufd2(fd);
-    if (ufd2 == -1) {
-        SUCCEED();
-    }
+    EXPECT_EQ(ufd2, -1);
 };
 
 HWTEST_F(UtilsUniqueFd, testUtilsUniqueCtroFromInt, TestSize.Level0)
 {
 
     UniqueFd ufd2(open(testfilename, O_RDWR, 0666));
-    if (ufd2 == -1) {
-        FAIL();
-    }
+    EXPECT_NE(ufd2, -1);
 };
 
 HWTEST_F(UtilsUniqueFd, testUtilsUniqueFdeqcompare, TestSize.Level0)

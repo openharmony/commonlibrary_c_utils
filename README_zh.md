@@ -37,6 +37,11 @@ commonlibrary/c_utils
 ./build.sh --product-name rk3568 --build-target commonlibrary/c_utils/base:utils
 ```
 
+### 编译Rust动态库
+```
+./build.sh --product-name rk3568 --build-target commonlibrary/c_utils/base:utils_rust
+```
+
 ### 编译静态库
 ```
 ./build.sh --product-name rk3568 --build-target commonlibrary/c_utils/base:utilsbase
@@ -55,6 +60,8 @@ ohos_shared_library("xxxxx") {
     "c_utils:utils",
     # 静态库依赖(可选)
     "c_utils:utilsbase",
+    # Rust动态库依赖(可选)
+    "c_utils:utils_rust",
   ]
 
   ...
@@ -63,11 +70,15 @@ ohos_shared_library("xxxxx") {
 
 ## 使用说明
 
+### [Rust-匿名共享内存](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_rust_ashmem.md)
+### [Rust-文件与目录](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_rust_directory.md)
+
 ### [使用匿名共享内存](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-ashmem.md)
 ### [使用智能指针管理动态分配内存对象](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-refbase.md)
 ### [使用Parcel作为数据容器](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-parcel.md)
 ### [定时器](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_timer.md)
-
+### [文件映射](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_mapped_file.md)
+### [事件处理系统](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_event.md)
 ### [读写锁](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-rwlock.md)
 ### [增强信号量功能](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-semaphore.md)
 ### [强化线程能力](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-thread.md)
@@ -89,6 +100,11 @@ ohos_shared_library("xxxxx") {
 ### [管理、传递文件描述符](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-uniquefd.md)
 
 ## Changelog
+**2023/06/14**
+1. 添加文件映射、事件处理系统的开发指导文档。
+2. Refbase维测增强部分已更新至文档。
+3. 添加Rust相关功能的开发指导文档并提供编译命令。
+
 **2023/01/31**
 1. 添加docs目录，提供c_utils内各主要功能的开发指导文档。
 2. 在源码头文件中添加注释。

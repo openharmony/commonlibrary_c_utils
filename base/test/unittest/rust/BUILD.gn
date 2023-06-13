@@ -1,0 +1,57 @@
+# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import("//build/ohos.gni")
+import("//build/test.gni")
+
+config("module_private_config") {
+  visibility = [ ":*" ]
+
+  # library path
+  lib_dirs = [ "libs" ]
+}
+
+group("unittest") {
+  testonly = true
+  deps = []
+
+  deps += [
+    ":utils_rust_ashmem_test",
+    ":utils_rust_directory_test",
+    ":utils_rust_file_test",
+  ]
+}
+
+ohos_rust_unittest("utils_rust_ashmem_test") {
+  module_out_path = "utils/base/rust"
+  sources = [ "utils_rust_ashmem_test.rs" ]
+  configs = [ ":module_private_config" ]
+  deps = [ "../../../../base:utils_rust" ]
+}
+
+ohos_rust_unittest("utils_rust_file_test") {
+  module_out_path = "utils/base/rust"
+  sources = [ "utils_rust_file_test.rs" ]
+  deps = [
+    "//commonlibrary/c_utils/base:utils_rust",
+    "//third_party/rust/crates/cxx:lib",
+  ]
+}
+
+ohos_rust_unittest("utils_rust_directory_test") {
+  module_out_path = "utils/base/rust"
+  sources = [ "utils_rust_directory_test.rs" ]
+  deps = [
+    "//commonlibrary/c_utils/base:utils_rust",
+    "//third_party/rust/crates/cxx:lib",
+  ]
+}
