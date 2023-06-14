@@ -246,47 +246,11 @@ public:
      */
     const void *ReadFromAshmem(int32_t size, int32_t offset);
 
-    /**
-     * @brief Creates an <b>Ashmem</b> region.
-     *
-     * @param fd Indicates the file descriptor of the <b>Ashmem</b> region
-	 * in the kenrel.
-     * @param size Indicates the size of the <b>Ashmem</b> region.
-     */
-    Ashmem(int fd, int32_t size);
-    ~Ashmem() override;
-
-    /**
-     * @brief Obtains the file descriptor of this <b>Ashmem</b> region in the kernel.
-     *
-     * @return Returns the file descriptor. The value <b>0</b> is returned
-     * if the <b>Ashmem</b> region is closed.
-     */
-    int GetAshmemFd() const
-    {
-        return memoryFd_;
-    };
-
 private:
-    #ifdef UTILS_CXX_RUST
     mutable int memoryFd_; // File descriptor of the Ashmem region.
     mutable int32_t memorySize_; // Size of the Ashmem region.
     mutable int flag_; // Protection flag of the Ashmem region in user space.
     mutable void *startAddr_; // Start address of the Ashmem region.
-    bool CheckValid(int32_t size, int32_t offset, int cmd);
-    #endif
-private:
-    #ifdef UTILS_CXX_RUST
-    mutable int memoryFd_; // File descriptor of the Ashmem region.
-    mutable int32_t memorySize_; // Size of the Ashmem region.
-    mutable int flag_; // Protection flag of the Ashmem region in user space.
-    mutable void *startAddr_; // Start address of the Ashmem region.
-    #else
-    int memoryFd_; // File descriptor of the Ashmem region.
-    int32_t memorySize_; // Size of the Ashmem region.
-    int flag_; // Protection flag of the Ashmem region in user space.
-    void *startAddr_; // Start address of the Ashmem region.
-    #endif
 
     bool CheckValid(int32_t size, int32_t offset, int cmd) const;
 };
