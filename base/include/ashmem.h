@@ -245,12 +245,19 @@ public:
      * <b>Ashmem</b> region in the kernel and the mapped region in user space.
      */
     const void *ReadFromAshmem(int32_t size, int32_t offset);
-
+    #endif
 private:
+    #ifdef UTILS_CXX_RUST
     mutable int memoryFd_; // File descriptor of the Ashmem region.
     mutable int32_t memorySize_; // Size of the Ashmem region.
     mutable int flag_; // Protection flag of the Ashmem region in user space.
     mutable void *startAddr_; // Start address of the Ashmem region.
+    #else
+    int memoryFd_; // File descriptor of the Ashmem region.
+    int32_t memorySize_; // Size of the Ashmem region.
+    int flag_; // Protection flag of the Ashmem region in user space.
+    void *startAddr_; // Start address of the Ashmem region.
+    #endif
 
     bool CheckValid(int32_t size, int32_t offset, int cmd) const;
 };
