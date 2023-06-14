@@ -36,9 +36,9 @@ namespace OHOS {
 bool RustLoadStringFromFile(const rust::String& filePath, rust::String& content)
 {
     std::string tmpPath(filePath);
-    std::string tmpcontent(content);
-    if (LoadStringFromFile(tmpPath,tmpcontent)) {
-        content = tmpcontent;
+    std::string tmpContent(content);
+    if (LoadStringFromFile(tmpPath, tmpContent)) {
+        content = tmpContent;
         return true;
     }
     return false;
@@ -46,9 +46,9 @@ bool RustLoadStringFromFile(const rust::String& filePath, rust::String& content)
 
 bool RustLoadStringFromFd(int fd, rust::String& content)
 {
-    std::string tmpcontent(content);
-    if (LoadStringFromFd(fd, tmpcontent)) {
-        content = tmpcontent;
+    std::string tmpContent(content);
+    if (LoadStringFromFd(fd, tmpContent)) {
+        content = tmpContent;
         return true;
     }
     return false;
@@ -57,9 +57,9 @@ bool RustLoadStringFromFd(int fd, rust::String& content)
 bool RustLoadBufferFromFile(const rust::String& filePath, rust::vec<char>& content)
 {
     std::string tmpPath(filePath);
-    std::vector<char> tmpcontent(content.begin(), content.end());
-    if(LoadBufferFromFile(tmpPath, tmpcontent)) {
-        std::copy(tmpcontent.begin(), tmpcontent.end(), std::back_inserter(content));
+    std::vector<char> tmpContent(content.begin(), content.end());
+    if (LoadBufferFromFile(tmpPath, tmpContent)) {
+        std::copy(tmpContent.begin(), tmpContent.end(), std::back_inserter(content));
         return true;
     }
     return false;
@@ -68,41 +68,41 @@ bool RustLoadBufferFromFile(const rust::String& filePath, rust::vec<char>& conte
 bool RustSaveBufferToFile(const rust::String& filePath, const rust::vec<char>& content, bool truncated)
 {
     std::string tmpPath(filePath);
-    std::vector<char> tmpcontent(content.begin(), content.end());
-    return SaveBufferToFile(tmpPath, tmpcontent, truncated);
+    std::vector<char> tmpContent(content.begin(), content.end());
+    return SaveBufferToFile(tmpPath, tmpContent, truncated);
 }
 
 bool RustSaveStringToFile(const rust::String& filePath, const rust::String& content, bool truncated)
 {
     std::string tmpPath(filePath);
-    std::string tmpcontent(content);
-    return SaveStringToFile(tmpPath, tmpcontent, truncated);
+    std::string tmpContent(content);
+    return SaveStringToFile(tmpPath, tmpContent, truncated);
 }
 
 bool RustSaveStringToFd(int fd, const rust::String& content)
 {
-    std::string tmpcontent(content);
-    return SaveStringToFd(fd, tmpcontent);
+    std::string tmpContent(content);
+    return SaveStringToFd(fd, tmpContent);
 }
 
 bool RustFileExists(const rust::String& fileName)
 {
-    std::string tmpname(fileName);
-    return FileExists(tmpname);
+    std::string tmpName(fileName);
+    return FileExists(tmpName);
 }
 
 bool RustStringExistsInFile(const rust::String& fileName, const rust::String& subStr, bool caseSensitive)
 {
-    std::string tmpname(fileName);
-    std::string tmpstr(subStr);
-    return StringExistsInFile(tmpname, tmpstr, caseSensitive);
+    std::string tmpName(fileName);
+    std::string tmpStr(subStr);
+    return StringExistsInFile(tmpName, tmpStr, caseSensitive);
 }
 
 int  RustCountStrInFile(const rust::String& fileName, const rust::String& subStr, bool caseSensitive)
 {
-    std::string tmpname(fileName);
-    std::string tmpstr(subStr);
-    return CountStrInFile(tmpname, tmpstr, caseSensitive);
+    std::string tmpName(fileName);
+    std::string tmpStr(subStr);
+    return CountStrInFile(tmpName, tmpStr, caseSensitive);
 }
 
 #endif

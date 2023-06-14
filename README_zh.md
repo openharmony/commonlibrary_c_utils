@@ -72,13 +72,14 @@ ohos_shared_library("xxxxx") {
 
 ### [Rust-匿名共享内存](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_rust_ashmem.md)
 ### [Rust-文件与目录](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_rust_directory.md)
+### [Rust-读写文件](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_rust_file.md)
 
 ### [使用匿名共享内存](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-ashmem.md)
 ### [使用智能指针管理动态分配内存对象](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-refbase.md)
 ### [使用Parcel作为数据容器](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-parcel.md)
 ### [定时器](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_timer.md)
-### [文件映射](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_mapped_file.md)
-### [事件处理系统](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_event.md)
+### [文件映射](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_mapped_file.md)
+### [事件处理系统](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_event.md)
 ### [读写锁](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-rwlock.md)
 ### [增强信号量功能](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-semaphore.md)
 ### [强化线程能力](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-thread.md)
