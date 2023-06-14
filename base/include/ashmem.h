@@ -194,28 +194,6 @@ public:
     void UnmapAshmem();
 
     /**
-     * @brief Sets the protection flag of this <b>Ashmem</b> region.
-     *
-     * @param protectionType Indicates the value of the protection flag.
-     * @return Returns <b>True</b> if the operation is successful.
-     */
-    bool SetProtection(int protectionType);
-
-    /**
-     * @brief Obtains the protection flag of this <b>Ashmem</b> region.
-     *
-     * @return Returns the protection flag. For details, see the Linux manual.
-     */
-    int GetProtection();
-
-    /**
-     * @brief Obtains the size of this <b>Ashmem</b> region.
-     *
-     * @return Returns the size.
-     */
-    int32_t GetAshmemSize();
-
-    /**
      * @brief Writes data to the `offset` position of this <b>Ashmem</b> region.
      *
      * Bounds and the protection flag will be checked.
