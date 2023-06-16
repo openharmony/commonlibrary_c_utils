@@ -178,7 +178,7 @@ ohos_shared_library("utils") {
 
 ########## modules for `c_utils` in rust ##########
 # rust compiler is not supportted on mac
-if (host_os != "mac") {
+if (host_os == "linux" && !is_asan) {
   import("//build/templates/rust/rust_cxx.gni")  # used for templates rust_cxx()
   rust_cxx("cxx_rust_gen") {
     sources = [
@@ -212,7 +212,7 @@ if (host_os != "mac") {
     part_name = "c_utils"
   }
 
-  ohos_rust_shared_library("utils_rust") {
+  ohos_rust_shared_library("utils_rs") {
     sources = [
       "src/rust/ashmem.rs",
       "src/rust/directory_ex.rs",
@@ -234,6 +234,13 @@ if (host_os != "mac") {
       "system",
       "updater",
     ]
+  }
+}
+
+group("utils_rust") {
+  public_deps = []
+  if (host_os == "linux" && !is_asan) {
+    public_deps += [ ":utils_rs" ]
   }
 }
 ###############################################################################
