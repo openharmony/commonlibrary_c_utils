@@ -26,31 +26,31 @@ if (host_os == "linux" && !is_asan) {
     deps = []
 
     deps += [
-      ":utils_rust_ashmem_test",
-      ":utils_rust_directory_test",
-      ":utils_rust_file_test",
+      ":rust_utils_ashmem_test",
+      ":rust_utils_directory_test",
+      ":rust_utils_file_test",
     ]
   }
 
-  ohos_rust_unittest("utils_rust_ashmem_test") {
+  ohos_rust_unittest("rust_utils_ashmem_test") {
     module_out_path = "utils/base/rust"
-    sources = [ "utils_rust_ashmem_test.rs" ]
+    sources = [ "rust_utils_ashmem_test.rs" ]
     configs = [ ":module_private_config" ]
-    deps = [ "../../../../base:utils_rust" ]
+    deps = [ "//commonlibrary/c_utils/base:utils_rust" ]
   }
 
-  ohos_rust_unittest("utils_rust_file_test") {
+  ohos_rust_unittest("rust_utils_file_test") {
     module_out_path = "utils/base/rust"
-    sources = [ "utils_rust_file_test.rs" ]
+    sources = [ "rust_utils_file_test.rs" ]
     deps = [
       "//commonlibrary/c_utils/base:utils_rust",
       "//third_party/rust/crates/cxx:lib",
     ]
   }
 
-  ohos_rust_unittest("utils_rust_directory_test") {
+  ohos_rust_unittest("rust_utils_directory_test") {
     module_out_path = "utils/base/rust"
-    sources = [ "utils_rust_directory_test.rs" ]
+    sources = [ "rust_utils_directory_test.rs" ]
     deps = [
       "//commonlibrary/c_utils/base:utils_rust",
       "//third_party/rust/crates/cxx:lib",
