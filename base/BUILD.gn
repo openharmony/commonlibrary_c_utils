@@ -108,7 +108,7 @@ ohos_static_library("utilsbase") {
     if (c_utils_debug_log_enabled) {
       configs += [ ":debug_log_enabled" ]
     }
-    external_deps = [ "hilog_native:libhilog_base" ]
+    external_deps = [ "hilog:libhilog_base" ]
     public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
 
     subsystem_name = "commonlibrary"
@@ -123,7 +123,7 @@ ohos_static_library("utilsbase_rtti") {
   if (current_os != "android" && current_os != "ios") {
     defines = [ "CONFIG_HILOG" ]
   }
-  external_deps = [ "hilog_native:libhilog_base" ]
+  external_deps = [ "hilog:libhilog_base" ]
   public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
   remove_configs = [ "//build/config/compiler:no_rtti" ]
   cflags = [ "-frtti" ]
@@ -164,7 +164,7 @@ ohos_shared_library("utils") {
     if (c_utils_debug_log_enabled) {
       configs += [ ":debug_log_enabled" ]
     }
-    external_deps = [ "hilog_native:libhilog_base" ]
+    external_deps = [ "hilog:libhilog_base" ]
     public_deps = [ "//third_party/bounds_checking_function:libsec_shared" ]
 
     subsystem_name = "commonlibrary"
