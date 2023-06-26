@@ -90,7 +90,7 @@ ohos_unittest("UtilsAshmemTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ##############################unittest##########################################
