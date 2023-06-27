@@ -204,7 +204,7 @@ if (host_os == "linux" && !is_asan) {
     ]
     deps = [
       ":cxx_rust_gen",
-      "//build/rust/tests:cxx_cppdeps",
+      "//third_party/rust/crates/cxx:cxx_cppdeps",
     ]
     public_deps = [ "//third_party/bounds_checking_function:libsec_shared" ]
 
