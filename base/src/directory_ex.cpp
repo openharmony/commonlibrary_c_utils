@@ -15,8 +15,7 @@
 
 #include "directory_ex.h"
 #include <dirent.h>
-#include <cerrno>
-#include <fcntl.h>
+#include <errno.h>
 #include "securec.h"
 #include "unistd.h"
 #include "utils_log.h"
@@ -155,7 +154,7 @@ bool ForceRemoveDirectory(const string& path)
         if (ptr->d_type == DT_DIR) {
             ret = ForceRemoveDirectory(subPath);
         } else {
-            if (faccessat(AT_FDCWD, subPath.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
+            if (access(subPath.c_str(), F_OK) == 0) {
                 if (remove(subPath.c_str()) != 0) {
                     closedir(dir);
                     return false;
@@ -166,13 +165,13 @@ bool ForceRemoveDirectory(const string& path)
     closedir(dir);
 
     string currentPath = ExcludeTrailingPathDelimiter(path);
-    if (faccessat(AT_FDCWD, currentPath.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
+    if (access(currentPath.c_str(), F_OK) == 0) {
         if (remove(currentPath.c_str()) != 0) {
             return false;
         }
     }
 
-    return ret && (faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) != 0);
+    return ret && (access(path.c_str(), F_OK) != 0);
 }
 
 bool RemoveFile(const string& fileName)
