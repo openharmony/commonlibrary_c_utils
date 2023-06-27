@@ -37,13 +37,6 @@ pub mod ffi {
 
         // global function
         /**
-         * Create an ashmem and return its FD.
-         * # Safety
-         * Requires C-style string as parameter to specify the name of Ashmem.
-         */
-        pub unsafe fn AshmemCreate(name: *const c_char, size: usize) -> i32;
-
-        /**
          * Create an C++ Ashmem object managed by std::shared_ptr.
          * # Safety
          * Requires C-style string as parameter to specify the name of Ashmem.
@@ -217,16 +210,4 @@ pub unsafe fn create_ashmem_instance(name: &str, size: i32) -> Option<Ashmem> {
     } else {
         Some(Ashmem::new(c_ashmem_ptr))
     }
-}
-
-/**
- * Create raw ashmem and returns its FD.
- * # Safety
- * Transmits c-style string of `name`.
- */
-#[allow(dead_code)]
-pub unsafe fn ashmem_create(name: &str, size: i32) -> i32 {
-    let c_name = CString::new(name).expect("CString::new Failed!");
-    let name_ptr = c_name.as_ptr();
-    ffi::AshmemCreate(name_ptr, size.try_into().expect("Invalid size."))
 }
