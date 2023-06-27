@@ -46,6 +46,9 @@ int64_t GetSecondsBetween(struct tm inputTm1, struct tm inputTm2)
 {
     int64_t second1 = GetSecondsSince1970ToPointTime(inputTm1);
     int64_t second2 = GetSecondsSince1970ToPointTime(inputTm2);
+    if (second1 == -1 || second2 == -1) {
+        return -1;
+    }
     return second1 >= second2 ? (second1 - second2) : (second2 - second1);
 }
 

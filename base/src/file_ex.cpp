@@ -116,9 +116,9 @@ bool LoadStringFromFile(const string& filePath, string& content)
     }
 
     file.seekg(0, ios::end);
-    const long fileLength = file.tellg();
+    const long long fileLength = file.tellg();
     if (fileLength > MAX_FILE_LENGTH) {
-        UTILS_LOGD("invalid file length(%{public}ld)!", fileLength);
+        UTILS_LOGD("invalid file length(%{public}lld)!", fileLength);
         return false;
     }
 
@@ -137,7 +137,7 @@ string GetFileNameByFd(const int fd)
     string fdPath = "/proc/self/fd/" + std::to_string(fd);
     char fileName[PATH_MAX + 1] = {0};
 
-    int ret = readlink(fdPath.c_str(), fileName, PATH_MAX);
+    ssize_t ret = readlink(fdPath.c_str(), fileName, PATH_MAX);
     if (ret < 0 || ret > PATH_MAX) {
         UTILS_LOGD("Get fileName failed, ret is: %{public}d!", ret);
         return string();
@@ -168,9 +168,9 @@ bool LoadStringFromFd(int fd, string& content)
         return false;
     }
 
-    const long fileLength = lseek(fd, 0, SEEK_END);
+    const off_t fileLength = lseek(fd, 0, SEEK_END);
     if (fileLength > MAX_FILE_LENGTH) {
-        UTILS_LOGE("invalid file length(%{public}ld)!", fileLength);
+        UTILS_LOGE("invalid file length(%{public}jd)!", static_cast<intmax_t>(fileLength));
         return false;
     }
 
@@ -184,16 +184,16 @@ bool LoadStringFromFd(int fd, string& content)
     }
 
     content.resize(fileLength);
-    int loc = lseek(fd, 0, SEEK_SET);
+    off_t loc = lseek(fd, 0, SEEK_SET);
     if (loc == -1) {
         UTILS_LOGE("lseek file to begin failed!");
         return false;
     }
 
-    const long len = read(fd, content.data(), fileLength);
+    const ssize_t len = read(fd, content.data(), fileLength);
     if (len != fileLength) {
-        UTILS_LOGE("the length read from file is not equal to fileLength!len:%{public}ld,fileLen:%{public}ld",
-            len, fileLength);
+        UTILS_LOGE("the length read from file is not equal to fileLength!len:%{public}zd,fileLen:%{public}jd",
+            len, static_cast<intmax_t>(fileLength));
         return false;
     }
 
@@ -240,14 +240,14 @@ bool SaveStringToFd(int fd, const std::string& content)
         return true;
     }
 
-    const long len = write(fd, content.c_str(), content.length());
+    const ssize_t len = write(fd, content.c_str(), content.length());
     if (len < 0) {
         UTILS_LOGE("write file failed!errno:%{public}d, err:%{public}s", errno, strerror(errno));
         return false;
     }
 
     if (static_cast<unsigned long>(len) != content.length()) {
-        UTILS_LOGE("the length write to file is not equal to fileLength!len:%{public}ld, fileLen:%{public}zu",
+        UTILS_LOGE("the length write to file is not equal to fileLength!len:%{public}zd, fileLen:%{public}zu",
             len, content.length());
         return false;
     }
@@ -301,9 +301,9 @@ bool LoadBufferFromFile(const string& filePath, vector<char>& content)
     }
 
     file.seekg(0, std::ios::end);
-    const long fileLength = file.tellg();
+    const long long fileLength = file.tellg();
     if (fileLength > MAX_FILE_LENGTH) {
-        UTILS_LOGD("invalid file length(%{public}ld)!", fileLength);
+        UTILS_LOGD("invalid file length(%{public}lld)!", fileLength);
         return false;
     }
 

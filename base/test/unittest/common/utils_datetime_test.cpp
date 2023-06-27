@@ -91,6 +91,8 @@ HWTEST_F(UtilsDateTimeTest, testTime001, TestSize.Level0)
     info.tm_isdst = 0;
     second2 = GetSecondsSince1970ToPointTime(info);
     EXPECT_EQ(-1, second2);
+    int64_t ret2 = GetSecondsBetween(curTime, info);
+    EXPECT_TRUE(ret2 = -1);
 }
 
 /*

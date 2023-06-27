@@ -19,6 +19,7 @@ declare_args() {
   c_utils_track_all = false
   c_utils_print_track_at_once = false
   c_utils_debug_log_enabled = false
+  c_utils_feature_intsan = true
 }
 
 config("utils_config") {
@@ -148,6 +149,13 @@ ohos_shared_library("utils") {
   } else {
     sources = sources_utils
     configs = [ ":utils_coverage_config" ]
+
+    if (c_utils_feature_intsan) {
+      sanitize = {
+        integer_overflow = true
+      }
+    }
+
     if (c_utils_debug_refbase) {
       configs += [ ":debug_refbase" ]
       if (c_utils_track_all) {
