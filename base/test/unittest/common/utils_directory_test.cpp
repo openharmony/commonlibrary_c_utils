@@ -12,11 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <gtest/gtest.h>
+
 #include "directory_ex.h"
+#include <gtest/gtest.h>
+#include <fcntl.h>
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+
 using namespace testing::ext;
 using namespace std;
 
@@ -209,6 +212,73 @@ HWTEST_F(UtilsDirectoryTest, testRemoveFile001, TestSize.Level0)
         EXPECT_EQ(ret, true);
     }
     ret = ForceRemoveDirectory(dirpath);
+    EXPECT_EQ(ret, true);
+}
+
+/*
+ * @tc.name: testRemoveFile002
+ * @tc.desc: Remove soft link file.
+ */
+HWTEST_F(UtilsDirectoryTest, testRemoveFile002, TestSize.Level0)
+{
+    string dirpath = "/data/test_dir";
+    bool ret = ForceCreateDirectory(dirpath);
+    EXPECT_EQ(ret, true);
+
+    string targetname = "/data/test_target.txt";
+    FILE *fp = fopen(targetname.c_str(), "w");
+    if (NULL != fp) {
+        fclose(fp);
+    }
+
+    // symlink to a directory
+    string linkpath = "/data/test_symlink_dir";
+    int res = symlink(dirpath.c_str(), linkpath.c_str());
+    EXPECT_EQ(res, 0);
+
+    ret = ForceRemoveDirectory(linkpath);
+    EXPECT_EQ(ret, true);
+
+    // Target dir is not removed.
+    ret = faccessat(AT_FDCWD, dirpath.c_str(), F_OK, AT_SYMLINK_NOFOLLOW);
+    EXPECT_EQ(ret, 0);
+
+    // symlink to a file
+    string filename = dirpath + "/test.txt";
+    res = symlink(targetname.c_str(), filename.c_str());
+    EXPECT_EQ(res, 0);
+
+    ret = ForceRemoveDirectory(dirpath);
+    EXPECT_EQ(ret, true);
+
+    // Target file is not removed.
+    ret = faccessat(AT_FDCWD, targetname.c_str(), F_OK, AT_SYMLINK_NOFOLLOW);
+    EXPECT_EQ(ret, 0);
+
+    ret = RemoveFile(targetname);
+    EXPECT_EQ(ret, true);
+}
+
+/*
+ * @tc.name: testRemoveFile003
+ * @tc.desc: Remove dangling soft link file.
+ */
+HWTEST_F(UtilsDirectoryTest, testRemoveFile003, TestSize.Level0)
+{
+    string dirpath = "/data/test_dir";
+    bool ret = ForceCreateDirectory(dirpath);
+    EXPECT_EQ(ret, true);
+
+    // symlink to a file
+    string targetname = "/data/nonexisted.txt";
+    string filename = dirpath + "/test.txt";
+    int res = symlink(targetname.c_str(), filename.c_str());
+    EXPECT_EQ(res, 0);
+
+    ret = ForceRemoveDirectory(dirpath);
+    EXPECT_EQ(ret, true);
+
+    ret = RemoveFile(targetname);
     EXPECT_EQ(ret, true);
 }
 
