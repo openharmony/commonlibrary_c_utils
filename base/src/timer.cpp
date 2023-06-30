@@ -53,6 +53,15 @@ void Timer::Shutdown(bool useJoin)
         std::lock_guard<std::mutex> lock(mutex_);
         if (intervalToTimers_.empty()) {
             UTILS_LOGI("no event for epoll wait, use detach to shutdown");
+
+            int tmpTimerFd = INVALID_TIMER_FD;
+            uint32_t ret = reactor_->ScheduleTimer([](int unused) {
+                UTILS_LOGD("%{public}s:Pseudo-task invoked to get thread exited.", __func__);
+            }, 0, tmpTimerFd, true); // Add a task to avoid eternally blocking of epoll_wait
+            if (ret == TIMER_ERR_OK) {
+                UTILS_LOGD("%{public}s:Pseudo-task need to be scheduled.", __func__);
+            }
+
             thread_.detach();
             return;
         }

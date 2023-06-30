@@ -17,15 +17,17 @@
 #define UTILS_EVENT_HANDLER_H
 
 #include <cstdint>
-#include <map>
 #include <functional>
+#include <map>
+#include <memory>
+#include <unistd.h>
 
 namespace OHOS {
 namespace Utils {
 
 class EventReactor;
 
-class EventHandler {
+class EventHandler : public std::enable_shared_from_this<EventHandler> {
 public:
     using Callback = std::function<void()>;
 
