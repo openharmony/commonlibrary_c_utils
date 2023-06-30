@@ -55,7 +55,7 @@ private:
     uint32_t       interval_;
     EventReactor*  reactor_;
 
-    std::unique_ptr<EventHandler> handler_;
+    std::shared_ptr<EventHandler> handler_;
     TimerCallback                 callback_;
 };
 
