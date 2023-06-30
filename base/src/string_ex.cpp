@@ -56,9 +56,21 @@ string ReplaceStr(const string& str, const string& src, const string& dst)
 
 string TrimStr(const string& str, const char cTrim /*= ' '*/)
 {
+    if (str.size() == 1 && str[0] == cTrim) {
+        return string{};
+    }
+
     string strTmp = str;
-    strTmp.erase(0, strTmp.find_first_not_of(cTrim));
-    strTmp.erase(strTmp.find_last_not_of(cTrim) + sizeof(char));
+    std::string::size_type firstBound = strTmp.find_first_not_of(cTrim);
+    if (firstBound != std::string::npos) {
+        strTmp.erase(0, firstBound);
+    }
+
+    std::string::size_type lastBound = strTmp.find_last_not_of(cTrim);
+    if (lastBound != std::string::npos && lastBound != strTmp.size() - 1) {
+        strTmp.erase(lastBound + sizeof(char));
+    }
+
     return strTmp;
 }
 
