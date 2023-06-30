@@ -290,7 +290,6 @@ fn test_ashmem_ffi_invalid_006()
     ashmem.CloseAshmem();
 }
 
-
 #[test]
 fn test_ashmem_write_read_001()
 {
@@ -299,6 +298,8 @@ fn test_ashmem_write_read_001()
 
     let ashmem = ashmem.unwrap();
     assert_eq!(ashmem.get_ashmem_size(), MEMORY_SIZE);
+    assert_eq!(ashmem.get_protection(), ashmem::PROT_READ | ashmem::PROT_WRITE | ashmem::PROT_EXEC); // default protection mask.
+    assert_ne!(ashmem.get_ashmem_fd(), -1);
 
     assert!(ashmem.map_ashmem(ashmem::PROT_READ | ashmem::PROT_WRITE));
 
