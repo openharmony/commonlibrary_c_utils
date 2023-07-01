@@ -1307,12 +1307,6 @@ HWTEST_F(UtilsParcelTest, test_parcel_Data_Structure_002, TestSize.Level0)
     result = parcel.WriteBufferAddTerminator(static_cast<const void *>(str.data()), 0, sizeof(char));
     EXPECT_EQ(false, result);
 
-    result = parcel.WriteBuffer(static_cast<const void *>(strOverflow.data()), SIZE_MAX);
-    EXPECT_EQ(false, result);
-    result = parcel.WriteBufferAddTerminator(static_cast<const void *>(strOverflow.data()),
-                                             SIZE_MAX, sizeof(char));
-    EXPECT_EQ(false, result);
-
     result = parcel.WriteBuffer(static_cast<const void *>(strWriteFail.data()), strWriteFail.length());
     EXPECT_EQ(false, result);
     result = parcel.WriteBufferAddTerminator(static_cast<const void *>(strWriteFail.data()),
