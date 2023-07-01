@@ -17,6 +17,7 @@
 #define UTILS_EVENT_DEMULTIPLEXER_H
 
 #include <mutex>
+#include <memory>
 #include <cstdint>
 #include <map>
 
@@ -47,7 +48,7 @@ private:
     int epollFd_;
     int maxEvents_;
     std::recursive_mutex mutex_;
-    std::map<int, EventHandler*> eventHandlers_; // guard by mutex_
+    std::map<int, std::shared_ptr<EventHandler>> eventHandlers_; // guard by mutex_
 };
 
 }

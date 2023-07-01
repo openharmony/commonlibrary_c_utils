@@ -70,7 +70,7 @@ uint32_t EventDemultiplexer::UpdateEventHandler(EventHandler* handler)
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     auto itor = eventHandlers_.find(handler->GetHandle());
     if (itor == eventHandlers_.end()) {
-        eventHandlers_.insert(std::make_pair(handler->GetHandle(), handler));
+        eventHandlers_.insert(std::make_pair(handler->GetHandle(), handler->shared_from_this()));
         return Update(EPOLL_CTL_ADD, handler);
     }
 
@@ -79,7 +79,7 @@ uint32_t EventDemultiplexer::UpdateEventHandler(EventHandler* handler)
         return Update(EPOLL_CTL_DEL, handler);
     }
 
-    if (handler != itor->second) {
+    if (handler != itor->second.get()) {
         return TIMER_ERR_DEAL_FAILED;
     }
     return Update(EPOLL_CTL_MOD, handler);
@@ -102,7 +102,19 @@ uint32_t EventDemultiplexer::Update(int operation, EventHandler* handler)
 
 void EventDemultiplexer::Polling(int timeout /* ms */)
 {
+    std::vector<std::shared_ptr<EventHandler>> holdHandlers;
     std::vector<struct epoll_event> epollEvents(maxEvents_);
+    {
+        std::lock_guard<std::recursive_mutex> lock(mutex_);
+        if (eventHandlers_.size() == 0) {
+            return;
+        }
+
+        for (auto itor = eventHandlers_.begin(); itor != eventHandlers_.end();++itor) {
+            holdHandlers.emplace_back(itor->second);
+        }
+    }
+
     int nfds = epoll_wait(epollFd_, &epollEvents[0], static_cast<int>(epollEvents.size()), timeout);
     if (nfds == 0) {
         return;
@@ -113,8 +125,8 @@ void EventDemultiplexer::Polling(int timeout /* ms */)
     }
 
     for (int idx = 0; idx < nfds; ++idx) {
-        uint32_t events = epollEvents[idx].events;
         void* ptr = epollEvents[idx].data.ptr;
+        uint32_t events = epollEvents[idx].events;
         auto handler = reinterpret_cast<EventHandler*>(ptr);
         if (handler != nullptr) {
             handler->HandleEvents(Epoll2Reactor(events));
