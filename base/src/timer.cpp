@@ -49,6 +49,14 @@ void Timer::Shutdown(bool useJoin)
     }
 
     reactor_->SwitchOff();
+    if (timeoutMs_ == -1) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (intervalToTimers_.empty()) {
+            UTILS_LOGI("no event for epoll wait, use detach to shutdown");
+            thread_.detach();
+            return;
+        }
+    }
     if (!useJoin) {
         thread_.detach();
         return;

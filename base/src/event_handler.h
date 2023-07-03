@@ -19,15 +19,13 @@
 #include <cstdint>
 #include <map>
 #include <functional>
-#include <unistd.h>
-#include <memory>
 
 namespace OHOS {
 namespace Utils {
 
 class EventReactor;
 
-class EventHandler : public std::enable_shared_from_this<EventHandler> {
+class EventHandler {
 public:
     using Callback = std::function<void()>;
 
