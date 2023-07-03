@@ -27,78 +27,80 @@
 
 namespace OHOS {
 /**
- * @brief Give a thread-safe thread pool.
+ * @brief Provides interfaces for thread-safe thread pool operations.
  *
- * The thread-safe is for threadpool itself not for the threads in pool. A task
- * queue and a thread group are under control. Users add tasks to task queue.
- * The thread group will execute the tasks in task queue.
+ * The thread-safe is for the thread pool, but not for the threads in the pool.
+ * A task queue and a thread group are under control. Users add tasks to the
+ * task queue, and the thread group executes the tasks in the task queue.
  */
 class ThreadPool : public NoCopyable {
 public:
     typedef std::function<void()> Task;
 
     /**
-     * @brief Construct ThreadPool and name the threads in pool.
+     * @brief Creates a thread pool and names the threads in the pool.
      *
-     * @param name it will be set as a part the real name of threads in pool.
-     * The real name of threads in pool will be like: name + No. The thread
-     * name is a meaningful C language string, whose length is restricted to
-     * 16 characters, including the terminating null byte ('\0'). Please pay
-     * attention to the length of name here. For example, if the number of
-     * threads in pool is less than 10, the maximum length of name is 14.
+     * @param name Indicates the prefix of the names of the threads in pool.
+     * The names of threads in the pool are in the <b>name</b> + No format.
+     * The thread name is a meaningful C language string, whose length is
+     * restricted to 16 characters including the terminating null byte ('\0').
+     * Pay attention to the name length when setting this parameter.
+     * For example, if the number of threads in the pool is less than 10,
+     * the name length cannot exceed 14 characters.
      */
     explicit ThreadPool(const std::string &name = std::string());
     ~ThreadPool() override;
 
     /**
-     * @brief Start a given number(threadsNum) of threads, which will execute
-     * the tasks in task queue.
+     * @brief Starts a given number of threads, which will execute
+     * the tasks in a task queue.
      *
-     * @param threadsNum A given number of threads to start.
+     * @param threadsNum Indicates the number of threads to start.
      */
     uint32_t Start(int threadsNum);
     /**
-     * @brief Stop ThreadPool and wait all threads in pool to stop.
+     * @brief Stops the thread pool.
      */
     void Stop();
     /**
-     * @brief Add a Task to task queue.
+     * @brief Adds a task to the task queue.
      *
-     * If Start() has never been called, the Task will be executed immediately.
+     * If <b>Start()</b> has never been called, the task will be executed
+     * immediately.
      *
-     * @param f A Task to be added to task queue.
+     * @param f Indicates the task to add.
      */
     void AddTask(const Task& f);
     /**
-     * @brief Set the maximum amount of tasks in task queue.
+     * @brief Sets the maximum number of tasks in the task queue.
      *
-     * @param maxSize The maximum amount of tasks in task queue.
+     * @param maxSize Indicates the maximum number of tasks to set.
      */
     void SetMaxTaskNum(size_t maxSize) { maxTaskNum_ = maxSize; }
 
     // for testability
     /**
-     * @brief Get the maximum amount of tasks in task queue.
+     * @brief Obtains the maximum number of tasks in the task queue.
      */
     size_t GetMaxTaskNum() const { return maxTaskNum_; }
     /**
-     * @brief Get the current amount of tasks in task queue.
+     * @brief Obtains the number of tasks in the task queue.
      */
     size_t GetCurTaskNum();
     /**
-     * @brief Get the current amount of threads in pool.
+     * @brief Obtains the number of threads in the pool.
      */
     size_t GetThreadsNum() const { return threads_.size(); }
     /**
-     * @brief Get the name of ThreadPool.
+     * @brief Obtains the name of the thread pool.
      */
     std::string GetName() const { return myName_; }
 
 private:
-    // tasks in the queue reach the maximum set by maxQueueSize, means thread pool is full load.
+    // If the number of tasks in the queue reaches the maximum set by maxQueueSize, the thread pool is full load.
     bool Overloaded() const;
     void WorkInThread(); // main function in each thread.
-    Task ScheduleTask(); // fetch a task from the queue and execute
+    Task ScheduleTask(); // fetch a task from the queue and execute it
 
 private:
     std::string myName_;

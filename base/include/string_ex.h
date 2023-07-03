@@ -16,13 +16,13 @@
 /**
 * @file string_ex.h
 *
-* @brief Provide global string operation function implemented in c_utils.
+* @brief Provides the global string operation function implemented in c_utils.
 */
 
 /**
 * @defgroup StringOperation
 * @{
-* @brief To operate strings.
+* @brief Provides interfaces for operating strings.
 *
 * Include converting between uppercase and lowercase,
 * string replacement, trim and split etc.
@@ -37,76 +37,76 @@ namespace OHOS {
 
 /**
  * @ingroup StringOperation
- * @brief Convert all letters of string to uppercase.
+ * @brief Converts all letters in a string to uppercase.
  *
- * @param str Base string.
- * @return Return a new converted `std::string` object.
+ * @param str Indicates the base string.
+ * @return Returns a new `std::string` object after conversion.
  */
 std::string UpperStr(const std::string& str);
 
 /**
  * @ingroup StringOperation
- * @brief Convert all letters of string to lowercase.
+ * @brief Converts all letters in a string to lowercase.
  *
- * @param str Base string.
- * @return Return a new converted `std::string` object.
+ * @param str Indicates the base string.
+ * @return Returns a new `std::string` object after conversion.
  */
 std::string LowerStr(const std::string& str);
 
 /**
  * @ingroup StringOperation
- * @brief Replace `src` with `dst` in base string `str`.
+ * @brief Replaces a substring in the base string.
  *
- * @param str Target sub-string to be replaced.
- * @param src Base string.
- * @param dst Expected sub-string for replacement.
- * @return Return a new replaced `std::string` object.
+ * @param str Indicates the substring to be replaced.
+ * @param src Indicates the base string.
+ * @param dst Indicates the expected substring for replacement.
+ * @return Returns a new `std::string` object after replacement.
  */
 std::string ReplaceStr(const std::string& str, const std::string& src, const std::string& dst);
 
 /**
  * @ingroup StringOperation
- * @brief Trim string by `cTrim` at the front and end of `str`.
+ * @brief Trims a string indicated by `cTrim` from both ends of the base string.
  *
- * @param str Base string.
- * @param cTrim Target string used in trim，which is '' by default.
- * @return Return a new trimmed `std::string` object.
+ * @param str Indicates the base string.
+ * @param cTrim Indicates the string to trim from the base string, which is '' by default.
+ * @return Returns a new `std::string` object after trimming.
  */
 std::string TrimStr(const std::string& str, const char cTrim = ' ');
 
 /**
  * @ingroup StringOperation
- * @brief Convert decimal to hexadecimal string.
+ * @brief Converts a decimal value to a hexadecimal string.
  *
- * @param value Target decimal value.
- * @param upper Specify if output as uppercase,
- * whose value is `true` by default。
- * @return Return a new converted `std::string` object.
+ * @param value Indicates the decimal value to convert.
+ * @param upper Specifies whether the output string is in uppercase.
+ * The default value is `true`.
+ * @return Returns a new `std::string` object after conversion.
  */
 std::string DexToHexString(int value, bool upper = true);
 
 /**
  * @ingroup StringOperation
- * @brief Split string by `sep`.
+ * @brief Splits a string by `sep`.
  *
- * @param str Base string.
- * @param sep Sub-string as separator.
- * @param strs `std::vector` object to store the results.
- * @param canEmpty Specify if output empty string as results,
- * whose value is false by default.
- * @param needTrim Specify if need to trim by '',
- * whose value is true by default.
+ * @param str Indicates the base string.
+ * @param sep Indicates the substring to be used as the separator.
+ * @param strs Indicates the `std::vector` object to store the results.
+ * @param canEmpty Specifies whether the output string can be an empty string.
+ * The default value is `false`.
+ * @param needTrim Specifies whether to remove whitespace from the output string.
+ * The default value is `true`.
  */
 void SplitStr(const std::string& str, const std::string& sep, std::vector<std::string>& strs,
               bool canEmpty = false, bool needTrim = true);
 
 /**
  * @ingroup StringOperation
- * @brief Convert int and double and so on to string.
+ * @brief Converts a value of int, double, or any other type to a string.
  *
- * @tparam T Specific type of input data.
- * @param  iValue Input data.
- * @return Return a new converted `std::string` object.
+ * @tparam T Indicates the type of the input data.
+ * @param  iValue Indicates the input data.
+ * @return Returns a new `std::string` object after conversion.
  */
 template<class T>
 inline std::string ToString(T iValue)
@@ -116,120 +116,130 @@ inline std::string ToString(T iValue)
 
 /**
  * @ingroup StringOperation
- * @brief Convert string to int.
+ * @brief Converts a string to an int value.
  *
- * @param str String to be converted.
- * @param value Target `int` variable to store the result.
- * @return Return true if converting success, false if failed.
+ * @param str Indicates the string to be converted.
+ * @param value Indicates the `int` variable to store the result.
+ * @return Returns `true` if the operation is successful;
+ * returns `false` otherwise.
  */
 bool StrToInt(const std::string& str, int& value);
 
 /**
  * @ingroup StringOperation
- * @brief Judge if all characters of the string are numbers.
+ * @brief Checks whether all characters in a string are numeric.
  *
- * @param str Base string.
- * @return Return true if all are numbers, otherwise false.
+ * @param str Indicates the base string.
+ * @return Returns `true` if all characters in the string are numeric;
+ * returns `false` otherwise.
  */
 bool IsNumericStr(const std::string& str);
 
 /**
  * @ingroup StringOperation
- * @brief Judge if all characters of the string are alphabet.
+ * @brief Checks whether all characters in a string are alphabetic.
  *
- * @param str Base string.
- * @return Return true if all are alphabet, otherwise false.
+ * @param str Indicates the base string.
+ * @return Returns `true` if all characters in the string are alphabetic;
+ * returns `false` otherwise.
  */
 bool IsAlphaStr(const std::string& str);
 
 /**
  * @ingroup StringOperation
- * @brief Judge if all characters of the string are uppercase.
+ * @brief Checks whether all characters in a string are in uppercase.
  *
- * @param str Base string.
- * @return Return true if all are uppercase, otherwise false.
+ * @param str Indicates the base string.
+ * @return Returns `true` if all characters in the string are in uppercase;
+ * returns `false` otherwise.
  */
 bool IsUpperStr(const std::string& str);
 
 /**
  * @ingroup StringOperation
- * @brief Judge if all characters of the string are lowercase.
+ * @brief Checks whether all characters in a string are in lowercase.
  *
- * @param str Base string.
- * @return Return true if all are lowercase, otherwise false.
+ * @param str Indicates the base string.
+ * @return Returns `true` if all characters in the string are in lowercase;
+ * returns `false` otherwise.
  */
 bool IsLowerStr(const std::string& str);
 
 /**
  * @ingroup StringOperation
- * @brief Judge if `str` contains the `sub`.
+ * @brief Checks whether a string contains the specified substring.
  *
- * @param str Base string.
- * @param sub Target sub-string.
- * @return Return true if contains, otherwise false.
+ * @param str Indicates the base string.
+ * @param sub Indicates the substring.
+ * @return Returns `true` if the string contains the specified substring;
+ * returns `false` otherwise.
  */
 bool IsSubStr(const std::string& str, const std::string& sub);
 
 /**
  * @ingroup StringOperation
- * @brief Get the first sub_str between `left` and `right`.
+ * @brief Obtains the first substring between the substrings specified
+ * by `left` and `right`.
  *
- * @param str Base string.
- * @param left Specified left string.
- * @param right Specified right string.
- * @param sub Target `std::string` object to store the result string.
- * @return Return the right string pos, if failed return string::npos.
+ * @param str Indicates the base string.
+ * @param left Indicates the left string.
+ * @param right Indicates the right string.
+ * @param sub Indicates the `std::string` object to store the result string.
+ * @return Returns `pos` if the operation is successful;
+ * returns `string::npos` otherwise.
  */
 std::string::size_type GetFirstSubStrBetween(const std::string& str, const std::string& left,
                                              const std::string& right, std::string& sub);
 
 /**
  * @ingroup StringOperation
- * @brief Get all of the sub strings between `left` and `right`.
+ * @brief Obtains all of the substrings between the substrings specified
+ * by `left` and `right`.
  *
- * @param str Base string.
- * @param left Specified left string.
- * @param right Specified right string.
- * @param sub Target `std::vector` object to store all of the result strings.
+ * @param str Indicates the base string.
+ * @param left Indicates the left string.
+ * @param right Indicates the right string.
+ * @param sub Indicates the `std::vector` object to store all the result strings.
  */
 void GetSubStrBetween(const std::string& str, const std::string& left,
                       const std::string& right, std::vector<std::string>& sub);
 
 /**
  * @ingroup StringOperation
- * @brief Judge if the `first`'s letter is same with `second`.
+ * @brief Checks whether two strings are equal.
  *
- * @param first First input string.
- * @param second Second input string.
- * @note Case-insensitive.
+ * @param first Indicates the first string to check.
+ * @param second Indicates the second string to check.
+ * @note The string is case-insensitive.
  */
 bool IsSameTextStr(const std::string& first, const std::string& second);
 
 /**
  * @ingroup StringOperation
- * @brief Judge if all of the characters in `str` are ASCII encoded.
+ * @brief Checks whether all characters in a string are ASCII encoded.
  *
- * @param str Base string.
- * @return Return true if all are ASCII encoded, otherwise false.
+ * @param str Indicates the base string.
+ * @return Returns `true` if all characters in the string are ASCII encoded;
+ * returns `false` otherwise.
  */
 bool IsAsciiString(const std::string& str);
 
 #ifndef IOS_PLATFORM
 /**
  * @ingroup StringOperation
- * @brief Convert a string from UTF-16 to UTF-8 encoded.
+ * @brief Converts a string from UTF-16 to UTF-8 encoded.
  *
- * @param str16 Input `std::u16string` object.
- * @return If converting failed, return an empty `std::string` object.
+ * @param str16 Indicates a `std::u16string` object.
+ * @return Returns an empty `std::string` object if the operation fails.
  */
 std::string Str16ToStr8(const std::u16string& str16);
 
 /**
  * @ingroup StringOperation
- * @brief Convert a string from UTF-8 to UTF-16 encoded.
+ * @brief Converts a string from UTF-8 to UTF-16 encoded.
  *
- * @param str Input `std::string` object.
- * @return If converting failed, return an empty `std::u16string` object.
+ * @param str Indicates a `std::string` object.
+ * @return Returns an empty `std::u16string` object if the operation fails.
  */
 std::u16string Str8ToStr16(const std::string& str);
 #endif

@@ -28,19 +28,19 @@ namespace OHOS {
  *
  * Taking DelayedSingleton as an example, when declaring the target class as a
  * singleton, add the DECLARE_DELAYED_SINGLETON (class_name) to the class
- * declaration.\n
- * When using the target singleton, call class_name::GetInstance()->.
+ * declaration. When using the target singleton, call
+ * class_name::GetInstance()->.
  */
 
 /**
- * @brief Set `MyClass` as a `DelayedSingleton`.
+ * @brief Sets `MyClass` as a `DelayedSingleton`.
  *
- * `MyClass` object can be obtained by calling
+ * A `MyClass` object can be obtained by calling
  * `DelayedSingleton<MyClass>::GetInstance()`.
  *
  * @param MyClass Target class to be set as a singleton.
- * @note This macro definition should be used into the body of a class
- * definition.
+ *
+ * @note This macro definition should be used in the body of a class definition.
  */
 #define DECLARE_DELAYED_SINGLETON(MyClass)\
 public:\
@@ -50,14 +50,14 @@ private:\
     MyClass();
 
 /**
- * @brief Set `MyClass` as a `DelayedRefSingleton`.
+ * @brief Sets `MyClass` as a `DelayedRefSingleton`.
  *
- * `MyClass` object can be obtained by calling
+ * A `MyClass` object can be obtained by calling
  * `DelayedRefSingleton<MyClass>::GetInstance()`.
  *
  * @param MyClass Target class to be set as a singleton.
- * @note This macro definition should be used into the body of a class
- * definition.
+ *
+ * @note This macro definition should be used in the body of a class definition.
  */
 #define DECLARE_DELAYED_REF_SINGLETON(MyClass)\
 private:\
@@ -66,14 +66,14 @@ private:\
     MyClass();
 
 /**
- * @brief Set `MyClass` as a `Singleton`.
+ * @brief Sets `MyClass` as a `Singleton`.
  *
- * `MyClass` object can be obtained by calling
+ * A `MyClass` object can be obtained by calling
  * `Singleton<MyClass>::GetInstance()`.
  *
  * @param MyClass Target class to be set as a singleton.
- * @note This macro definition should be used into the body of a class
- * definition.
+ *
+ * @note This macro definition should be used in the body of a class definition.
  */
 #define DECLARE_SINGLETON(MyClass)\
 private:\
@@ -84,35 +84,33 @@ private:\
     ~MyClass();
 
 /**
- * @brief class DelayedSingleton is a thread-safe, memory-safe lazy initialized
+ * @brief DelayedSingleton is a thread-safe, memory-safe lazy initialized
  * singleton (with smart pointer and lock).
  */
 template<typename T>
 class DelayedSingleton : public NoCopyable {
 public:
     /**
-     * @brief Create a unique instance object and return.
+     * @brief Creates a unique instance object.
      *
-     * Use smart pointer to manage resources, and when all shared_ptrs are
-     * destroyed, the new object will also be deleted. This avoids memory
-     * leaks.\n
-     * Lock is added only when the pointer is empty to avoid locking every time
-     * the `GetInstance()` method is called, reducing the overhead of lock.
+     * Use a smart pointer to manage resources. If all shared_ptrs are
+     * destroyed, the new object will also be deleted. This avoids memory leaks.
+     * A lock is added only when the pointer is empty, so as to avoid locking
+     * every time `GetInstance()` is called, reducing overhead of the lock.
      */
     static std::shared_ptr<T> GetInstance();
     /**
-     * @brief Release the ownership of managed object of the smart pointer.
+     * @brief Releases the ownership of managed object of the smart pointer.
      *
-     * @note After calling this method, the 'GetInstance()' method will create
-     * a new object, and if the old object has an external 'std::shared_ptr'
-     * reference, the developer needs to release it himself to guarantee a
-     * singleton.
+     * @note After this API is called successfully, 'GetInstance()' will create
+     * a new object. If the old object has an external 'std::shared_ptr'
+     * reference, you need to release it to maintain a singleton.
      */
     static void DestroyInstance();
 
 private:
     static std::shared_ptr<T> instance_; // Record the created DelayedSingleton instance.
-    static std::mutex mutex_; // Guarantees that only one thread is accessing a common resource at any time.
+    static std::mutex mutex_; // Mutex, which guarantees that only one thread is accessing a common resource at any time.
 };
 
 template<typename T>
@@ -146,22 +144,22 @@ void DelayedSingleton<T>::DestroyInstance()
 }
 
 /**
- * @brief class DelayedRefSingleton is a thread-safe, lazy initialized
- * singleton(with ordinary pointer and lock).
+ * @brief DelayedRefSingleton is a thread-safe, lazy initialized
+ * singleton (with ordinary pointer and lock).
  */
 template<typename T>
 class DelayedRefSingleton : public NoCopyable {
 public:
     /**
-     * @brief Create a unique instance object and return.
+     * @brief Creates a unique instance object.
      *
-     * Pointer is used in the implementation, and the return type is a
-     * reference:the instance returned by reference has a lifetime that is
-     * managed by non-user code.
+     * Pointer is used in the implementation, and the return value is a
+     * reference. It points to an instance that has a lifetime managed by
+     * the non-user code.
      *
      * @note The instance may not have been created at a certain point in time,
-     * or it can be deleted, which cannot prevent the user from using delete
-     * keyword to cause the object to be destroyed in advance.
+     * or it may have been deleted, and therefore it is not possible to
+     * prohibit use of the delete keyword to destroy the object in advance.
      */
     static T& GetInstance();
 
@@ -190,15 +188,15 @@ T& DelayedRefSingleton<T>::GetInstance()
 }
 
 /**
- * @brief class Singleton is a normal initialized singleton(no pointers and
- * locks are used).
+ * @brief Singleton is a normally initialized singleton (without pointers and
+ * locks).
  */
 template<typename T>
 class Singleton : public NoCopyable {
 public:
 
     /**
-     * @brief Return a unique instance object.
+     * @brief Gets a singleton instance object.
      */
     static T& GetInstance() { return instance_; }
 

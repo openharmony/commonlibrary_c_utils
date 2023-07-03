@@ -25,7 +25,7 @@
 namespace OHOS {
 
 /**
- * @brief The order of the items in it can be maintained automatically.
+ * @brief Provides a sorted vector, in which all items are sorted automatically.
  */
 template <class TYPE, bool AllowDuplicate = true>
 class SortedVector {
@@ -37,7 +37,7 @@ public:
     using const_iterator = typename std::vector<TYPE>::const_iterator;
 
     /**
-     * @brief Construct a new SortedVector object.
+     * @brief Creates a `SortedVector` object.
      */
     SortedVector();
 
@@ -48,47 +48,50 @@ public:
     SortedVector(const std::vector<TYPE>& orivect);
 
     /**
-     * @brief Destroy the SortedVector object.
+     * @brief Destroys this `SortedVector` object.
      */
     virtual ~SortedVector() {}
 
     /**
-     * @brief Copy assignment operator.
+     * @brief An overloaded assignment operator function that assigns a sorted
+     * vector to this vector.
      *
-     * @param TYPE Type of the items.
-     * @param AllowDuplicate Specify if duplicated items are allowed.
+     * @param TYPE Indicates the type of items.
+     * @param AllowDuplicate Specifies whether duplicated items are allowed.
      */
     SortedVector<TYPE, AllowDuplicate>& operator=(const SortedVector<TYPE, false>& rhs);
     SortedVector<TYPE, AllowDuplicate>& operator=(const SortedVector<TYPE, true>& rhs);
 
     /**
-     * @brief Empty the vector.
+     * @brief Clears this vector.
      */
     inline void Clear() { vec_.clear(); }
 
     /**
-     * @brief Return number of items in the vector.
+     * @brief Obtains the number of items in this vector.
      */
     inline size_t Size() const { return vec_.size(); }
 
     /**
-     * @brief Return whether or not the vector is empty.
+     * @brief Checks whether this vector is empty.
      *
-     * @return Return true if vector is empty, false otherwise.
+     * @return Returns `true` if the vector is empty; returns `false` otherwise.
      */
     inline bool IsEmpty() const { return vec_.empty(); }
 
     /**
-     * @brief Return how many items can be stored before reallocating new
-     * storage space.
+     * @brief Obtains the capacity of this vector, that is, the number of items
+     * that can be stored before the system reallocates new storage space.
      */
     inline size_t Capacity() const { return vec_.capacity(); }
 
     /**
-     * @brief Set the vector's capacity to `size`.
+     * @brief Sets the capacity of this vector.
      *
-     * @return Return `size` if the vector's capacity is changed to `size`,
-     * otherwise return `CAPACITY_NOT_CHANGED`(-1).
+     * @param size Indicates the capacity to set.
+     *
+     * @return Returns the capacity if the operation is successful;
+     * returns `CAPACITY_NOT_CHANGED`(-1) otherwise.
      */
     ssize_t SetCapcity(size_t size)
     {
@@ -102,66 +105,80 @@ public:
 
     // Cstyle access
     /**
-     * @brief Return a const pointer to the first item of a vector, which is
-     * used to access the item.
+     * @brief Accesses the first item in this vector.
+     *
+     * @return Returns a constant pointer to the first item.
      */
     inline const TYPE* Array() const { return vec_.data(); }
 
     /**
-     * @brief Return a non-const pointer to the first item of a vector that is
-     * used to access the item of the vector.
+     * @brief Accesses the first item in this vector while editing it.
      *
-     * @note When use it , you should make sure it is sorted.
+     * @note When using this function, you should ensure that the vector
+     * is sorted.
+     *
+     * @return Returns a non-constant pointer to the first item.
      */
     TYPE* EditArray() { return vec_.data(); }
 
     /**
-     * @brief Find the first index of the 'item' value in the vector.
+     * @brief Obtains the index of the first occurrence of an item
+     * in this vector.
      *
-     * @param item Target value.
-     * @return If found, the index value is returned, otherwise `NOT_FOUND`(-1)
-     * is returned.
+     * @param item Indicates the item.
+     *
+     * @return Returns the index if the item is found;
+     * returns `NOT_FOUND`(-1) otherwise.
+     *
      */
     ssize_t IndexOf(const TYPE& item) const;
 
     /**
-     * @brief Find where this `item` should be inserted.
+     * @brief Obtains the index where an item should be inserted into
+     * this vector.
      *
-     * @param item Target value.
-     * @return Return the index where the value should be inserted.
+     * @param item Indicates the item.
+     *
+     * @return Returns the index.
      */
     size_t OrderOf(const TYPE& item) const;
 
     /**
-     * @brief Access vector items based on the input `index`.
+     * @brief Accesses an item with the specified index.
      *
-     * @param index `index` value.
-     * @return Return the value of the item corresponding to the `index`.
+     * @param index Indicates the index.
+     *
+     * @return Returns the item value.
      */
     inline const TYPE& operator[](size_t index) const { return vec_[index]; }
 
     /**
-     * @brief Return a reference to the item at the end of the vector.
+     * @brief Obtains the reference to the last item in this vector.
+     *
+     * @return Returns the reference to the last item.
      */
     const TYPE& Back() const { return vec_.back(); }
 
     /**
-     * @brief Return a reference to the vector starting item.
+     * @brief Obtains the reference to the first item in this vector.
+     *
+     * @return Returns the reference to the first item.
      */
     const TYPE& Front() const { return vec_.front(); }
 
     /**
-     * @brief Remove the last item of the vector.
+     * @brief Removes the last item from this vector.
      */
     void PopBack() { return vec_.pop_back(); }
 
     /**
-     * @brief Return the item value of a vector.
+     * @brief Obtains the value of an item with the specified index
+     * in this vector.
      *
-     * @param index `index` value.
-     * @return If `index` is less than 0, the value of
-     * vector[vector.size() + `index`] is returned, otherwise the value of
-     * vector[`index`] is returned.
+     * @param index Indicates the index.
+     *
+     * @return Returns vector[vector.size() + `index`] if `index` is
+     * less than 0; returns vector[`index`] otherwise.
      */
     const TYPE& MirrorItemAt(ssize_t index) const
     {
@@ -171,19 +188,22 @@ public:
         return *(vec_.begin() + index);
     };
 
-    // modify the array
+    // Modify the array.
     /**
-     * @brief Add a new 'item' in the correct place.
+     * @brief Adds an item to this vector.
      *
-     * @return Return the position of the new item on success, otherwise it
-     * returns `ADD_FAIL`(-1)
+     * @return Returns the index of the item if the operation is successful;
+     * returns `ADD_FAIL`(-1) otherwise.
      */
     ssize_t Add(const TYPE& item);
 
     /**
-     * @brief Return reference of the item based on `index`.
+     * @brief Obtains the reference to an item with the specified index
+     * in this vector.
      *
-     * @param index `index` value.
+     * @param index Indicates the index.
+     *
+     * @return Returns the reference to the item.
      */
     TYPE& EditItemAt(size_t index)
     {
@@ -192,24 +212,26 @@ public:
 
 
     /**
-     * @brief Merge a vector into this one.
+     * @brief Merges a vector into this vector.
      *
-     * If the value of `AllowDuplicate` is false, it is vec_ to deduplicate.
+     * If `AllowDuplicate` is set to `false`, the current vector should
+     * perform deduplication.
      *
-     * @param invec The vector to be merged.
-     * @return Return the size of the merged vec_.
+     * @param invec Indicates the vector to be merged.
+     *
+     * @return Returns the size of the merged vector.
      */
     size_t Merge(const std::vector<TYPE>& invec);
     size_t Merge(const SortedVector<TYPE, AllowDuplicate>& sortedVector);
 
     /**
-     * @brief If `index` is less than the vector's size, delete the item at
-     * `index`.
+     * @brief Erases the item with the specified index from this vector.
      *
-     * @param index `index` value.
-     * @return If `index` is greater than or equal to the size of the vector,
-     * the iterator of the last item is returned, otherwise the iterator of the
-     * next item of the deleted item is returned.
+     * @param index Indicates the index.
+     *
+     * @return Returns an iterator to the last item if the index is
+     * greater than or equal to the size of the vector;
+     * returns the item next to the deleted item otherwise.
      */
     iterator Erase(size_t index)
     {
@@ -220,8 +242,10 @@ public:
     }
 
     /**
-     * @brief An iterator that returns a vector starting item of a non-const
-     * type.
+     * @brief Obtains an iterator of the non-const type to the first item
+     * in this vector.
+     *
+     * @return Returns an iterator to the first item.
      */
     iterator Begin()
     {
@@ -229,7 +253,10 @@ public:
     }
 
     /**
-     * @brief An iterator that returns the vector starting item of type const.
+     * @brief Obtains an iterator of the const type to the first item
+     * in this vector.
+     *
+     * @return Returns an iterator to the first item.
      */
     const_iterator Begin() const
     {
@@ -237,8 +264,10 @@ public:
     }
 
     /**
-     * @brief Return an iterator for an item at the end of a vector of a
-     * non-const type.
+     * @brief Obtains an iterator of the non-const type to the last item
+     * in this vector.
+     *
+     * @return Returns an iterator to the last item.
      */
     iterator End()
     {
@@ -246,8 +275,10 @@ public:
     }
 
     /**
-     * @brief Return an iterator for the item at the end of a vector of type
-     * const.
+     * @brief Obtains an iterator of the const type to the last item
+     * in this vector.
+     *
+     * @return Returns an iterator to the last item.
      */
     const_iterator End() const
     {

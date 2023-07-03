@@ -24,7 +24,7 @@
 namespace OHOS {
 
 /**
- * @brief Parameters and data required to call the update method.
+ * @brief Provides the parameters and data required to call the update method.
  */
 struct ObserverArg {
 public:
@@ -32,73 +32,75 @@ public:
 };
 
 /**
- * @brief Observer class.
+ * @brief Implements the <b>Observer</b> class.
  */
 class Observer;
 
 /**
- * @brief Observed class.
+ * @brief Implements the observed class.
  */
 class Observable {
 public:
     virtual ~Observable() = default;
     /**
-     * @brief Add the specified observer to the set of observers.
+     * @brief Adds the specified observer to the set of observers.
      *
      * If `o` is valid and does not exist in the observer set, the observer
-     * will be added, otherwise this function will return directly.
+     * will be added; otherwise, this function will return directly.
      */
     void AddObserver(const std::shared_ptr<Observer>& o);
 
     /**
-     * @brief Remove the observer passed in from the parameter.
+     * @brief Removes the specified observer.
      */
     void RemoveObserver(const std::shared_ptr<Observer>& o);
 
     /**
-     * @brief Remove all observers.
+     * @brief Removes all observers.
      */
     void RemoveAllObservers();
 
     /**
-     * @brief Notify all observers without data transmission.
+     * @brief Notifies all observers with no data passed.
      *
-     * Equivalent to NotifyObservers(nullptr).
+     * This function is equivalent to <b>NotifyObservers(nullptr)</b>.
      */
     void NotifyObservers();
 
     /**
-     * @brief Notify all observers, and pass the data 'arg' to the observer.
+     * @brief Notifies all observers, with the data 'arg' passed to
+	 * the observers.
      *
-     * If the `changed_` is true, call the `Update()` function to notify all
+     * If `changed_` is true, call the `Update()` function to notify all
      * observers to respond.
      *
-     * @param arg Parameters and data maybe used for Observer::Update().
+     * @param arg Indicates the parameters and data to be used for
+	 * <b>Observer::Update()</b>.
      * @see ObserverArg.
      */
     void NotifyObservers(const ObserverArg* arg);
 
     /**
-     * @brief Get the number of observers.
+     * @brief Obtains the number of observers.
      */
     int GetObserversCount();
 
 protected:
 
     /**
-     * @brief Get the state of this Observable object.
+     * @brief Obtains the state of this <b>Observable</b> object.
      *
-     * @return The value of `changed_`.
+     * @return Returns the value of `changed_`.
      */
     bool HasChanged();
 
     /**
-     * @brief Set the state of this Observable object to true.
+     * @brief Sets the state of this <b>Observable</b> object to true.
      */
     void SetChanged();
 
     /**
-     * @brief Set the state of this Observable object to false.
+     * @brief Set the state of this <b>Observable</b> object to false.
      */
     void ClearChanged();
 
@@ -114,9 +116,10 @@ class Observer {
 public:
     virtual ~Observer() = default;
     /**
-     * @brief The observer's interface to update itself.
+     * @brief Updates this observer.
      *
-     * It will be called when this object is notified by an Observable object.
+     * It will be called when this observer is notified by an
+	 * <b>Observable</b> object.
      */
     virtual void Update(const Observable* o, const ObserverArg* arg) = 0;
 };

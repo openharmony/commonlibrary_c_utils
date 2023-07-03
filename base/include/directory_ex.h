@@ -38,128 +38,135 @@ void RustGetDirFiles(const rust::String& path, rust::vec<rust::String>& files);
 #endif
 
 /**
- * @brief Get the full absolute path to the current program.
+ * @brief Obtains the full absolute path of this program.
  *
- * /proc/self/exe represents the current program, and its source path can be
- * read with the readlink function to get the absolute path of the current
- * program.
+ * <b>/proc/self/exe</b> indicates the program, and you can obtain its absolute
+ * path by using readlink().
  */
 std::string GetCurrentProcFullFileName();
 
 /**
- * @brief Get the absolute path of the current program.
+ * @brief Obtains the absolute path of this program.
  */
 std::string GetCurrentProcPath();
 
 /**
- * @brief Obtain the path to the corresponding file by the full path.
+ * @brief Obtains the path of a file based on the full path.
  */
 std::string ExtractFilePath(const std::string& fileFullName);
 
 /**
- * @brief Obtain the name to the corresponding file by the full path.
+ * @brief Obtains the name of a file based on the full path.
  */
 std::string ExtractFileName(const std::string& fileFullName);
 
 /**
- * @brief Obtain the filename extension to the corresponding file by the full
- * path.
+ * @brief Obtains the filename extension based on the full path.
+ *
  */
 std::string ExtractFileExt(const std::string& fileName);
 
 /**
- * @brief Exclude the end '/' from the strPath.
+ * @brief Excludes the trailing path delimiter '/' from the <b>strPath</b>.
  *
- * Determine whether the path has ended with '/', and returns the path after
- * removing '/', otherwise returns the path directly.
+ * If the path ends with '/', returns the path after removing '/'.
+ * Otherwise, returns the path directly.
  */
 std::string ExcludeTrailingPathDelimiter(const std::string& path);
 
 /**
- * @brief Include the end '/' from the strPath.
+ * @brief Includes the trailing path delimiter '/' in the <b>strPath</b>.
  *
- * Determine whether the path has ended with "/", and returns the path after
- * adding '/', otherwise returns the path directly.
+ * If the path ends with "/", returns the path.
+ * Otherwise, returns the path with an appended delimiter.
  */
 std::string IncludeTrailingPathDelimiter(const std::string& path);
 
 /**
- * @brief Get names of all files under `path` recursively.
+ * @brief Obtains the names of all files in the specified directory recursively.
  *
- * @param path Input path.
- * @param files Target `std::vector` to store the file names.
+ * @param path Indicates the target directory.
+ * @param files Indicates the <b>std::vector</b> to store the file names.
  */
 void GetDirFiles(const std::string& path, std::vector<std::string>& files);
 
 /**
- * @brief Judge if the path is empty.
+ * @brief Checks whether a folder is empty.
  *
- * @return Return true if is empty, else false.
+ * @return Returns <b>true</b> if the folder is empty;
+ * returns <b>false</b> otherwise.
  */
 bool IsEmptyFolder(const std::string& path);
 
 /**
- * @brief Create the dir recursively.
+ * @brief Creates a directory recursively.
  *
- * Parent directory can be created at the same time when it does not exist.
+ * The parent directory can be created at the same time when it does not exist.
  *
- * @note If there are problems such as 'Permission Denied', the creation may
+ * @note If there are errors such as 'Permission Denied', the creation may
  * also fail.
- * @return Return true if create success, else false.
+ * @return Returns <b>true</b> if the directory is created;
+ * returns <b>false</b> otherwise.
  */
 bool ForceCreateDirectory(const std::string& path);
 
 /**
- * @brief Delete the specified dir.
+ * @brief Deletes a directory.
  *
- * All subdirs and files will also be deleted.
+ * All subdirectories and files in the specified directory will also be deleted.
  *
  * @note It is not necessarily successful to delete.
- * @note If there are problems such as 'Permission Denied', the deletion may
+ * @note If there are errors such as 'Permission Denied', the deletion may
  * also fail.
- * @return Return true if delete success, else false.
+ * @return Returns <b>true</b> if the directory is deleted;
+ * returns <b>false</b> otherwise.
  */
 bool ForceRemoveDirectory(const std::string& path);
 
 /**
- * @brief Remove the file specified by fileName.
+ * @brief Removes the file specified by <b>fileName</b>.
  *
- * @return Return true if remove success, else false.
+ * @return Returns <b>true</b> if the file is removed;
+ * returns <b>false</b> otherwise.
  */
 bool RemoveFile(const std::string& fileName);
 
 /**
- * @brief Get the folder size(bytes).
+ * @brief Obtains the folder size, in bytes.
  */
 uint64_t GetFolderSize(const std::string& path);
 
 /**
- * @brief Change the file authority.
+ * @brief Changes the access permissions on a file.
  *
- * @param mode Specify the changed permissions, see chmod().
- * @return Return true if change success, else false.
+ * @param mode Indicates the permissions on the file.
+ * For details, see <b>chmod()</b>.
+ * @return Returns <b>true</b> if the permissions are changed;
+ * returns <b>false</b> otherwise.
  */
 bool ChangeModeFile(const std::string& fileName, const mode_t& mode);
 
 /**
- * @brief Change authority of the directory specified by path and all of its
+ * @brief Changes the access permissions on a directory and all its
  * subdirectories.
  *
- * @param mode Specify the changed permissions, see chmod().
- * @return Return true if change success, else false.
+ * @param mode Indicates the permissions. For details, see <b>chmod()</b>.
+ * @return Returns <b>true</b> if the permissions are changed;
+ * returns <b>false</b> otherwise.
  */
 bool ChangeModeDirectory(const std::string& path, const mode_t& mode);
 
 /**
- * @brief Get real path from relative path.
+ * @brief Obtains the real path from a relative path.
  *
- * @return Return true if get success, else false.
+ * @return Returns <b>true</b> if the real path is obtained;
+ * returns <b>false</b> otherwise.
  */
 bool PathToRealPath(const std::string& path, std::string& realPath);
 
 #if defined(IOS_PLATFORM) || defined(_WIN32)
 /**
- * @brief The TransformFileName function transform the input file name for windows or mac.
+ * @brief Transforms a file name to that for Windows or macOS.
  */
 std::string TransformFileName(const std::string& fileName);
 #endif

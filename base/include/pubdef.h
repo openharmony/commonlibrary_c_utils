@@ -17,7 +17,7 @@
  * @file pubdef.h
  *
  * @brief The file contains macro definitions for some basic functions
- * in c_utils, such as unit conversion, return maximum value, etc.
+ * in c_utils, for example, unit conversion and space freeup.
  */
 
 #ifndef UTILS_BASE_PUBDEF_H
@@ -39,7 +39,7 @@ namespace OHOS {
 // Used for unit conversion from second to hour
 #define SECOND_TO_HOUR(s) ((s) / 3600)
 
-// Used to return the size of array
+// Used to return the array size
 #define ARRAY_SIZE(a) (sizeof((a)) / sizeof((a[0])))
 
 // Used to free the space pointed by pointer p
@@ -52,11 +52,11 @@ namespace OHOS {
 // Used to return the minimum of two numbers
 #define MIN(x, y)  (((x) < (y)) ? (x) : (y))
 
-// Used to determine whether a float number 'x' is 0
+// Used to determine whether float number 'x' is 0
 #define EPS (1e-8)
 #define EQUAL_TO_ZERO(x) (fabs(x) <= (EPS))
 
-// Used to retry syscalls that can return EINTR.
+// Used to attempt a retry when the syscall error code is EINTR
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp)            \
     ({                                     \

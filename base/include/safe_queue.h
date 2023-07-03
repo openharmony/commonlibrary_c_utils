@@ -16,10 +16,10 @@
 /**
  * @file safe_queue.h
  *
- * @brief The file contains interfaces of thread-safe queues in c_utils.
+ * @brief Provides interfaces for thread-safe queue operations in c_utils.
  *
- * The file contains thread-safe abstract class, the SafeQueue
- * and SafeStack that override the virtual methods of the abstract class.
+ * The file contains the thread-safe abstract class, the <b>SafeQueue</b>
+ * and <b>SafeStack</b> that override the virtual methods of the abstract class.
  */
 
 #ifndef UTILS_BASE_SAFE_QUEUE_H
@@ -31,10 +31,10 @@
 namespace OHOS {
 
 /**
- * @brief An abstract class for thread-safe queues.
+ * @brief Provides an abstract class for thread-safe queues.
  *
- * Encapsulate std::lock_guard locks on the basis of std::deque,
- * so that the interface of the queue becomes thread-safe.
+ * It encapsulates std::lock_guard locks on the basis of std::deque to
+ * make the interfaces of the queue thread-safe.
  */
 template <typename T>
 class SafeQueueInner {
@@ -98,10 +98,10 @@ protected:
 };
 
 /**
- * @brief Thread-safe Queue.
+ * @brief Provides thread-safe queue operations.
  *
- * Overrides the DoPush and DoPop methods of abstract classes to implement
- * the push and pop functionality of the "SafeQueue".
+ * It overrides the <b>DoPush</b> and <b>DoPop</b> methods of abstract classes
+ * to implement the push and pop functionality of <b>SafeQueue</b>.
  */
 template <typename T>
 class SafeQueue : public SafeQueueInner<T> {
@@ -116,8 +116,8 @@ protected:
     }
 
 /**
- * @brief Encapsulate the pop_front() of dequeues
- * and implement the pop function of queues.
+ * @brief Encapsulates the <b>pop_front()</b> method
+ * to implement the pop function of queues.
  */
     bool DoPop(T& pt) override
     {
@@ -132,10 +132,10 @@ protected:
 };
 
 /**
- * @brief Thread-safe Stack.
+ * @brief Provides thread-safe stack operations.
  *
- * Overrides the DoPush and DoPop methods of abstract classes
- * to implement the push and pop functionality of the "SafeStack".
+ * It overrides the <b>DoPush</b> and <b>DoPop</b> methods of abstract classes
+ * to implement the push and pop functionality of <b>SafeStack</b>.
  */
 template <typename T>
 class SafeStack : public SafeQueueInner<T> {
@@ -150,8 +150,8 @@ protected:
     }
 
 /**
- * @brief Encapsulate the pop_back() of dequeues
- * and implement the pop function of stack.
+ * @brief Encapsulates the <b>pop_back()</b> method
+ * to implement the pop function of stack.
  */
     bool DoPop(T& pt) override
     {

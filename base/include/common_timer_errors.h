@@ -16,8 +16,8 @@
  /**
   * @file common_timer_errors.h
   *
-  * @brief Provide value of 'Code' segment of ErrCode for 'Timer' module in
-  * commonlibrary subsystem.
+  * @brief Provides the values of the <b>Code</b> segment in <b>ErrCode</b>
+  * for the Timer module in the commonlibrary subsystem.
   */
 
 #ifndef UTILS_COMMON_TIMER_ERRORS_H
@@ -39,24 +39,27 @@ namespace Utils {
  * |Field|Reserved|        Subsystem      |  Module      |                  Code                         |
  * +-----+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
  *
- * In this file, subsystem is "SUBSYS_COMMON" and module is "MODULE_TIMER".
+ * In this file, the subsystem is "SUBSYS_COMMON", and the module is
+ * "MODULE_TIMER".
  */
 
 using ErrCode = int;
 
-// offset of timer module error, only be used in this file.
+// The error codes can be used only for the Timer module.
 /**
- * @brief Base ErrCode of module 'Timer' in commonlibrary subsystem.
+ * @brief Provides the base error codes of the Timer module
+ * in the commonlibrary subsystem.
  */
 constexpr ErrCode COMMON_TIMER_ERR_OFFSET = ErrCodeOffset(SUBSYS_COMMON, MODULE_TIMER);
 
 /**
- * @brief Value of 'Code' segment of ErrCode for 'Timer'.
+ * @brief Enumerates the values of the <b>Code</b> segment in <b>ErrCode</b>
+ * for the Timer module.
  *
- * @var TIMER_ERR_OK Success.
- * @var TIMER_ERR_DEAL_FAILED Deal failed.
- * @var TIMER_ERR_BADF Bad file descriptor.
- * @var TIMER_ERR_INVALID_VALUE Invalid value.
+ * @var TIMER_ERR_OK Indicates an operation success.
+ * @var TIMER_ERR_DEAL_FAILED Indicates an operation failure.
+ * @var TIMER_ERR_BADF Indicates a bad file descriptor.
+ * @var TIMER_ERR_INVALID_VALUE Indicates an invalid value.
  */
 enum {
     TIMER_ERR_OK                = 0,

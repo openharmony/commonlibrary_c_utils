@@ -16,9 +16,10 @@
  /**
   * @file parcel.h
   *
-  * @brief Provide classes for data container implemented in c_utils.
+  * @brief Provides classes for the data container implemented in c_utils.
   *
-  * Including class Parcel, Parcelable and related memory Allocator.
+  * The <b>Parcel</b> and <b>Parcelable</b> classes and the related memory
+  * allocator are provided.
   */
 
 #ifndef OHOS_UTILS_PARCEL_H
@@ -35,10 +36,10 @@ namespace OHOS {
 class Parcel;
 
 /**
- * @brief Interface for class whose Instance can be written into a Parcel.
+ * @brief Defines a class for which the instance can be written into a parcel.
  *
- * @note If this object is remote, its position intends to
- * use in kernel data transaction.
+ * @note If this object is remote, its position will be used in
+ * kernel data transaction.
  */
 class Parcelable : public virtual RefBase {
 public:
@@ -46,39 +47,41 @@ public:
 
     Parcelable();
     /**
-     * @brief Construct a new Parcelable object.
+     * @brief Creates a `Parcelable` object.
      *
-     * @param asRemote Specifies whether this object is remote.
+     * @param asRemote Specifies whether the object is remote.
      */
     explicit Parcelable(bool asRemote);
 
     /**
-     * @brief Write a parcelable object to the given parcel.
+     * @brief Writes a `Parcelable` object into a parcel.
      *
-     * @param parcel Target parcel to write to.
-     * @return Return true being written on success or false if any error occur.
-     * @note If this object is remote, its position will be saved in the parcel.
-     * @note A static Unmarshalling function must also be implemented, so that
-     * you can get data from the given parcel into this parcelable object.
+     * @param parcel Indicates the parcel.
+     * @return Returns `true` if the operation is successful; returns `false`
+     * otherwise.
+     * @note If the `Parcelable` object is remote, its position will be saved
+     * in the parcel.
+     * @note You must implement a static Unmarshalling function to
+     * fetch data from the given parcel into this `Parcelable` object.
      * See `static TestParcelable *Unmarshalling(Parcel &parcel)` as an example.
      */
     virtual bool Marshalling(Parcel &parcel) const = 0;
 
     /**
-     * @brief Enum flag to describe behaviors of the Parcelable object.
+     * @brief Enumerates the behavior types of a `Parcelable` object.
      *
-     * @var IPC Indicate the object can be used in IPC.
-     * @var RPC Indicate the object can be used in RPC.
-     * @var HOLD_OBJECT Indicate the object will ensure
-     * alive during data transaction.
+     * @var IPC Indicate an object that can be used in IPC.
+     * @var RPC Indicate an object that can be used in RPC.
+     * @var HOLD_OBJECT Indicate an object that will be always alive
+     * during data transaction.
      *
      */
     enum BehaviorFlag { IPC = 0x01, RPC = 0x02, HOLD_OBJECT = 0x10 };
 
     /**
-     * @brief Enable specified behavior.
+     * @brief Enables the specified behavior.
      *
-     * @param b Specific flag value.
+     * @param b Indicates the behavior.
      * @see BehaviorFlag.
      */
     inline void SetBehavior(BehaviorFlag b) const
@@ -87,9 +90,10 @@ public:
     }
 
     /**
-     * @brief Disable specified behavior.
+     * @brief Disables the specified behavior.
      *
-     * @param b Specific flag value. See BehaviorFlag.
+     * @param b Indicates the behavior.
+     * @see BehaviorFlag.
      */
     inline void ClearBehavior(BehaviorFlag b) const
     {
@@ -97,9 +101,12 @@ public:
     }
 
     /**
-     * @brief Check whether specified behavior is enabled.
+     * @brief Checks whether the specified behavior is enabled.
      *
-     * @param b Specific flag value.
+     * @param b Indicates the behavior.
+
+     * @return Returns `true` if the behavior is enabled; returns `false`
+     * otherwise.
      * @see BehaviorFlag.
      */
     inline bool TestBehavior(BehaviorFlag b) const
@@ -108,12 +115,12 @@ public:
     }
 
 public:
-    bool asRemote_; // if the object is remote
-    mutable uint8_t behavior_; // value of flag of behaviors
+    bool asRemote_; // If the object is remote.
+    mutable uint8_t behavior_; // Behavior of the object.
 };
 
 /**
- * @brief Interface for memory allocator of the data in Parcel.
+ * @brief Defines a memory allocator for data in `Parcel`.
  */
 class Allocator {
 public:
@@ -127,144 +134,150 @@ public:
 };
 
 /**
- * @brief Default implement of Allocator.
+ * @brief Provides the default implementation for a memory allocator.
  *
- * @note Allocator defined by user for a parcel need be specified manually.
+ * @note A non-default allocator for a parcel must be specified manually.
  */
 class DefaultAllocator : public Allocator {
 public:
     /**
-     * @brief Use `malloc()` to allocate memory for a parcel.
+     * @brief Allocates memory for this parcel.
      *
-     * @param size Size of desired memory region.
-     * @return Void-type pointer to the memory region.
+     * @param size Indicates the size of the memory to allocate.
+     * @return Returns the void pointer to the memory region.
      */
     void *Alloc(size_t size) override;
 
     /**
-     * @brief Use `free()` to deallocate memory for a parcel.
+     * @brief Deallocates memory for this parcel.
      *
-     * @param data Void-type pointer to the memory region.
+     * @param data Indicates the void pointer to the memory region.
      */
     void Dealloc(void *data) override;
 private:
     /**
-     * @brief Use `realloc()` to reallocate memory for a parcel.
+     * @brief Reallocates memory for this parcel.
      *
-     * @param data Void-type pointer to the existed memory region.
-     * @param newSize New desired size of memory region.
-     * @return Void-type pointer to the new memory region.
+     * @param data Indicates the void pointer to the existing memory region.
+     * @param newSize Indicates the size of the memory to reallocate.
+     * @return Returns the void pointer to the new memory region.
      */
     void *Realloc(void *data, size_t newSize) override;
 };
 
 /**
- * @brief A data/message container.
+ * @brief Provides a data/message container.
  *
- * Contains interfaces for writing and reading data of various types,
- * including primitives, Parcelable objects etc.
+ * This class provides methods for writing and reading data of various types,
+ * including primitives and parcelable objects.
  *
- * @note Usually used in IPC, RPC.
+ * @note This class is usually used in IPC and RPC scenarios.
  */
 class Parcel {
 public:
     Parcel();
 
     /**
-     * @brief Construct a new Parcel object with specified Allocator.
+     * @brief Creates a `Parcel` object with the specified memory allocator.
      *
-     * @param allocator Specified Allocator.
+     * @param allocator Indicates the memory allocator.
      */
     explicit Parcel(Allocator *allocator);
 
     virtual ~Parcel();
 
     /**
-     * @brief Get total size of existed data in this parcel.
+     * @brief Obtains the total size of existing data in this parcel.
      *
-     * @return Value of the size in bytes.
+     * @return Returns the size, in bytes.
      */
     size_t GetDataSize() const;
 
     /**
-     * @brief Get the pointer to the beginning of data in this parcel.
+     * @brief Obtains the pointer to the beginning of data in this parcel.
      *
-     * @return `uintptr_t`-type pointer.
+     * @return Returns a pointer of the `uintptr_t` type.
      */
     uintptr_t GetData() const;
 
     /**
-     * @brief Get position of every object written in this parcel.
+     * @brief Obtains the position (offset) of every object written
+     * in this parcel.
      *
-     * @return `binder_size_t`-type pointer to
+     * @return Returns a pointer of the `binder_size_t` type to
      * the first slot of the position array.
      * @see flat_obj.h
      */
     binder_size_t GetObjectOffsets() const;
 
     /**
-     * @brief Get total size of all of the current positions.
+     * @brief Obtains the size of the position array.
      *
-     * @return Value of the size in bytes.
+     * @return Returns the size, in bytes.
      */
     size_t GetOffsetsSize() const;
 
     /**
-     * @brief Get total availiable bytes to write to this parcel.
+     * @brief Obtains the total number of available bytes to write
+     * into this parcel.
      *
-     * @return Amount of the availiable bytes.
+     * @return Returns the number of available bytes.
      */
     size_t GetWritableBytes() const;
 
     /**
-     * @brief Get total availiable bytes to read from this parcel.
+     * @brief Obtains the total number of available bytes to read
+     * from this parcel.
      *
-     * @return Amount of the availiable bytes.
+     * @return Returns the number of available bytes.
      */
     size_t GetReadableBytes() const;
 
     /**
-     * @brief Get total capacity of this parcel,
-     * i.e. size of current data region in parcel.
+     * @brief Obtains the total capacity of this parcel, that is, the size of
+     * the current data region in the parcel.
      *
-     * @return Value of the capacity in bytes.
+     * @return Returns the capacity, in bytes.
      */
     size_t GetDataCapacity() const;
 
     /**
-     * @brief Get maximum capacity of this parcel.
+     * @brief Obtains the maximum capacity of this parcel.
      *
-     * @return Value of the capacity in bytes.
+     * @return Returns the capacity, in bytes.
      */
     size_t GetMaxCapacity() const;
 
     /**
-     * @brief Set capacity of this parcel,
-     * i.e. size of current data region in parcel.
+     * @brief Sets the capacity for this parcel, that is, the size of the
+     * current data region in the parcel.
      *
-     * @param newCapacity Desired new capacity.
-     * @return Return True on success, or false if any error occur.
-     * @note Corresponding Allocator will try to reallocate
-     * the data region with new capacity.
+     * @param newCapacity Indicates the capacity to set.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
+     * @note The memory allocator will try to reallocate the data region
+     * with the new capacity.
      *
      */
     bool SetDataCapacity(size_t newCapacity);
 
     /**
-     * @brief Set total size of existed data in this parcel.
+     * @brief Sets the total size of existing data in this parcel.
      *
-     * @param dataSize Desired value of size in bytes.
-     * @return Return True on success, or false if any error occur.
-     * @note Avoid using it independently, otherwise it may not
-     * represents the correct size of existed data.
+     * @param dataSize Indicates the size, in bytes.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
+     * @note Do not call this function independently; otherwise, it may fail to
+     * return the correct data size.
      */
     bool SetDataSize(size_t dataSize);
 
     /**
-     * @brief Set maximux capacity of this parcel.
+     * @brief Sets the maximum capacity for this parcel.
      *
-     * @param maxCapacity Desired value of maximum capacity.
-     * @return Return True on success, or false if any error occur.
+     * @param maxCapacity Indicates the maximum capacity to set.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool SetMaxCapacity(size_t maxCapacity);
 
@@ -283,150 +296,166 @@ public:
     bool WritePointer(uintptr_t value);
 
     /**
-     * @brief Write a data region(buffer) to this parcel.
+     * @brief Writes a data region (buffer) to this parcel.
      *
-     * @param data Void-type pointer to the buffer.
-     * @param size Size of the buffer to be written.
-     * @return Return True on success, or false if any error occur.
+     * @param data Indicates the void pointer to the buffer.
+     * @param size Indicates the size of the buffer.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool WriteBuffer(const void *data, size_t size);
 
     /**
-     * @brief Write a data region(buffer) to this parcel
-     * in alignment and with terminator replaced.
+     * @brief Writes a data region (buffer) to this parcel in alignment
+     * and with the terminator replaced.
      *
-     * @param data Void-type pointer to the buffer.
-     * @param size Size of the buffer to be written.
-     * @param typeSize Size of the terminator.
-     * @return Return True on success, or false if any error occur.
+     * @param data Indicates the void pointer to the buffer.
+     * @param size Indicates the size of the buffer.
+     * @param typeSize Indicates the size of the terminator.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      * @note The last several bytes specified by `typeSize` of the aligned data
-     * will be deemed as a terminator, and then will be replaced by
-     * '0b00000000'.
+     * will be treated as a terminator and replaced by '0b00000000'.
      */
     bool WriteBufferAddTerminator(const void *data, size_t size, size_t typeSize);
 
     /**
-     * @brief Write a data region(buffer) to this parcel without padding.
+     * @brief Writes a data region (buffer) to this parcel.
      *
-     * @param data Void-type pointer to the buffer.
-     * @param size Size of the buffer to be written.
-     * @return Return True on success, or false if any error occur.
+     * Currently, this function provides the same capability as `WriteBuffer()`.
+     *
+     * @param data Indicates the void pointer to the buffer.
+     * @param size Indicates the size of the buffer.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool WriteUnpadBuffer(const void *data, size_t size);
 
     /**
-     * @brief Write a C-style string to this parcel.
+     * @brief Writes a C-style string to this parcel.
      *
-     * Default terminator `\0` of C-style string will also write.
+     * The default terminator `\0` of the C-style string will also be written.
      *
-     * @param value A C-style string, i.e. char-type pointer.
-     * @return Return True on success, or false if any error occur.
+     * @param value Indicates a pointer of the char type to a C-style string.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool WriteCString(const char *value);
 
     /**
-     * @brief Write a C++ string(`std::u16string`) to this parcel.
+     * @brief Writes a C++ string (`std::string`) to this parcel.
      *
-     * The exact length of the string will write first, then the string itself
-     * with an appended terminator `\0` will write.
+     * The exact length of the string will be written first, and then the string
+     * itself with the appended terminator `\0` will be written.
      *
-     * @param value An `std::string` object passed by reference.
-     * @return Return True on success, or false if any error occur.
+     * @param value Indicates the reference to an `std::string` object.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool WriteString(const std::string &value);
 
     /**
-     * @brief Write a C++ UTF-16 encoded string(`std::string`) to this parcel.
+     * @brief Writes a C++ UTF-16 encoded string (`std::u16string`)
+     * to this parcel.
      *
-     * The exact length of the string will write first, then the string itself
-     * with an appended terminator `\0` will write.
+     * The exact length of the string will be written first, and then the string
+     * itself with the appended terminator `\0` will be written.
      *
-     * @param value An `std::u16string` object passed by reference.
-     * @return Return True on success, or false if any error occur.
+     * @param value Indicates the reference to an `std::u16string` object.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool WriteString16(const std::u16string &value);
 
     /**
-     * @brief Write a UTF-16 encoded string
-     * with specified length to this parcel.
+     * @brief Writes a UTF-16 encoded string with the specified length
+     * to this parcel.
      *
-     * An `std::u16string` object will be constructed by input `char16_t*`
+     * An `std::u16string` object will be constructed based on the `char16_t*`
      * pointer and the length `len` first. Then the input length and the string
-     * data in `u16string` object with an appended terminator `\0` will write.
+     * data in the `u16string` object with the appended terminator `\0` will
+     * be written.
      *
-     * @param value Pointer to the UTF-16 encoded string.
-     * @param len Exact length of the input string.
-     * @return Return True on success, or false if any error occur.
+     * @param value Indicates the pointer to a UTF-16 encoded string.
+     * @param len Indicates the exact length of the input string.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool WriteString16WithLength(const char16_t *value, size_t len);
 
     /**
-     * @brief Write a UTF-8 encoded string
-     * with specified length to this parcel.
+     * @brief Writes a UTF-8 encoded string with the specified length
+     * to this parcel.
      *
-     * The input length `len` and the string data
-     * with an appended terminator `\0` will write.
+     * The input length `len` and the string itself
+     * with the appended terminator `\0` will be written.
      *
-     * @param value Pointer to the UTF-8 encoded string.
-     * @param len Exact length of the input string.
-     * @return Return True on success, or false if any error occur.
+     * @param value Indicates the pointer to a UTF-8 encoded string.
+     * @param len Indicates the exact length of the input string.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool WriteString8WithLength(const char *value, size_t len);
 
     /**
-     * @brief Write a Parcelable object to this parcel.
+     * @brief Writes a `Parcelable` object to this parcel.
      *
-     * Remote object will be written by `WriteRemoteObject(const Parcelable *)`.
-     * Non-remote object will be written by its own
-     * `Marshalling(Parcel &parcel)`.
+     * Call `WriteRemoteObject(const Parcelable *)` to write a remote object.
+     * Call `Marshalling(Parcel &parcel)` to write a non-remote object.
      *
-     * @param object Pointer to the input Parcelable object.
-     * @return Return True on success, or false if any error occur.
-     * @note '0' of `Int32_t` will write if input pointer is `nullptr`.
+     * @param object Indicates the pointer to a `Parcelable` object.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
+     * @note The value '0' of `Int32_t` will be written if a null pointer
+     * is passed in.
      */
     bool WriteParcelable(const Parcelable *object);
 
     /**
-     * @brief Write a Parcelable object to this parcel,
-     * and enable its behavior of `HOLD_OBJECT`.
+     * @brief Writes a `Parcelable` object to this parcel, and enables its
+     * behavior of `HOLD_OBJECT`.
      *
-     * @param object Smart pointer to the input parcelable object.
-     * @return Return True on success, or false if any error occur.
+     * @param object Indicates the smart pointer to a `Parcelable` object.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool WriteStrongParcelable(const sptr<Parcelable> &object);
 
     /**
-     * @brief Write a remote object to this parcel.
+     * @brief Writes a remote object to this parcel.
      *
-     * @param object Pointer to a remote object.
-     * @return Return True on success, or false if any error occur.
-     * @note If `HOLD_OBJECT` is enabled for the input object, it will stay
+     * @param object Indicates the pointer to a remote object.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
+     * @note If `HOLD_OBJECT` is enabled for the remote object, it will stay
      * alive as long as this parcel is alive.
      *
      */
     bool WriteRemoteObject(const Parcelable *object);
 
     /**
-     * @brief Write an object to this parcel.
+     * @brief Writes an object to this parcel.
      *
-     * Use its own `Marshalling(Parcel &parcel)` when `nullptr` as input,
-     * otherwise use `WriteRemoteObject(const Parcelable *)`.
+     * Use its own `Marshalling(Parcel &parcel)` when a null pointer is passed
+     * in; in other scenarios, use `WriteRemoteObject(const Parcelable *)`.
      *
-     * @tparam T Specific class type of the input object.
-     * @param object Smart pointer to the input object.
-     * @return Return True on success, or false if any error occur.
+     * @tparam T Indicates the class type of the object.
+     * @param object Indicates the smart pointer to the object.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     template<typename T>
     bool WriteObject(const sptr<T> &object);
 
     /**
-     * @brief Parse input data by this parcel.
+     * @brief Parses input data by this parcel.
      *
-     * @param data Pointer to input data.
-     * @param size Size of input data(Bytes).
-     * @return Return True on success, or false if any error occur.
-     * @note Only read operation from this parcel is permitted after successful
-     * calling this method.
+     * @param data Indicates the pointer to input data.
+     * @param size Indicates the size of the input data, in bytes.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
+     * @note Only the read operation from this parcel is allowed after
+     * successful calling of this method.
      */
     bool ParseFrom(uintptr_t data, size_t size);
 
@@ -477,200 +506,212 @@ public:
     bool ReadDouble(double &value);
 
     /**
-     * @brief Read a block of data(buffer data) from this parcel.
+     * @brief Reads a block of data (buffer data) from this parcel.
      *
-     * @param length Size of the buffer(Bytes).
-     * @return A `uint8_t` pointer to the buffer.
+     * @param length Indicates the size of the buffer, in bytes.
+     * @return Returns a pointer of the `uint8_t` type to the buffer.
      */
     const uint8_t *ReadBuffer(size_t length);
 
     /**
-     * @brief Read a block of data(buffer data) without padding(alignment) from
-     * this parcel.
+     * @brief Reads a block of data (buffer data) without padding (alignment)
+     * from this parcel.
      *
-     * This method will read the effective data whose length specified by
-     * `length` and discard bytes for padding.
+     * This method will read the effective data with the specified
+     * `length` and discard the bytes used for padding.
      *
-     * @param length Effective size of the buffer(Bytes).
-     * @return A `uint8_t` pointer to the buffer.
+     * @param length Indicates the effective size of the buffer, in bytes.
+     * @return Returns a pointer of the `uint8_t` type to the buffer.
      *
      */
     const uint8_t *ReadUnpadBuffer(size_t length);
 
     /**
-     * @brief Skip the next several bytes specifed by `bytes` in read process.
+     * @brief Skips the next several bytes specified by `bytes` in the read
+     * operation.
      *
-     * @param bytes Skipped number of bytes.
+     * @param bytes Indicates the number of bytes to skip.
      */
     void SkipBytes(size_t bytes);
 
     /**
-     * @brief Read a C-style string from this parcel.
+     * @brief Reads a C-style string from this parcel.
      *
-     * @return A C-style string, which is represented by a `char`-type pointer.
+     * @return Returns a pointer of the `char` type to the C-style string.
      */
     const char *ReadCString();
 
     /**
-     * @brief Read a C++ string(`std::string`) object from this parcel.
+     * @brief Reads a C++ string (`std::string`) object from this parcel.
      *
-     * @return An `std::string` object.
+     * @return Returns a pointer of the `std::string` type to the C-style
+     * string.
      */
     const std::string ReadString();
 
     /**
-     * @brief Read a C++ string(`std::string`) object from this parcel to input
-     * object.
+     * @brief Reads a C++ string (`std::string`) object from this parcel to
+     * an object.
      *
-     * @param value Target receiver `std::string` object.
-     * @return Return True on success, or false if any error occur.
+     * @param value Indicates the `std::string` object to hold the data read.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool ReadString(std::string &value);
 
     /**
-     * @brief Read a C++ UTF-16 encoded string(`std::string`) object from this
-     * parcel.
+     * @brief Reads a C++ UTF-16 encoded string (`std::u16string`) object
+     * from this parcel.
      *
-     * @return An `std::u16string` object.
+     * @return Returns a pointer of the `std::u16string` type to the C-style
+     * string.
      */
     const std::u16string ReadString16();
 
     /**
-     * @brief Read a C++ UTF-16 string(`std::u16string`) object from this
-     * parcel to input object.
+     * @brief Reads a C++ UTF-16 string (`std::u16string`) object from this
+     * parcel to an object.
      *
-     * @param value Target receiver `std::string` object.
-     * @return Return True on success, or false if any error occur.
+     * @param value Indicates the `std::u16string` object to hold the data read.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool ReadString16(std::u16string &value);
 
     /**
-     * @brief Read a C++ UTF-16 string(`std::u16string`) object and its length
+     * @brief Reads a C++ UTF-16 string (`std::u16string`) object and its length
      * from this parcel.
      *
-     * @param len `int32_t`-type variable passed by reference to receive the
-     * length.
-     * @return An output `std::u16string` object.
+     * @param len Indicates the reference to a variable of the `int32_t` type
+     * to receive the length.
+     * @return Returns an `std::u16string` object.
      */
     const std::u16string ReadString16WithLength(int32_t &len);
 
     /**
-     * @brief Read a C++ string(`std::string`) object and its length from this
-     * parcel.
+     * @brief Reads a C++ string (`std::string`) object and its length from
+     * this parcel.
      *
-     * @param len `int32_t`-type variable passed by reference to receive the
-     * length.
-     * @return An output `std::u8string` object.
+     * @param len Indicates the reference to a variable of the `int32_t` type
+     * to receive the length.
+     * @return Returns an `std::string` object.
      */
     const std::string ReadString8WithLength(int32_t &len);
 
     /**
-     * @brief Set the read cursor to specified position.
+     * @brief Sets the read cursor to the specified position.
      *
-     * @param newPosition Specified position represented by offsets relative to
-     * the beginning of the data region.
-     * @return Return True on success, or false if any error occur.
+     * @param newPosition Indicates the position, represented by the offset
+     * (in bytes) from the beginning of the data region.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool RewindRead(size_t newPosition);
 
     /**
-     * @brief Set the write cursor to specified position.
+     * @brief Sets the write cursor to the specified position.
      *
-     * @param offsets Specified position represented by offsets(Bytes) relative
-     * to the beginning of the data region.
-     * @return Return True on success, or false if any error occur.
+     * @param offsets Indicates the position, represented by the offset
+     * (in bytes) from the beginning of the data region.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool RewindWrite(size_t offsets);
 
     /**
-     * @brief Get current position of read cursor.
+     * @brief Obtains the current position of the read cursor.
      *
-     * @return Position represented by offsets(Bytes) relative to the beginning
-     * of the data region.
+     * @return Returns the position, represented by the offset (in bytes)
+     * from the beginning of the data region.
      */
     size_t GetReadPosition();
 
     /**
-     * @brief Get current position of write cursor.
+     * @brief Obtains the current position of the write cursor.
      *
-     * @return Position represented by offsets(Bytes) relative to the beginning
-     * of the data region.
+     * @return Returns the position, represented by the offset (in bytes)
+     * from the beginning of the data region.
      */
     size_t GetWritePosition();
 
     /**
-     * @brief Read a Parcelable(and its subclass) object from this parcel.
+     * @brief Reads a `Parcelable` object and its child class objects
+     * from this parcel.
      *
-     * @tparam T Specific class type of the output object.
-     * @return Object of specific class.
-     * @note `nullptr` will return if a '0' is read.
+     * @tparam T Indicates the class type of the output object.
+     * @return Returns the object read.
+     * @note A null pointer will be returned if '0' is read.
      */
     template <typename T>
     T *ReadParcelable();
 
     /**
-     * @brief Read a Parcelable object from this parcel, and manage it by a
+     * @brief Reads a `Parcelable` object from this parcel and manages it by a
      * smart pointer.
      *
-     * @tparam T Specific class type of the output object.
-     * @return Object managed by a smart pointer.
-     * @note `nullptr` will return if a '0' is read.
+     * @tparam T Indicates the class type of the output object.
+     * @return Returns the object managed by a smart pointer.
+     * @note A null pointer will be returned if '0' is read.
      */
     template <typename T>
     sptr<T> ReadStrongParcelable();
 
     /**
-     * @brief Check if it is valid to read an object from current cursor.
+     * @brief Checks whether it is valid to read an object from the current
+     * cursor.
      *
-     * @return Return true if valid, otherwise return false.
+     * @return Returns `true` if valid; returns `false` otherwise.
      */
     bool CheckOffsets();
 
     /**
-     * @brief Read an object from this parcel.
+     * @brief Reads an object from this parcel.
      *
-     * `CheckOffsets()` will call first to check whether it is valid to read an
+     * Call `CheckOffsets()` first to check whether it is valid to read an
      * object.
      *
-     * @tparam T Specific class type of the output object.
-     * @return A smart pointer to the object.
-     * @note `nullptr` will return if `CheckOffsets()` fail.
+     * @tparam T Indicates the class type of the output object.
+     * @return Returns the smart pointer to the object.
+     * @note A null pointer will be returned if `CheckOffsets()` fails
+     * to be called.
      */
     template<typename T>
     sptr<T> ReadObject();
 
     /**
-     * @brief Set the Allocator object of this parcel.
+     * @brief Sets a memory allocator for this parcel.
      *
-     * New Allocator will reallocate the data region to which has been written.
+     * The new allocator will reallocate the data region that has been written.
      *
-     * @param allocator Specified Allocator object.
-     * @return Return True on success, or false if any error occur.
+     * @param allocator Indicates the pointer to an `Allocator` object.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool SetAllocator(Allocator *allocator);
 
     /**
-     * @brief Record an array of offsets of the object.
+     * @brief Records an array of positions of this parcel.
      *
-     * @param offsets A pointer to the input array.
-     * @param offsetSize Size of the input array.
-     * @note It will return directly if fail.
+     * @param offsets Indicates the pointer to the position array.
+     * @param offsetSize Indicates the size of the position array.
+     * @note The method returns directly if the call fail.
      */
     void InjectOffsets(binder_size_t offsets, size_t offsetSize);
 
     /**
-     * @brief Deallocate the data region, and reset this parcel.
+     * @brief Deallocates the data region and resets this parcel.
      */
     void FlushBuffer();
 
     /**
-     * @brief Write an `std::vector` object to this parcel.
+     * @brief Writes an `std::vector` object to this parcel.
      *
-     * @tparam T1 Specific class type for input vector.
-     * @tparam T2 Specific class type for write method of this parcel.
-     * @param val Input vector object passed by reference.
-     * @param Write Specific `Parcel::Write(T2 value)` method.
-     * @return Return True on success, or false if any error occur.
+     * @tparam T1 Indicates the class type for the vector.
+     * @tparam T2 Indicates the class type for the write method of this parcel.
+     * @param val Indicates the reference to the vector.
+     * @param Write Indicates the `Parcel::Write(T2 value)` method.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     template <typename T1, typename T2>
     bool WriteVector(const std::vector<T1> &val, bool (Parcel::*Write)(T2));
@@ -689,13 +730,14 @@ public:
     bool WriteString16Vector(const std::vector<std::u16string> &val);
 
     /**
-     * @brief Read an `std::vector` object from this parcel.
+     * @brief Reads an `std::vector` object from this parcel.
      *
-     * @tparam T1 Specific class type for output vector.
-     * @tparam T2 Specific class type for read method of this parcel.
-     * @param val Pointer to the output vector object.
-     * @param Write Specific `Parcel::Read(T2 value)` method.
-     * @return Return True on success, or false if any error occur.
+     * @tparam T1 Indicates the class type for the vector.
+     * @tparam T2 Indicates the class type for the read method of this parcel.
+     * @param val Indicates the pointer to the vector.
+     * @param Write Indicates the `Parcel::Read(T2 value)` method.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     template <typename T>
     bool ReadVector(std::vector<T> *val, bool (Parcel::*Read)(T &));
@@ -728,21 +770,23 @@ public:
 
 protected:
     /**
-     * @brief Record position of the written object, which are represented by
-     * offset from the beginning of the data region.
+     * @brief Records the position of the written object, which is represented
+     * by the offset from the beginning of the data region.
      *
-     * @param offset Specific position.
-     * @return Return True on success, or false if any error occur.
+     * @param offset Indicates the position.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool WriteObjectOffset(binder_size_t offset);
 
     /**
-     * @brief Ensure number of the written objects is lower than the capacity of
-     * objects.
+     * @brief Ensures that the number of written objects is less than
+     * the capacity of objects.
      *
-     * If it is full, the capacity will be expanded.
+     * If the data region is full, the capacity will be expanded.
      *
-     * @return Return True on success, or false if any error occur.
+     * @return Returns `true` if the operation is successful;
+     * returns `false` otherwise.
      */
     bool EnsureObjectsCapacity();
 
@@ -821,7 +865,7 @@ T *Parcel::ReadParcelable()
     return T::Unmarshalling(*this);
 }
 
-// Read data from the given parcel into this parcelable object, return sptr.
+// Read data from the given parcel into this parcelable object, and return sptr.
 template <typename T>
 sptr<T> Parcel::ReadStrongParcelable()
 {

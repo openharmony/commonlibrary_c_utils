@@ -30,22 +30,22 @@
 namespace OHOS {
 namespace Utils {
 /**
- * @brief This is a timer manager.
+ * @brief Implements a timer manager.
  *
- * After "Timer" started, users can register several timed events, which can be
- * continuous or once, to it. Some points need to be noticed:\n
- * 1. Timer should be set up(via Setup()) before use, and shutdown
+ * After a timer is started, users can register several timed events, which
+ * can be continuous or one-shot, to it. Some points need to be noticed:\n
+ * 1. A timer must be set up (through Setup()) before use, and be shut down
  * (via Shutdown()) before its deconstruction.\n
- * 2. Timer should be set up first and then shutdown. Avoid delegating them to
- * different threads since it may cause multithreading problem.\n
- * 3. Set up Timer again would not reset this Timer, but return
- * `TIMER_ERR_INVALID_VALUE`. If a reset operation is required, shut Timer down
- * first and then set it up.\n
- * 4. Parameter in Shutdown() determines whether the thread in Timer would be
- * detach or join(True(default) --> join; False --> detach). Detach operation
- * would cause possible multithreading problems, thus is not recommended. If a
+ * 2. A timer must be set up first and then shut down. Avoid delegating a
+ * timer to different threads. Otherwise, multithreading issues may occur.\n
+ * 3. Setting up a timer again will not reset the timer, but return
+ * `TIMER_ERR_INVALID_VALUE`. If a reset operation is required, shut down
+ * the timer first and then set it up.\n
+ * 4. The parameter in Shutdown() determines whether the thread in the timer
+ * will be detached. A detach operation may cause possible
+ * multithreading problems, and is therefore not recommended. If a
  * detach operation is required, availability of related objects used in
- * `thread_` should be guaranteed.
+ * `thread_` must be guaranteed.
  */
 class Timer {
 public:
@@ -55,58 +55,61 @@ public:
 
 public:
     /**
-     * @brief Construct Timer.
+     * @brief Creates a timer.
      *
-     * If performance-sensitive, change "timeoutMs" larger before Setup.
-     * "timeoutMs" default-value(1000ms), performance-estimate: occupy
-     * fixed-100us in every default-value(1000ms).
+     * In performance-sensitive scenarios, set `timeoutMs` to a
+	 * greater value before timer setup based on your timed event setttings. The
+     * default value is 1000 ms. The timeout event requires 100 us to respond.
      *
-     * @param name Name for Timer. It is used as the name of thread in Timer.
-     * @param timeoutMs Time for waiting timer events. It is an integer in
-     * [-1, INT32MAX], but -1 and 0 is not recommended. -1 means waiting
-     * forever(until event-trigger). 0 means no waiting, which occupies too
-     * much cpu time. others means waiting(until event-trigger).
+     * @param name Indicates the name of the timer. It is used as the name
+	 * of the thread in the timer.
+     * @param timeoutMs Indicates the duration for which the timer will wait.
+     * The value is an integer in [-1, INT32MAX], but `-1` and `0` are not
+     * recommended. `-1` means to wait indefinitely (until the timed event is
+     * triggered). `0` means not to wait, which occupies too much CPU time.
      */
     explicit Timer(const std::string& name, int timeoutMs = 1000);
     virtual ~Timer() {}
 
     /**
-     * @brief Set up "Timer".
+     * @brief Sets up a timer.
      *
-     * Do not set up repeatly before shutdown.
+     * Do not set up a timer before shutting down the existing one.
      */
     virtual uint32_t Setup();
 
     /**
-     * @brief Shut down "Timer".
+     * @brief Shuts down this timer.
      *
-     * There are two modes to shut the "Timer" down: blocking and unblocking.
-     * Blocking mode will shut "Timer" down until all running events in "Timer"
-     * finished. If "timeoutMs" is set as -1, use unblocking mode to avoid
-     * deadloop.
+     * A timer can be shut down in blocking or unblocking mode. In blocking
+     * mode, the timer will be shut down only after all running events
+     * in the timer have finished. If `timeoutMs` is set to `-1`, use
+     * unblocking mode to avoid deadloop.
      *
-     * @param useJoin Shutdown mode. true means blocking. false means
-     * unblocking(not recommended).
+     * @param useJoin Specifies whether to use blocking mode. The value `true`
+     * means to use blocking mode, and `false` (not recommended) means
+     * the opposite.
      */
     virtual void Shutdown(bool useJoin = true);
 
     /**
-     * @brief Regist timed events.
+     * @brief Registers timed events.
      *
-     * @param callback callback function of a timed event.
-     * @param interval interval time(ms) of a timed event.
-     * @param once continuity of a timed event. true means discontinuous. false
-     * means continuous. Default is false.
-     * @return return ID of a timed event. You can use it as parameter of
-     * Unregister().
+     * @param callback Indicates the callback function of a timed event.
+     * @param interval Indicates the interval of a timed event, in ms.
+     * @param once Indicates whether the timed event is one-shot.
+     * The value `true` means that the timed event is one-shot,
+	 * and `false` means the opposite. The default value is `false`.
+     * @return Returns the ID of a timed event. You can use it as the
+     * parameter of Unregister().
      * @see Unregister
      */
     uint32_t Register(const TimerCallback& callback, uint32_t interval /* ms */, bool once = false);
     /**
-     * @brief Delete a timed events.
+     * @brief Deletes a timed event.
      *
-     * @param timerId ID of the timed event need to be deleted. Users can get
-     * it by Register().
+     * @param timerId Indicates the ID of the timed event to delete.
+     * It can be obtained through Register().
      * @see Register
      */
     void Unregister(uint32_t timerId);
@@ -123,7 +126,7 @@ private:
 
 private:
     struct TimerEntry {
-        uint32_t       timerId;  // unique id
+        uint32_t       timerId;  // Unique ID.
         uint32_t       interval;  // million second
         TimerCallback  callback;
         bool           once;

@@ -16,9 +16,9 @@
 /**
  * @file safe_block_queue.h
  *
- * The file contains interfaces of Thread-safe block queues in c_utils.
- * Includes the SafeBlockQueue class, and the SafeBlockQueueTracking class
- * for trackable tasks.
+ * Provides interfaces for thread-safe blocking queues in c_utils.
+ * The file includes the <b>SafeBlockQueue</b> class and
+ * the <b>SafeBlockQueueTracking</b> class for trackable tasks.
  */
 
 #ifndef UTILS_BASE_BLOCK_QUEUE_H
@@ -33,9 +33,10 @@
 namespace OHOS {
 
 /**
- * @brief Thread-safe blocking queues.
+ * @brief Provides interfaces for thread-safe blocking queues.
  *
- * Provides blocking and non-blocking push and pop interfaces.
+ * The interfaces can be used to perform blocking and non-blocking push and
+ * pop operations on queues.
  */
 template <typename T>
 class SafeBlockQueue {
@@ -45,41 +46,43 @@ public:
     }
 
 /**
- * @brief Insert an element at the end of the queue (blocking).
+ * @brief Inserts an element at the end of this queue in blocking mode.
  *
- * When the queue is full, the thread of the push operation will be blocked.
- * When the queue is not full, the push operation can be executed
- *  and wakes up one of the waiting threads.
+ * If the queue is full, the thread of the push operation will be blocked
+ * until the queue has space.
+ * If the queue is not full, the push operation can be performed and one of the
+ * pop threads (blocked when the queue is empty) is woken up.
  *
- * @param elem Enqueue data.
+ * @param elem Indicates the element to insert.
  */
     virtual void Push(T const& elem)
     {
         std::unique_lock<std::mutex> lock(mutexLock_);
         while (queueT_.size() >= maxSize_) {
-            // queue full , waiting for jobs to be taken
+            // If the queue is full, wait for jobs to be taken.
             cvNotFull_.wait(lock, [&]() { return (queueT_.size() < maxSize_); });
         }
 
-        // here means not full we can push in
+        // Insert the element into the queue if the queue is not full.
         queueT_.push(elem);
         cvNotEmpty_.notify_one();
     }
 
 /**
- * @brief Get the first element of the queue (blocking).
+ * @brief Removes the first element from this queue in blocking mode.
  *
- * When the queue is empty, the thread of the pop operation will be blocked.
- * When the queue is not empty, the pop operation can be executed
- * and wakes up one of the waiting threads. Then return the first element
- * of the queue.
+ * If the queue is empty, the thread of the pop operation will be blocked
+ * until the queue has elements.
+ * If the queue is not empty, the pop operation can be performed, the first
+ * element of the queue is returned, and one of the push threads (blocked
+ * when the queue is full) is woken up.
  */
     T Pop()
     {
         std::unique_lock<std::mutex> lock(mutexLock_);
 
         while (queueT_.empty()) {
-            // queue empty, waiting for tasks to be Push
+            // If the queue is empty, wait for elements to be pushed in.
             cvNotEmpty_.wait(lock, [&] { return !queueT_.empty(); });
         }
 
@@ -90,14 +93,14 @@ public:
     }
 
 /**
- * @brief Insert an element at the end of queue (Non-blocking).
+ * @brief Inserts an element at the end of this queue in non-blocking mode.
  *
- * When the queue is full, the thread of the push operation
- * will directly return false.
- * When the queue is not full, the push operation can be executed
- * and wakes up one of the waiting threads, and return true.
+ * If the queue is full, <b>false</b> is returned directly.
+ * If the queue is not full, the push operation can be performed, one of the
+ * pop threads (blocked when the queue is empty) is woken up, and <b>true</b>
+ * is returned.
  *
- * @param elem Enqueue data.
+ * @param elem Indicates the element to insert.
  */
     virtual bool PushNoWait(T const& elem)
     {
@@ -105,21 +108,21 @@ public:
         if (queueT_.size() >= maxSize_) {
             return false;
         }
-        // here means not full we can push in
+        // Insert the element if the queue is not full.
         queueT_.push(elem);
         cvNotEmpty_.notify_one();
         return true;
     }
 
 /**
- * @brief Get the first elements of the queue (Non-blocking).
+ * @brief Removes the first element from this queue in non-blocking mode.
  *
- * When the queue is empty, the thread of the pop operation
- * will directly return false.
- * When the queue is not empty, the pop operation can be executed
- * and wakes up one of the waiting threads, and return true.
+ * If the queue is empty, <b>false</b> is returned directly.
+ * If the queue is not empty, the pop operation can be performed, one of the
+ * push threads (blocked when the queue is full) is woken up, and <b>true</b>
+ * is returned.
  *
- * @param outtask data of pop.
+ * @param outtask Indicates the data of the pop operation.
  */
     bool PopNotWait(T& outtask)
     {
@@ -156,7 +159,7 @@ public:
     virtual ~SafeBlockQueue() {}
 
 protected:
-    unsigned long maxSize_;  // capacity of queue
+    unsigned long maxSize_;  // Capacity of the queue
     std::mutex mutexLock_;
     std::condition_variable cvNotEmpty_;
     std::condition_variable cvNotFull_;
@@ -164,8 +167,9 @@ protected:
 };
 
 /**
- * @brief A thread-safe blocking queue that inherits SafeBlockQueue
- * and tracks the number of outstanding tasks.
+ * @brief Provides interfaces for operating the thread-safe blocking queues
+ * and tracking the number of pending tasks.
+ * This class inherits from <b>SafeBlockQueue</b>.
  */
 template <typename T>
 class SafeBlockQueueTracking : public SafeBlockQueue<T> {
@@ -178,34 +182,35 @@ public:
     virtual ~SafeBlockQueueTracking() {}
 
 /**
- * @brief Insert an element at the end of queue (blocking).
+ * @brief Inserts an element at the end of this queue in blocking mode.
  *
- * When the queue is full, the thread of the push operation will be blocked.
- * When the queue is not full, the push operation can be executed
- * and wakes up one of the waiting threads.
+ * If the queue is full, the thread of the push operation will be blocked
+ * until the queue has space.
+ * If the queue is not full, the push operation can be performed and one of the
+ * pop threads (blocked when the queue is empty) is woken up.
  */
     virtual void Push(T const& elem)
     {
         unfinishedTaskCount_++;
         std::unique_lock<std::mutex> lock(mutexLock_);
         while (queueT_.size() >= maxSize_) {
-            // queue full , waiting for jobs to be taken
+            // If the queue is full, wait for jobs to be taken.
             cvNotFull_.wait(lock, [&]() { return (queueT_.size() < maxSize_); });
         }
 
-        // here means not full we can push in
+        // If the queue is not full, insert the element.
         queueT_.push(elem);
 
         cvNotEmpty_.notify_one();
     }
 
 /**
- * @brief Insert an element at the end of queue (Non-blocking).
+ * @brief Inserts an element at the end of this queue in non-blocking mode.
  *
- * When the queue is full, the thread of the push operation
- * will directly return false.
- * When the queue is not full, the push operation can be executed
- *  and wakes up one of the waiting threads, and return true.
+ * If the queue is full, <b>false</b> is returned directly.
+ * If the queue is not full, the push operation can be performed,
+ * one of the pop threads (blocked when the queue is empty) is woken up,
+ * and <b>true</b> is returned.
  */
     virtual bool PushNoWait(T const& elem)
     {
@@ -213,7 +218,7 @@ public:
         if (queueT_.size() >= maxSize_) {
             return false;
         }
-        // here means not full we can push in
+        // Insert the element if the queue is not full.
         queueT_.push(elem);
         unfinishedTaskCount_++;
         cvNotEmpty_.notify_one();
@@ -221,14 +226,14 @@ public:
     }
 
 /**
- * @brief A response function when a task completes.
+ * @brief Called to return the result when a task is complete.
  *
- * If the count of unfinished task < 1, return false directly.
- * If the count of unfinished task = 1, all threads waiting
- * while calling Join() will be woken up;
- * the count of unfinished task decrements by 1 and returns true.
- * If the count of unfinished task > 1,
- * decrements the count by 1 and returns true.
+ * If the count of unfinished tasks < 1, <b>false</b> is returned directly.
+ * If the count of unfinished tasks = 1, all the threads blocked
+ * by calling Join() will be woken up,
+ * the count of unfinished tasks decrements by 1, and <b>true</b> is returned.
+ * If the count of unfinished tasks > 1,
+ * the count of unfinished tasks decrements by 1, and <b>true</b> is returned.
  */
     bool OneTaskDone()
     {
@@ -247,9 +252,9 @@ public:
     }
 
 /**
- * @brief Wait for all tasks to complete.
+ * @brief Waits for all tasks to complete.
  *
- * When anyone of the tasks is not completed, the current thread will be
+ * If there is any task not completed, the current thread will be
  * blocked even if it is just woken up.
  */
     void Join()
@@ -259,7 +264,7 @@ public:
     }
 
 /**
- * @brief Returns the number of unfinished tasks.
+ * @brief Obtains the number of unfinished tasks.
  */
     int GetUnfinishTaskNum()
     {

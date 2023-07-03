@@ -16,10 +16,11 @@
 /**
  * @file unique_fd.h
  *
- * @brief Provide management of file descriptor implemented in c_utils.
+ * @brief Provides APIs to manage file descriptors (FDs) implemented in c_utils.
  *
- * Include Manager class UniqueFdAddDeletor, default Deleter class
- * DefaultDeleter and related global operator overload functions.
+ * The manager class `UniqueFdAddDeletor`,
+ * the default deleter class `DefaultDeleter`,
+ * and related global overloaded operator functions are provided.
  */
 #ifndef UNIQUE_FD_H
 #define UNIQUE_FD_H
@@ -29,21 +30,22 @@
 namespace OHOS {
 
 /**
- * @brief Default implement of Deleter, including a static function to close the fd.
+ * @brief Provides the default implementation for a deleter,
+ * including a static function to close FDs.
  *
- * Deleter is used for closing the file descriptor. Developer could implement
- * another Deleter to deal with different scenarios./n `Deleter::Close()` will
- * call when a UniqueFdAddDeletor object release the management of an fd, and
- * there's no any other UniqueFdAddDeletor objects to take over it.
+ * The deleter is used for closing FDs. You can implement a deleter to
+ * deal with a different scenario. When `Deleter::Close()` is called to enable
+ * a `UniqueFdAddDeletor` object to release the management of an FD,
+ * the FD can no longer be taken over by other `UniqueFdAddDeletor` objects.
  */
 class DefaultDeleter {
 public:
     /**
-     * @brief Default function to close fd.
+     * @brief Default function to close an FD.
      *
-     * Call `close()` if the input `fd` is valid(>=0).
+     * Call `close()` if the input FD is valid (greater than or equal to 0).
      *
-     * @param fd Input file descriptor.
+     * @param fd Indicates an FD.
      */
     static void Close(int fd)
     {
@@ -69,15 +71,15 @@ template <typename Deleter>
 bool operator<(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs);
 
 /**
- * @brief A file descriptor manager.
+ * @brief Defines an FD manager.
  *
- * To take the unique management of a file descriptor, avoiding double close
- * issue. Double close issue may wrongly close the fd which is just opened./n
- * The management of an fd can be delivered between different UniqueFdAddDeletor
- * objects. An fd will be closed if there's no UniqueFdAddDeletor take over the
- * management of it.
+ * To ensure unique management on an FD, avoid the double-close issue,
+ * which may cause a file to be incorrectly closed./n
+ * The management of an FD can be delivered between `UniqueFdAddDeletor`
+ * objects. An FD will be closed if no `UniqueFdAddDeletor` object is available
+ * to take over its management.
  *
- * @tparam Deleter Specified Deletor.
+ * @tparam Deleter Indicates a deleter.
  * @see DefaultDeleter
  */
 template <typename Deleter = DefaultDeleter>
@@ -96,9 +98,9 @@ class UniqueFdAddDeletor final {
 
 public:
     /**
-     * @brief Construct UniqueFdAddDeletor with managed fd.
+     * @brief Creates a `UniqueFdAddDeletor` object to manage an FD.
      *
-     * @param value Fd to be managed.
+     * @param value Indicates the FD to be managed.
      */
     explicit UniqueFdAddDeletor(const int& value)
         : fd_(value)
@@ -106,7 +108,8 @@ public:
     }
 
     /**
-     * @brief Construct UniqueFdAddDeletor with managed fd of -1.
+     * @brief Constructor used to create a `UniqueFdAddDeletor` object
+     * with the FD set to `-1`.
      */
     UniqueFdAddDeletor()
         : fd_(-1)
@@ -114,19 +117,18 @@ public:
     }
 
     /**
-     * @brief Deconstructor.
+     * @brief Destructor used to destroy this `UniqueFdAddDeletor` object.
      *
-     * `UniqueFdAddDeletor::Reset(-1)` will call to close the fd
-     * and set it to -1.
+     * This function is used to close the FD and set the FD to `-1`.
      */
     ~UniqueFdAddDeletor() { Reset(-1); }
 
     /**
-     * @brief Release the management of current fd, set it to -1.
+     * @brief Releases the management on the current FD and sets it to `-1`.
      *
-     * @return Return the original fd before release.
-     * @note Released fd need to be taken over by another UniqueFdAddDeletor
-     * object, otherwise it must be closed manually.
+     * @return Returns the original FD before release.
+     * @note The released FD needs to be taken over by another
+     * `UniqueFdAddDeletor` object; otherwise, it must be closed manually.
      */
     int Release()
     {
@@ -135,22 +137,24 @@ public:
         return tmp;
     }
 
-    // this is dangerous, when you use it , you should know it, donot operator on the ret
+    // this is dangerous, when you use it , you should know it,
+    // do not operator on the ret
     /**
-     * @brief Cast operator overload function.
+     * @brief An overloaded cast operator function.
      *
-     * E.g. This function will call when pass UniqueFdAddDeletor object to
-     * function who requires a parameter of `int`.
+     * This function will be called when passing a `UniqueFdAddDeletor` object
+     * to a function that requires a parameter of `int`.
      *
-     * @return Return current fd under management.
+     * @return Returns the current FD under management.
      */
     operator int() const { return Get(); } // NOLINT
 
-    // this is dangerous, when you use it , you should know it, donot operator on the ret
+    // this is dangerous, when you use it , you should know it, do not operator
+    // on the ret
     /**
-     * @brief Get current fd under management, but not release it.
+     * @brief Obtains the current FD under management, without releasing it.
      *
-     * @return Return current fd under management.
+     * @return Returns the current FD.
      */
     int Get() const
     {
@@ -159,10 +163,10 @@ public:
 
     // we need move fd from one to another
     /**
-     * @brief Move constuctor. Used for delivering fd between UniqueFdAddDeletor
-     * objects.
+     * @brief Move constructor used to deliver the management of an FD from a
+     * `UniqueFdAddDeletor` object to this object.
      *
-     * @param rhs Source UniqueFdAddDeletor
+     * @param rhs Indicates the source `UniqueFdAddDeletor` object.
      */
     UniqueFdAddDeletor(UniqueFdAddDeletor&& rhs)
     {
@@ -171,13 +175,14 @@ public:
     }
 
     /**
-     * @brief Move assignment operator overload function. Used for delivering fd
-     * between UniqueFdAddDeletor objects.
+     * @brief Overloaded move assignment operator function used to deliver the
+     * management of an FD from a `UniqueFdAddDeletor` object to this object.
      *
-     * @param rhs Source UniqueFdAddDeletor
-     * @return This object.
-     * @note Fd of this object will be closed, then this object will take over
-     * the fd managed by `rhs`.
+     * @param rhs Indicates the source `UniqueFdAddDeletor` object.
+     * @return Returns this `UniqueFdAddDeletor` object.
+     * @note The current FD manged by this `UniqueFdAddDeletor` object will be
+     * closed, and this object will take over
+     * the FD originally managed by `rhs`.
      */
     UniqueFdAddDeletor& operator=(UniqueFdAddDeletor&& rhs)
     {
@@ -187,12 +192,13 @@ public:
     }
 
     /**
-     * @brief Equal operator overload function.
+     * @brief Checks whether the FD managed by this object and that managed by
+     * the source object are equal.
      *
-     * Compare of the `rhs` and the fd managed by this object.
+     * @param rhs Indicates the source `UniqueFdAddDeletor` object.
      *
-     * @param rhs Input value.
-     * @return Return true if equal, otherwise return false.
+     * @return Returns `true` if the two FDs are equal; returns `false`
+     * otherwise.
      */
     bool operator==(const int& rhs) const
     {
@@ -200,12 +206,13 @@ public:
     }
 
     /**
-     * @brief Not-equal operator overload function.
+     * @brief Checks whether the FD managed by this object and that managed by
+     * the source object are not equal.
      *
-     * Compare of the `rhs` and the fd managed by this object.
+     * @param rhs Indicates the source `UniqueFdAddDeletor` object.
      *
-     * @param rhs Input value.
-     * @return Return true if not equal, otherwise return false.
+     * @return Returns `true` if the two FDs are not equal; returns `false`
+     * otherwise.
      */
     bool operator!=(const int& rhs) const
     {
@@ -213,13 +220,13 @@ public:
     }
 
     /**
-     * @brief Equal-or-Greater-than operator overload function.
+     * @brief Checks whether the FD managed by this object is greater than or
+     * equal to that managed by the source object.
      *
-     * Compare of the `rhs` and the fd managed by this object.
+     * @param rhs Indicates the source `UniqueFdAddDeletor` object.
      *
-     * @param rhs Input value.
-     * @return Return true if equal to or greater than `rhs`,
-     * otherwise return false.
+     * @return Returns `true` if FD managed by this object is greater than or
+     * equal to that managed by the source object; returns `false` otherwise.
      */
     bool operator>=(const int& rhs) const
     {
@@ -227,13 +234,13 @@ public:
     }
 
     /**
-     * @brief Greater-than operator overload function.
+     * @brief Checks whether the FD managed by this object is greater than that
+     * managed by the source object.
      *
-     * Compare of the `rhs` and the fd managed by this object.
+     * @param rhs Indicates the source `UniqueFdAddDeletor` object.
      *
-     * @param rhs Input value.
-     * @return Return true if greater than `rhs`,
-     * otherwise return false.
+     * @return Returns `true` if FD managed by this object is greater than that
+     * managed by the source object; returns `false` otherwise.
      */
     bool operator>(const int& rhs) const
     {
@@ -241,13 +248,13 @@ public:
     }
 
     /**
-     * @brief Equal-or-Less-than operator overload function.
+     * @brief Checks whether the FD managed by this object is less than or equal
+     * to that managed by the source object.
      *
-     * Compare of the `rhs` and the fd managed by this object.
+     * @param rhs Indicates the source `UniqueFdAddDeletor` object.
      *
-     * @param rhs Input value.
-     * @return Return true if equal to or less than `rhs`,
-     * otherwise return false.
+     * @return Returns `true` if FD managed by this object is less than or equal
+     * to that managed by the source object; returns `false` otherwise.
      */
     bool operator<=(const int& rhs) const
     {
@@ -255,13 +262,13 @@ public:
     }
 
     /**
-     * @brief Less-than operator overload function.
+     * @brief Checks whether the FD managed by this object is less than that
+     * managed by the source object.
      *
-     * Compare of the `rhs` and the fd managed by this object.
+     * @param rhs Indicates the source `UniqueFdAddDeletor` object.
      *
-     * @param rhs Input value.
-     * @return Return true if less than `rhs`,
-     * otherwise return false.
+     * @return Returns `true` if FD managed by this object is less than that
+     * managed by the source object; returns `false` otherwise.
      */
     bool operator<(const int& rhs) const
     {
@@ -285,14 +292,14 @@ private:
 };
 
 /**
- * @brief Global Equal operator overload function.
+* @brief Checks whether the FD managed by two objects (specified by `lhs` and
+* `rhs` respectively) are equal.
+*
+ * @tparam Deleter Indicates a deleter.
+ * @param lhs Indicates the first `UniqueFdAddDeletor` object.
+ * @param rhs Indicates the second `UniqueFdAddDeletor` object.
  *
- * Compare of the `lhs` and the fd managed by `rhs`.
- *
- * @tparam Deleter Specified Deletor.
- * @param lhs Input value.
- * @param rhs Input UniqueFdAddDeletor object.
- * @return Return true if equal, otherwise return false.
+ * @return Returns `true` if the two FDs are equal; returns `false` otherwise.
  * @see DefaultDeleter
  */
 template <typename Deleter = DefaultDeleter>
@@ -302,14 +309,15 @@ bool operator==(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
 }
 
 /**
- * @brief Global Not-equal operator overload function.
+* @brief Checks whether the FD managed by two objects (specified by `lhs` and
+* `rhs` respectively) are not equal.
+*
+ * @tparam Deleter Indicates a deleter.
+ * @param lhs Indicates the first `UniqueFdAddDeletor` object.
+ * @param rhs Indicates the second `UniqueFdAddDeletor` object.
  *
- * Compare of the `lhs` and the fd managed by `rhs`.
- *
- * @tparam Deleter Specified Deletor.
- * @param lhs Input value.
- * @param rhs Input UniqueFdAddDeletor object.
- * @return Return true if not equal, otherwise return false.
+ * @return Returns `true` if the two FDs are not equal; returns `false`
+ * otherwise.
  * @see DefaultDeleter
  */
 template <typename Deleter = DefaultDeleter>
@@ -319,16 +327,16 @@ bool operator!=(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
 }
 
 /**
- * @brief Global Equal-or-Greater-than operator overload function.
+ * @brief Checks whether the FD managed by `lhs` is greater than or equal to
+ * that managed by `rhs`.
  *
- * Compare of the `lhs` and the fd managed by `rhs`.
+ * @tparam Deleter Indicates a deleter.
+ * @param lhs Indicates the first `UniqueFdAddDeletor` object.
+ * @param rhs Indicates the second `UniqueFdAddDeletor` object.
  *
- * @tparam Deleter Specified Deletor.
- * @param lhs Input value.
- * @param rhs Input UniqueFdAddDeletor object.
+ * @return Returns `true` if the FD managed by `lhs` is greater than or equal to
+ * that managed by `rhs`; returns `false` otherwise.
  * @see DefaultDeleter
- * @return Return true if `lhs` is equal to
- * or greater than fd managed by `rhs`.
  */
 template <typename Deleter = DefaultDeleter>
 bool operator>=(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
@@ -337,15 +345,16 @@ bool operator>=(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
 }
 
 /**
- * @brief Global Greater-than operator overload function.
+ * @brief Checks whether the FD managed by `lhs` is greater than that
+ * managed by `rhs`.
  *
- * Compare of the `lhs` and the fd managed by `rhs`.
+ * @tparam Deleter Indicates a deleter.
+ * @param lhs Indicates the first `UniqueFdAddDeletor` object.
+ * @param rhs Indicates the second `UniqueFdAddDeletor` object.
  *
- * @tparam Deleter Specified Deletor.
- * @param lhs Input value.
- * @param rhs Input UniqueFdAddDeletor object.
+ * @return Returns `true` if the FD managed by `lhs` is greater than that
+ * managed by `rhs`; returns `false` otherwise.
  * @see DefaultDeleter
- * @return Return true if `lhs` is greater than fd managed by `rhs`.
  */
 template <typename Deleter = DefaultDeleter>
 bool operator>(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
@@ -354,16 +363,16 @@ bool operator>(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
 }
 
 /**
- * @brief Global Equal-or-Less-than operator overload function.
+ * @brief Checks whether the FD managed by `lhs` is less than or equal to that
+ * managed by `rhs`.
  *
- * Compare of the `lhs` and the fd managed by `rhs`.
+ * @tparam Deleter Indicates a deleter.
+ * @param lhs Indicates the first `UniqueFdAddDeletor` object.
+ * @param rhs Indicates the second `UniqueFdAddDeletor` object.
  *
- * @tparam Deleter Specified Deletor.
- * @param lhs Input value.
- * @param rhs Input UniqueFdAddDeletor object.
+ * @return Returns `true` if the FD managed by `lhs` is less than or equal to
+ * that managed by `rhs`; returns `false` otherwise.
  * @see DefaultDeleter
- * @return Return true if `lhs` is equal to
- * or less than fd managed by `rhs`.
  */
 template <typename Deleter = DefaultDeleter>
 bool operator<=(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
@@ -372,15 +381,16 @@ bool operator<=(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)
 }
 
 /**
- * @brief Global Equal-or-Greater-than operator overload function.
+ * @brief Checks whether the FD managed by `lhs` is less than that
+ * managed by `rhs`.
  *
- * Compare of the `lhs` and the fd managed by `rhs`.
+ * @tparam Deleter Indicates a deleter.
+ * @param lhs Indicates the first `UniqueFdAddDeletor` object.
+ * @param rhs Indicates the second `UniqueFdAddDeletor` object.
  *
- * @tparam Deleter Specified Deletor.
- * @param lhs Input value.
- * @param rhs Input UniqueFdAddDeletor object.
+ * @return Returns `true` if the FD managed by `lhs` is less than that
+ * managed by `rhs`; returns `false` otherwise.
  * @see DefaultDeleter
- * @return Return true if `lhs` is less than fd managed by `rhs`.
  */
 template <typename Deleter = DefaultDeleter>
 bool operator<(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs)

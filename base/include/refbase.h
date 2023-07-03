@@ -22,12 +22,12 @@
  /**
   * @defgroup SmartPointer
   * @{
-  * @brief Smart Pointer are pointer-like classes.
+  * @brief SmartPointer is a pointer-like class.
   *
-  * They simulates a pointer while providing added features,
-  * such as automatic memory management.\n
-  * Automatic memory management is mainly about deallocating
-  * the related memory correctly when an object beyonds its life cycle.
+  * This class simulates a pointer while providing
+  * enhanced features, such as automatic memory management.\n
+  * Automatic memory management helps to deallocate
+  * memory resources correctly when an object's life time expires.
   */
 
 #ifndef UTILS_BASE_REFBASE_H
@@ -42,7 +42,7 @@
 namespace OHOS {
 /**
  * @ingroup SmartPointer
- * @brief A value indicates no strong references exist ever.
+ * @brief A value indicates no strong references ever.
  */
 #define INITIAL_PRIMARY_VALUE (1 << 28)
 
@@ -54,25 +54,24 @@ class RefTracker;
 
 /**
  * @ingroup SmartPointer
- * @brief Reference counter. A class records two kinds of count of references to
- * the corresponding RefBase object, and a count of references to the RefCounter
- * itself.
+ * @brief Reference counter class. Such a class records two kinds
+ * of references to the corresponding RefBase object and one kind
+ * of references to the RefCounter object itself.
  *
  * There are two different references for a single object.\n
- * Strong Reference holds a reference directly point to the object.
- * Objects which are strong referenced ought to be alive/existed
- * as long as this strong reference exists, thus the reference
- * is still valid.\n
- * Weak Reference holds a reference indirectly point to the object.
- * Objects which are weak referenced are not guaranteed to be alive/existed
+ * A strong reference holds the reference directly pointing to the object,
+ * and the object should be alive as long as the strong reference exists.\n
+ * A weak reference holds a reference indirectly pointing to the object,
+ * and the object is not always alive/existent
  * even if the weak reference exists.
- * @note Descriptions above are valid only when smart pointers
+ * @note The preceding descriptions are valid only when smart pointers
  * are properly used.
  */
 class RefCounter {
 public:
     /**
-     * @brief Callback function to destroy the corresponding RefBase object.
+     * @brief Callback function used to destroy the corresponding
+     * RefBase object.
      */
     using RefPtrCallback = std::function<void()>;
     friend class RefBase;
@@ -86,157 +85,159 @@ public:
     virtual ~RefCounter();
 
     /**
-     * @brief Set the callback function.
+     * @brief Sets the callback function.
      *
-     * @param callback A function to be set to delete
+     * @param callback Callback function used to delete
      * the corresponding RefBase object.
      */
     void SetCallback(const RefPtrCallback& callback);
 
     /**
-     * @brief Remove the current callback function. Set it to a `nullptr`.
+     * @brief Removes the current callback function by setting it to a `nullptr`.
      */
     void RemoveCallback();
 
     /**
-     * @brief Get reference count to the RefCounter object.
+     * @brief Gets the count of references to the RefCounter object.
      *
-     * @return Value of the related count.
+     * @return Count of references to the RefCounter object.
      */
     int GetRefCount();
 
     /**
-     * @brief Increment the reference count to the RefCounter object by 1.
+     * @brief Increments the count of references to the RefCounter object by 1.
      */
     void IncRefCount();
 
     /**
-     * @brief Decrement the reference count to the RefCounter object by 1.
+     * @brief Decrements the count of references to the RefCounter object by 1.
      *
      * Once the count reaches 0 after being decremented,
-     * it will call `delete this` to deallocate this RefCounter object.
+     * `delete this` will be called to deallocate this RefCounter object.
      */
     void DecRefCount();
 
     /**
-     * @brief Check if pointer to the call back function is a `nullptr`.
+     * @brief Checks if the pointer to the callback function is a `nullptr`.
      *
-     * @return Return true if it is not a `nullptr`.
+     * @return `true` if the callback function is a `nullptr`;
+     * `false` otherwise.
      */
     bool IsRefPtrValid();
 
     /**
-     * @brief Increment the strong reference count to the
+     * @brief Increments the count of strong references to the
      * corresponding RefBase object by 1.
      *
-     * @return Original (before increment) value of the count.
+     * @return Original count before increment.
      */
     int IncStrongRefCount(const void *objectId);
 
     /**
-     * @brief Decrement the strong reference count to the
+     * @brief Decrements the count of strong references to the
      * corresponding RefBase object by 1.
      *
-     * @return Original (before decrement) value of the count.
-     * @note If the strong reference has never existed,
-     * decrement will cause no effection.
+     * @return Original count before decrement.
+     * @note If the strong reference never exists,
+     * decrement will be ineffective.
      */
     int DecStrongRefCount(const void *objectId);
 
     /**
-     * @brief Get the strong reference count to the
+     * @brief Gets the count of strong references to the
      * corresponding RefBase object.
      *
-     * @return Value of the related count.
+     * @return Count of strong references.
      */
     int GetStrongRefCount();
 
     /**
-     * @brief Increment the weak reference count to the
+     * @brief Increments the count weak references to the
      * corresponding RefBase object by 1.
      *
-     * @return Original (before increment) value of the count.
+     * @return Original count before increment.
      */
     int IncWeakRefCount(const void *objectId);
 
     /**
-     * @brief Decrement the weak reference count to the
+     * @brief Decrements the count of weak references to the
      * corresponding RefBase object by 1.
      *
      * @return Original (before decrement) value of atomicWeak_.
-     * @note When the count reaches 0 after being decremented, the
+     * @note If the count reaches 0 after being decremented, the
      * corresponding RefBase object with no strong reference ever,
-     * or the object with strong reference count of 0 but has not been
-     * deallocated due to its extended 'life time', will be deallocated.
+     * or the RefBase object with 0 strong reference but an extended
+     * 'life time', will be deallocated.
      */
     int DecWeakRefCount(const void *objectId);
 
     /**
-     * @brief Get the weak reference count to the
+     * @brief Gets the count of weak references to the
      * corresponding RefBase object.
      *
-     * @return Value of the related count.
+     * @return Count of weak references.
      */
     int GetWeakRefCount();
 
     /**
-     * @brief Increment the times of attempts to increment.
+     * @brief Sets the number of attempts to increment.
      */
     void SetAttemptAcquire();
 
     /**
-     * @brief Check if the times of attempts greater than 0.
+     * @brief Check if the number of attempts is greater than 0.
      *
-     * @return Return true if the times is greater than 0.
+     * @return `true` if the number of attempts is greater than 0;
+     * `false` otherwise.
      */
     bool IsAttemptAcquireSet();
 
     /**
-     * @brief Clear the times of attempts to increment.
+     * @brief Clears number of attempts to increment.
      */
     void ClearAttemptAcquire();
 
     /**
-     * @brief Attempt to increment the strong reference count to the
+     * @brief Attempts to increment the count of strong references to the
      * corresponding RefBase object by 1.
      *
      * @param outCount If the attempt success, the original value
      * (before increment) of the count will be stored here.
-     * @return Return true if the attempt success.
+     * @return `true` if the attempt is successful; `false` otherwise.
      */
     bool AttemptIncStrongRef(const void *objectId, int &outCount);
 
     // Only for IPC use.
     /**
-     * @brief Attempt to increment the strong reference count to
-     * the corresponding RefBase object by 1(Simplified).
+     * @brief Attempts to increment the count of strong references to the
+     * the corresponding RefBase object by 1 (simplified).
      *
-     * @return Return true if the attempt success.
-     * @note  Ony for IPC use.
+     * @return `true` if the attempt is successful; `false` otherwise.
+     * @note Only for IPC use.
      */
     bool AttemptIncStrong(const void *objectId);
 
     /**
-     * @brief Check if the corresponding RefBase object
-     * own an extended life-time.
+     * @brief Checks if the corresponding RefBase object
+     * has an extended life-time.
      *
-     * @return Return true if its life-time has been extended.
+     * @return `true` if success; `false` otherwise.
      */
     bool IsLifeTimeExtended();
 
     /**
-     * @brief Extend the life-time of corresponding RefBase object.
+     * @brief Extends the life-time of corresponding RefBase object.
      *
-     * It allows the corresponding object keep alive
-     * even if there exists no strong reference to it.
-     * @note Corresponding object will be deallocated
-     * when related weak reference count also reach 0.
+     * This allows the corresponding object keep alive
+     * even if there is no strong reference.
+     * @note The RefBase object will be deallocated
+     * if the count of weak references also reaches 0.
      */
     void ExtendObjectLifetime();
 
 #if ((defined DEBUG_REFBASE) && (!defined TRACK_ALL))
     /**
-     * @brief Enable the ability of tracking. This is a debug feature.
+     * @brief Enables tracking. It is applicable to debugging only.
      */
     void EnableTracker();
 #endif
@@ -245,9 +246,9 @@ private:
     std::atomic<int> atomicStrong_; // = (num of sptr) or Initial-value
     std::atomic<int> atomicWeak_; // = (num of sptr)+(num of WeakRefCounter)
     std::atomic<int> atomicRefCount_; // = (num of WeakRefCounter) + 1
-    std::atomic<unsigned int> atomicFlags_; // A life-time extended flag
-    std::atomic<int> atomicAttempt_; // Times of attempts
-    RefPtrCallback callback_ = nullptr; // A callback function to deallocate the corresponding RefBase object
+    std::atomic<unsigned int> atomicFlags_; // Life-time extended flag
+    std::atomic<int> atomicAttempt_; // Number of attempts
+    RefPtrCallback callback_ = nullptr; // Callback function to deallocate the corresponding RefBase object
     static constexpr unsigned int FLAG_EXTEND_LIFE_TIME = 0x00000002; // Extended life-time bit to be set via logic-OR
 #ifdef DEBUG_REFBASE
 #ifdef TRACK_ALL
@@ -271,17 +272,16 @@ private:
  * @brief An intermediate class to represent the weak reference
  * to the correspond RefBase object.
  *
- * A WeakRefCounter object can be held by multiple wptr objects.\n
- * It holds references to the corresponding RefBase and RefCounter object.
- * Those two references will be set as `nullptr`s, when the weak referenced
- * target and its RefCounter object has been deallocated. Thus WeakRefCounter
- * object can still alive even if the target refereneced by this object
- * is vanished.
+ * A WeakRefCounter object can be shared by multiple wptr objects.\n
+ * It holds the references to the corresponding RefBase and RefCounter object.
+ * Those two references will be set as `nullptr` when the weak referenced
+ * target and its RefCounter object are deallocated. The WeakRefCounter
+ * object can remain alive even if the referenced target is deallocated.
  */
 class WeakRefCounter {
 public:
     /**
-     * @brief Construct a new Weak Ref Counter object.
+     * @brief Constructs a WeakRefCounter object.
      *
      * @param counter Pointer to corresponding RefCounter object.
      * @param cookie Pointer to corresponding RefBase object.
@@ -291,27 +291,27 @@ public:
     virtual ~WeakRefCounter();
 
     /**
-     * @brief Get current pointer to the corresponding RefBase object.
+     * @brief Gets the current pointer to the corresponding RefBase object.
      *
      * @return A void pointer to the RefBase object.
-     * If the corresponding object does not alive, a `nullptr` will return.
-     * @note Void pointer means you should cast it to the real type, since it
-     * can be kinds of subclasses of RefBase.
+     * If the corresponding object is not alive, a `nullptr` will be returned.
+     * @note A void pointer means that you should cast it to the real type,
+     * since it can be any subclass of RefBase.
      */
     void *GetRefPtr();
 
     /**
-     * @brief Increment the reference count to this WeakRefCounter object.
+     * @brief Increments the count of references to this WeakRefCounter object.
      *
-     * @note Notice the difference between this count and the weak reference
-     * count in RefCounter. This value equals to the number of wptrs directly
-     * referencing this WeakRefCount object.
+     * @note This count is different from the count of weak references
+     * in RefCounter. It is equal to the count of wptrs directly
+     * referenced to this WeakRefCount object.
      * @see RefCounter
      */
     void IncWeakRefCount(const void *objectId);
 
     /**
-     * @brief Decrement the reference count to this WeakRefCounter object.
+     * @brief Decrements the count of references to this WeakRefCounter object.
      *
      * @note This WeakRefCounter object will be deallocated when this count
      * reaches 0.
@@ -319,35 +319,37 @@ public:
     void DecWeakRefCount(const void *objectId);
 
     /**
-     * @brief Get the count recorded by this WeakRefCounter object.
+     * @brief Gets the count recorded by this WeakRefCounter object.
      *
-     * @return Value of the count.
-     * @note This value of count is different from that in RefCounter.
+     * @return Count recorded by this WeakRefCounter object.
+     * @note The count is different from that in RefCounter.
      * @see RefCounter::GetWeakRefCount()
      */
     int GetWeakRefCount() const;
 
     /**
-     * @brief Attempt to increment the strong reference count of
-     * the corresponding RefBase object(Used in promoting a wptr to a sptr).
+     * @brief Attempts to increment the count of strong references to
+     * the corresponding RefBase object (to promote a wptr to a sptr).
      *
-     * @return Return `true` after a success increment.
+     * @return `true` after a success increment.
      */
     bool AttemptIncStrongRef(const void *objectId);
 
 private:
-    std::atomic<int> atomicWeak_; // Count of references to this WeakRefCounter object
-                                  // The value equals to the total amount of wptrs which
-                                  // reference this WeakRefCounter object
-    RefCounter *refCounter_ = nullptr; // reference to the RefCounter object of corresponding RefBase Object
+    std::atomic<int> atomicWeak_; // Count of references to this
+                                  // WeakRefCounter object
+                                  // The value is equal to the count of wptrs
+                                  // that references this WeakRefCounter object.
+    RefCounter *refCounter_ = nullptr; // Reference to the RefCounter object of
+                                       // the corresponding RefBase object
     void *cookie_ = nullptr; // Pointer to the corresponding RefBase object
 };
 
 /**
  * @ingroup SmartPointer
- * @brief A base class which can be managed by a smart pointer.
+ * @brief A base class of subclasses that can be managed by SmartPointer.
  *
- * @note All classes which intend to be managed by smart pointers should be
+ * @note All classes which intend to be managed by SmartPointer should be
  * derived from RefBase.
  */
 class RefBase {
@@ -357,17 +359,17 @@ public:
     /**
      * @brief Copy constructor of RefBase.
      *
-     * @note  Note that this method will construct a new RefCounter object,
-     * and bind with it.
+     * @note This function constructs a new RefCounter object
+     * and binds it to the RefBase object.
      */
     RefBase(const RefBase &);
 
     /**
      * @brief Copy assignment operator of RefBase.
      *
-     * @note This method will unbind the current RefBase object and its
-     * original RefCounter object, then bind a newly constructed
-     * RefCounter object.
+     * @note This function unbinds this RefBase object from the
+     * original RefCounter object, and then binds it to the
+     * newly constructed RefCounter object.
      */
     RefBase &operator=(const RefBase &);
 
@@ -379,195 +381,193 @@ public:
     /**
      * @brief Move assignment operator of RefBase.
      *
-     * @note  This method will bind this RefBase object with the RefCounter
-     * object of the argument `other`, then `other` will unbind the RefCounter
-     * object.\n No counts operation will be poccessed.
+     * @note This function binds this RefBase object with the RefCounter
+     * object of the argument `other`, which will unbind the
+     * RefCounter object. No counts operation will be processed.
      */
     RefBase &operator=(RefBase &&other) noexcept;
 
     virtual ~RefBase();
 
     /**
-     * @brief A callback method to deallocate this object.
+     * @brief Callback function to deallocate this object.
      *
-     * This method has default implement to simply deallocate this RefBase
-     * object simply by calling `delete(this)`.
+     * This function provides the default implementation to deallocate
+     * this RefBase object by simply calling `delete(this)`.
      */
     virtual void RefPtrCallback();
 
     /**
-     * @brief Extend life time of the RefBase object.
+     * @brief Extends the life time of the RefBase object.
      *
      * @note The object whose life time has been extended will not be
-     * deallocated when the the weak reference count reach 0 instead of the
-     * strong one.
+     * deallocated if the count of weak references, instead of strong
+     * references, reaches 0.
      */
     void ExtendObjectLifetime();
 
     /**
-     * @brief Increment the strong reference count.
+     * @brief Increments the count of strong references.
      *
-     * `OnFirstStrongRef()`, which is an empty method by default, will be
-     * called when the first strong reference are established.、
+     * `OnFirstStrongRef()`, which is an empty function by default,
+     * will be called when the first strong reference is established.
      *
-     * @note It will atomically increment the weak reference count meanwhile.
+     * @note This function automatically increments the count of weak
+     * references meanwhile.
      */
     void IncStrongRef(const void *objectId);
 
     /**
-     * @brief Decrement the strong reference count.
+     * @brief Decrements the count of strong references.
      *
-     * This object will be deallocated when the count reaches 0, if it owns a
-     * normal life time.\n `OnLastStrongRef()`, which is an empty method by
-     * default, will be called when the last strong reference vanishes.
+     * If the life time is not extended, this object will be deallocated
+     * when the count of strong references reaches 0.\n
+     * `OnLastStrongRef()`, which is an empty function by default,
+     * will be called when the last strong reference is deleted.
      */
     void DecStrongRef(const void *objectId);
 
     /**
-     * @brief Get the strong reference count.
+     * @brief Gets the count of strong references.
      *
-     * @return Related count value. Return 0 when corresponding RefCounter
-     * object does not exist.
-     * @note Only valid when corresponding RefCounter object exists.
+     * @return Count of strong references. The value is 0 if the
+     * corresponding RefCounter object does not exist.
+     * @note This function is valid only when corresponding RefCounter
+     * object exists.
      */
     int GetSptrRefCount();
 
    /**
-    * @brief Create weak reference to this RefBase object.
-    *
-    * Create a WeakRefCounter object which holds reference to this RefBase
-    * object and set the reference count.
+    * @brief Creates a weak reference to this RefBase object.
     *
     * @param cookie Void pointer to this RefBase object.
     * @return Pointer to the newly created WeakRefCounter object.
-    * @note Avoid using it independently. Use related methods of wptr.
+    * @note Use this function with related functions of wptr.
+    * Do not use it independently.
     */
     WeakRefCounter *CreateWeakRef(void *cookie);
 
     /**
-     * @brief Get the pointer to corresponding counter object.
+     * @brief Gets the pointer to corresponding counter object.
      *
      * @return Pointer to the counter object.
      */
     RefCounter *GetRefCounter() const;
 
     /**
-     * @brief Increment the weak reference count.
+     * @brief Increments the count of weak references.
      *
-     * @note Only valid when corresponding RefCounter object exists.
+     * @note This function is valid only when corresponding RefCounter
+     * object exists.
      */
     void IncWeakRef(const void *objectId);
 
     /**
-     * @brief Decrement the weak reference count.
+     * @brief Decrements the count of weak references.
      *
-     * @note Only valid when corresponding RefCounter object exists.
+     * @note This function is valid only when corresponding RefCounter
+     * object exists.
      */
     void DecWeakRef(const void *objectId);
 
     /**
-     * @brief Get the weak reference count.
+     * @brief Gets the count of weak references.
      *
-     * @return Value of related count. Return 0 when corresponding
-     * RefCounter object doesn't exist.
+     * @return Count of weak references. The value is 0 if the corresponding
+     * RefCounter object does not exist.
      */
     int GetWptrRefCount();
 
     /**
-     * @brief Attempt to increment the strong reference count.
+     * @brief Attempts to increment the count of strong references.
      *
-     * `OnFirstStrongRef()`, which is an empty method by default, will be
-     * called when the first strong reference are established.
+     * `OnFirstStrongRef()`, which is an empty function by default, will be
+     * called when the first strong reference is established.
      *
-     * @return Return true if successfully increment the count.
-     * @note Note that count of times of attempts will increment by 1
+     * @return `true` if the increment is successful; `false` otherwise.
+     * @note The count of attempts will increment by 1
      * after a successful increment.
      */
     bool AttemptAcquire(const void *objectId);
 
     /**
-     * @brief Attempt to increment the strong reference count.
+     * @brief Attempts to increment the count of strong references.
      *
-     * `OnFirstStrongRef()`, which is an empty method by default, will be
-     * called when the first strong reference are established.
-     * @return Return true if successfully increment the count.
-     * @note Used in various copy constructor of sptr in scenario of
+     * `OnFirstStrongRef()`, which is an empty function by default, will be
+     * called when the first strong reference is established.
+     * @return `true` if the increment is successful; `false` otherwise.
+     * @note Use this function in the copy constructor of sptr in scenario of
      * interaction between sptr and wptr. Avoid using it independently.
      */
     bool AttemptIncStrongRef(const void *objectId);
 
     // Only for IPC use.
     /**
-     * @brief Attempt to increment the strong reference count.
+     * @brief Attempts to increment the count of strong references.
      *
-     * @return Return true if successfully increment the count, otherwise
-     * return false.
-     * @note Note that times of successful attempts will increment by 1 after
-     * a successful increment of the related count.
-     * @note This method is a simplified version of `AttemptAcquire`, but only
-     * for IPC use.
+     * @return `true` if the increment is successful; `false` otherwise.
+     * @note If the operation is successful, the count of successful attempts
+     * will increment by 1.
+     * @note This function is a simplified version of `AttemptAcquire`.
+     * It is only for IPC use.
      */
     bool AttemptIncStrong(const void *objectId);
 
     /**
-     * @brief check if the times of successful attempts of greater than 0.
+     * @brief Checks if the count of successful attempts is greater than 0.
      *
-     * @return Return true if times of successful attempts is greater than 0;
-     * Return false if it is not greater than 0, or the corresponding
-     * RefCounter object does not exist.
+     * @return `true` if the count of successful attempts is greater than 0;
+     * `false` if the count of successful attempts is not greater than 0
+     * or the corresponding RefCounter object does not exist.
      */
     bool IsAttemptAcquireSet();
 
     /**
-     * @brief Check if the life time of this RefBase object has been extended.
+     * @brief Checks if the life time of this RefBase object has been extended.
      *
-     * @return Return false when have a normal life time, or the corresponding
+     * @return `true` if the life time of this RefBase object has been extended;
+     * `false` if the RefBase object has a normal life time or the corresponding
      * RefCounter object does not exist.
      */
     bool IsExtendLifeTimeSet();
 
     /**
-     * @brief An event-drive method, which will be automatically called when
-     * first strong reference comes up.
+     * @brief Called when the first strong reference is established.
      *
      * @note It is an empty function by default.
      */
     virtual void OnFirstStrongRef(const void *);
 
     /**
-     * @brief An event-drive method, which will be automatically called when
-     * last strong reference eliminates.
+     * @brief Called when the last strong reference is deleted.
      *
      * @note It is an empty function by default.
      */
     virtual void OnLastStrongRef(const void *);
 
     /**
-     * @brief An event-drive method, which will be automatically called when
-     * last weak reference eliminates.
+     * @brief Called when the last weak reference is deleted.
      *
      * @note It is an empty function by default.
      */
     virtual void OnLastWeakRef(const void *);
 
     /**
-     * @brief An event-drive method, which will be autmatically called when
-     * use `wptr::Promote()`.
+     * @brief Called when `wptr::Promote()` is invoked.
      *
-     * @note Directly return true by default.
-     * @return Return true if success, otherwise return false.
+     * @return `true` if success; `false` otherwise.
      */
     virtual bool OnAttemptPromoted(const void *);
 
     /**
-     * @brief Enable the ability to track RefBase. This function will only be
-     * implemented if the macro DEBUG_REFBASE is defined and TRACK_ALL is not
-     * defined.
+     * @brief Enables tracking of the RefBase object. This function will
+     * be implemented only if DEBUG_REFBASE, but not TRACK_ALL, is defined.
      */
     void EnableTracker();
 
 private:
-    RefCounter *refs_ = nullptr; // Pointer to the corresponding reference counter of this RefBase object
+    RefCounter *refs_ = nullptr; // Pointer to the corresponding reference
+                                 // counter of this RefBase object
 };
 
 template <typename T>
@@ -575,12 +575,13 @@ class wptr;
 
 /**
  * @ingroup SmartPointer
- * @brief Strong reference smart pointer to a RefBase(or its subclass) object.
+ * @brief Strong reference smart pointer to a RefBase object
+ * (or an object of its subclass).
  *
  * It directly reference the RefBase object.
  *
- * @tparam T Specific class type managed by sptr. This class must inherit
- * from RefBase.
+ * @tparam T Specific class type managed by sptr.
+ * This class must inherit from RefBase.
  */
 template <typename T>
 class sptr {
@@ -592,15 +593,15 @@ public:
     ~sptr();
 
     /**
-     * @brief Constructor with specified object to be managed.
+     * @brief Constructor with the specified object to be managed.
      *
-     * @note Null sptr will be created if `other` is a `nullptr`.
+     * @note A null sptr will be created if `other` is `nullptr`.
      * @param other Object to be managed by wptr.
      */
     sptr(T *other);
 
     /**
-     * @brief Copy Constructor for sptr with different managed class type(T).
+     * @brief Copy constructor for sptr with the managed class type (T).
      *
      * @param other Input sptr object.
      */
@@ -618,12 +619,13 @@ public:
      * @brief Move assignment operator.
      *
      * @param other Input sptr object.
-     * @note Original strong reference in target sptr object will be removed.
+     * @note The original strong reference in target sptr object will
+     * be removed.
      */
     sptr<T> &operator=(sptr<T> &&other);
 
     /**
-     * @brief Copy Constructor for sptr with different managed class type(O).
+     * @brief Copy Constructor for sptr with the managed class type (O).
      *
      * @tparam O Another specific class type managed by `other`.
      * @param other Input sptr object.
@@ -632,16 +634,16 @@ public:
     sptr(const sptr<O> &other);
 
     /**
-     * @brief Constructor only used in promote process of wptr.
+     * @brief Constructor used to promote the process of wptr.
      *
      * @param p WeakRefCounter object which hold the reference to the
      * managed object.
-     * @param force Only used to identify from other constructor.
+     * @param force Used to distinguish from other constructors.
      */
     inline sptr(WeakRefCounter *p, bool force);
 
     /**
-     * @brief Get the pointer to the managed object.
+     * @brief Gets the pointer to the managed object.
      *
      * @return Pointer of the specific managed class type.
      */
@@ -651,18 +653,18 @@ public:
     }
 
     /**
-     * @brief Set the pointer to the managed object.
+     * @brief Sets the pointer to the managed object.
      *
      * @param other Another pointer object to be managed by sptr.
-     * @note Avoid using independently, otherwise it will
-     * cause mismatch of reference count and thus memory problems.
+     * @note Avoid using this function independently. Otherwise,
+     * a mismatch of the reference count will arise, leading to memory problems.
      */
     inline void ForceSetRefPtr(T *other);
 
     /**
-     * @brief Remove the reference to the managed object held by current sptr.
+     * @brief Removes the reference to the managed object held by current sptr.
      *
-     * @note It will make this sptr a "null sptr".
+     * @note This function will make this sptr a "null sptr".
      */
     void clear();
 
@@ -670,8 +672,8 @@ public:
      * @brief Type conversion operator.
      *
      * @return Raw pointer to the managed object.
-     * @note Sptr object itself will not be converted, only the member raw
-     * pointer returns.
+     * @note The sptr object will not be converted. Only the member raw
+     * pointer will be returned.
      */
     inline operator T *() const
     {
@@ -681,9 +683,9 @@ public:
     /**
      * @brief Dereference operator.
      *
-     * It will return the object managed by this sptr.
+     * This function will return the object managed by this sptr.
      *
-     * @return Return reference of specific object managed by sptr.
+     * @return Reference to the specific object managed by sptr.
      */
     inline T &operator*() const
     {
@@ -693,7 +695,8 @@ public:
     /**
      * @brief Member selection operator.
      *
-     * It will return the specified member of the object managed by this sptr.
+     * This function will return the specified member of the object
+     * managed by this sptr.
      */
     inline T *operator->() const
     {
@@ -701,9 +704,10 @@ public:
     }
 
     /**
-     * @brief Logical-NOT operator. Check if sptr is a "null sptr".
+     * @brief Logical-NOT operator, which is used to check if
+     * the sptr is a "null sptr".
      *
-     * @return Return true if sptr is a "null sptr".
+     * @return `true` if sptr is a "null sptr"; `false` otherwise.
      */
     inline bool operator!() const
     {
@@ -711,9 +715,9 @@ public:
     }
 
     /**
-     * @brief Copy assignment operator with specified object to be managed.
+     * @brief Copy assignment operator with the specified object to be managed.
      *
-     * @note Original reference will be removed, then new reference to the
+     * @note The original reference will be removed, and a new reference to the
      * input object will be established.
      * @param other Another object to be managed by this sptr.
      */
@@ -721,52 +725,52 @@ public:
 
     /**
      * @brief Copy assignment operator for sptr with
-     * same managed class type(T).
+     * the same managed class type (T).
      *
-     * @note Original reference will be removed, this sptr will manage the
-     * same object with the input sptr object.
-     * @param other Another sptr object with same managed class type(T).
+     * @note The original reference will be removed, and the same object
+     * with the input sptr object will be managed by this sptr.
+     * @param other Another sptr object with the same managed class type (T).
      */
     sptr<T> &operator=(const sptr<T> &other);
 
     /**
      * @brief Copy assignment operator for wptr with
-     * same managed class type(T).
+     * the same managed class type (T).
      *
-     * @note Original reference will be removed, this sptr will manage the
-     * same object with the input wptr object.
-     * @note This may fail, then this sptr will turn to be a "null sptr".
-     * @param other Another wptr object with same managed class type(T).
+     * @note The original reference will be removed, and the same object
+     * with the input wptr object will be managed by this sptr.
+     * @note If the operation fails, this sptr will turn to be a "null sptr".
+     * @param other Another wptr object with the same managed class type (T).
      */
     sptr<T> &operator=(const wptr<T> &other);
 
     /**
      * @brief Copy assignment operator for sptr with
-     * different managed class type(O).
+     * a different managed class type (O).
      *
-     * @note Original reference will be removed, this sptr will manage the
-     * same object with the input sptr object.
-     * @note This sptr will interpret the managed object as a type T.
-     * @param other Another sptr object with different managed class type(O).
+     * @note The original reference will be removed, and the same object
+     * with the input sptr object will be managed by this sptr.
+     * @note This sptr will interpret the managed object as the type (T).
+     * @param other Another sptr object with a different managed class type (O).
      */
     template <typename O>
     sptr<T> &operator=(const sptr<O> &other);
 
     /**
-     * @brief Equal-to operator between sptr and a raw pointer.
+     * @brief Equal-to operator between the sptr and raw pointer.
      *
      * @param other Input raw pointer.
-     * @return Return true if sptr point to the same object with input
-     * raw pointer.
+     * @return `true` if the sptr points to the same object with input
+     * raw pointer; `false` otherwise.
      */
     bool operator==(const T *other) const;
 
     /**
-     * @brief Not-equal-to operator between sptr and a raw pointer.
+     * @brief Not-equal-to operator between the sptr and raw pointer.
      *
      * @param other Input raw pointer.
-     * @return Return true if sptr does not point to the same object with input
-     * raw pointer.
+     * @return `true` if the sptr does not point to the same object
+     * with input raw pointer; `false` otherwise.
      */
     inline bool operator!=(const T *other) const
     {
@@ -774,18 +778,20 @@ public:
     }
 
     /**
-     * @brief Equal-to operator between sptr and a wptr.
+     * @brief Equal-to operator between the sptr and wptr.
      *
      * @param other Input wptr.
-     * @return Return true if sptr and wptr are managing same object.
+     * @return `true` if the same object is managed by the sptr and wptr;
+     * `false` otherwise.
      */
     bool operator==(const wptr<T> &other) const;
 
     /**
-     * @brief Not-equal-to operator between sptr and a wptr.
+     * @brief Not-equal-to operator between the sptr and wptr.
      *
      * @param other Input wptr.
-     * @return Return true if sptr and wptr are not managing same object.
+     * @return `true` if different objects are managed by the sptr and wptr;
+     * `false` otherwise.
      */
     inline bool operator!=(const wptr<T> &other) const
     {
@@ -793,10 +799,11 @@ public:
     }
 
     /**
-     * @brief Equal-to operator between sptrs.
+     * @brief Equal-to operator between two sptrs.
      *
      * @param other Input sptr.
-     * @return Return true if two sptrs are managing same object.
+     * @return `true` if the same object is managed by two sptrs;
+     * `false` otherwise.
      */
     bool operator==(const sptr<T> &other) const;
 
@@ -804,7 +811,8 @@ public:
      * @brief Not-equal-to operator between sptrs.
      *
      * @param other Input sptr.
-     * @return Return true if two sptrs are not managing same object.
+     * @return `true` if different objects are managed by two sptrs;
+     * `false` otherwise.
      */
     inline bool operator!=(const sptr<T> &other) const
     {
@@ -812,7 +820,7 @@ public:
     }
 
 private:
-    T *refs_ = nullptr; // Raw pointer to the managed specific object
+    T *refs_ = nullptr; // Raw pointer to the specific managed object
 };
 
 template <typename T>
@@ -982,10 +990,11 @@ inline sptr<T>::sptr(WeakRefCounter *p, bool /* force */)
 
 /**
  * @ingroup SmartPointer
- * @brief Weak reference smart pointer to a RefBase(or its subclass) object.
+ * @brief Weak reference smart pointer to a RefBase object
+ * (or an object of its subclass).
  *
- * Indirectly reference the RefBase object;
- * Directly reference the WeakRefCounter object.
+ * A weak reference indirectly references the RefBase object
+ * and directly references the WeakRefCounter object.
  *
  * @tparam T Specific class type managed by wptr.
  * This class must inherit from RefBase.
@@ -999,77 +1008,77 @@ public:
     wptr();
 
     /**
-     * @brief Constructor with specified object to be managed.
+     * @brief Constructor with the specified object to be managed.
      *
-     * This method will create WeakRefCounter object for `other` and set its
-     * weak reference count to 1.
+     * This function will create WeakRefCounter object for `other`
+     * and set the count of weak references to 1.
      *
-     * @note WeakRefCounter object will not be created if `other` is a
-     * `nullptr`.
+     * @note A WeakRefCounter object will not be created if `other`
+     * is a `nullptr`.
+     *
      * @param other Object to be managed by wptr.
      */
     wptr(T *other);
 
     /**
-     * @brief Copy constructor for wptr with same managed class type(T).
+     * @brief Copy constructor for wptr with the same managed class type (T).
      *
-     * This method will share the WeakRefCounter object of `other` with this
-     * wptr. Weak reference count in this WeakRefCounter object will be set
-     * properly.
+     * This function will share the WeakRefCounter object of `other` with this
+     * wptr and set the count of weak references properly.
      *
-     * @param other Another wptr with same managed class type(T).
+     * @param other Another wptr with the same managed class type (T).
      */
     wptr(const wptr<T> &other);
 
     /**
-     * @brief Copy constructor for sptr with same managed class type(T).
+     * @brief Copy constructor for sptr with the same managed class type (T).
      *
-     * This method will create WeakRefCounter object for the managed object of
-     * `other`, and set its weak reference count properly.
+     * This function will create a WeakRefCounter object for the managed
+     * object of `other`, and set the count of weak references properly.
      *
-     * @param other Another sptr with same managed class type(T).
+     * @param other Another sptr with the same managed class type (T).
      * @tparam T Specific class type managed by `other`.
      */
     wptr(const sptr<T> &other);
 
     /**
-     * @brief Copy constructor for wptr with different managed class type(O).
+     * @brief Copy constructor for wptr with a different managed class type (O).
      *
-     * Same with wptr<T>::wptr(const wptr<T> &other).
+     * This function is the same as wptr<T>::wptr(const wptr<T> &other).
      *
      * @tparam O Class type managed by `other`.
-     * @param other Another wptr with different managed class type(O).
+     * @param other Another wptr with a different managed class type (O).
      * @tparam T Specific class type managed by `other`.
      */
     template <typename O>
     wptr(const wptr<O> &other);
 
     /**
-     * @brief Copy constructor for sptr with different managed class type(O).
+     * @brief Copy constructor for sptr with a different managed class type (O).
      *
-     * Same with wptr<T>::wptr(const sptr<T> &other).
+     * This function is the same as wptr<T>::wptr(const sptr<T> &other).
      *
-     * @param other Another sptr with same managed class type(O).
+     * @param other Another sptr with the same managed class type (O).
      * @tparam T Specific class type managed by `other`.
      */
     template <typename O>
     wptr(const sptr<O> &other);
 
     /**
-     * @brief Copy assignment operator with specified object to be managed.
+     * @brief Copy assignment operator with the specified object to be managed.
      *
-     * @note Current wptr will unbind the original WeakRefCounter object and
-     * create a new WeakRefCounter object, then set its weak reference count
-     * properly.
+     * @note The current wptr will unbind the original WeakRefCounter object,
+     * create a new WeakRefCounter object, and then set the count of weak
+     * references properly.
      * @param other Another object to be managed by this wptr.
      */
     wptr<T> &operator=(T *other);
 
     /**
-     * @brief Copy assignment operator with specified object to be managed.
+     * @brief Copy assignment operator with the specified object to be managed.
      *
      * @note Same with wptr<T> &operator=(T *other), but a pointer type casting
-     * which will not affect the type of `*other` is proccessed.
+     * which will not affect the type of `*other` is processed.
      * @tparam O Specific class type managed by `other`.
      * @param other Another object to be managed by this wptr.
      *
@@ -1078,59 +1087,62 @@ public:
     wptr<T> &operator=(O *other);
 
     /**
-     * @brief Copy assignment operator for wptr with same managed class type(T).
+     * @brief Copy assignment operator for wptr with the same managed class
+     * type (T).
      *
-     * @note Current wptr will unbind the original WeakRefCounter object and
-     * share the WeakRefCounter object with `other`, then set its weak
-     * reference count properly.
-     * @param other Another wptr. Object managed by it will also be managed by
-     * this wptr.
+     * @note The current wptr will unbind the original WeakRefCounter object,
+     * share the WeakRefCounter object with `other`, and then set the count of
+     * weak references properly.
+     * @param other Another wptr object. Objects managed by it will also be
+     * managed by this wptr.
      */
     wptr<T> &operator=(const wptr<T> &other);
 
     /**
-     * @brief Copy assignment operator for sptr with
-     * same managed class type(T).
+     * @brief Copy assignment operator for sptr with the same managed class
+     * type (T).
      *
-     * @note Current wptr will unbind the original WeakRefCounter object and
-     * create a new WeakRefCounter object, then set its weak reference count
-     * properly.
-     * @param other A sptr object. Object managed by it will also be managed by
-     * this wptr.
+     * @note The current wptr will unbind the original WeakRefCounter object,
+     * create a new WeakRefCounter object, and then set the count of weak
+     * references properly.
+     * @param other A sptr object. Objects managed by it will also be
+     * managed by this wptr.
      */
     wptr<T> &operator=(const sptr<T> &other);
 
     /**
-     * @brief Copy assignment operator for wptr with
-     * different managed class type(O).
+     * @brief Copy assignment operator for wptr with a different managed class
+     * type (O).
      *
-     * @note Same with wptr<T> &operator=(const wptr<T> &). Note that no cast
-     * here is proccessed.
-     * @param other An wptr object. Object managed by it will also be managed by
-     * this wptr.
+     * @note This function is the same as wptr<T> &operator=(const wptr<T> &).
+     * Note that no cast here is processed.
+     * @param other An wptr object. Objects managed by it will also be
+     * managed by this wptr.
      * @tparam O Specific class type managed by `other`.
      */
     template <typename O>
     wptr<T> &operator=(const wptr<O> &other);
 
     /**
-     * @brief Copy assignment operator for sptr with
-     * different managed class type(O).
+     * @brief Copy assignment operator for sptr with a different managed class
+     * type (O).
      *
-     * @note Same with wptr<T> &wptr<T>::operator=(const sptr<T> &). Note that
-     * no cast here is proccessed.
-     * @param other An sptr object. Object managed by it will also be managed by
-     * this wptr.
+     * @note This function is the same as
+     * wptr<T> &wptr<T>::operator=(const sptr<T> &).
+     * Note that no cast here is processed.
+     * @param other An sptr object. Objects managed by it will also be
+     * managed by this wptr.
      * @tparam O Specific class type managed by `other`.
      */
     template <typename O>
     wptr<T> &operator=(const sptr<O> &other);
 
     /**
-     * @brief Dereference operator. It will return the object managed by this
-     * wptr.
+     * @brief Dereference operator.
      *
-     * @return Return specific object managed by wptr.
+     * This function will return the object managed by this wptr.
+     *
+     * @return Specific object managed by wptr.
      */
     inline T &operator*() const
     {
@@ -1140,7 +1152,8 @@ public:
     /**
      * @brief Member selection operator.
      *
-     * It will return the specified member of the object managed by this wptr.
+     * This function will return the specified object member managed
+     * by this wptr.
      */
     inline T *operator->() const
     {
@@ -1148,18 +1161,18 @@ public:
     }
 
     /**
-     * @brief Equal-to operator between wptr and a raw pointer.
+     * @brief Equal-to operator between the wptr and raw pointer.
      *
      * @param other Input raw pointer.
-     * @return Return true if two pointers have same value.
+     * @return `true` if two pointers have the same value; `false` otherwise.
      */
     bool operator==(const T *other) const;
 
     /**
-     * @brief Not-equal-to operator between wptr and a raw pointer.
+     * @brief Not-equal-to operator between the wptr and raw pointer.
      *
      * @param other Input raw pointer.
-     * @return Return true if two pointers have different value.
+     * @return `true` if two pointers have different values; `false` otherwise.
      */
     inline bool operator!=(const T *other) const
     {
@@ -1169,16 +1182,16 @@ public:
     /**
      * @brief Equal-to operator between two wptrs.
      *
-     * @param other Input reference of a wptr object.
-     * @return Return if two pointers have same value.
+     * @param other Input reference to a wptr object.
+     * @return `true` if two pointers have the same value; `false` otherwise.
      */
     bool operator==(const wptr<T> &other) const;
 
     /**
      * @brief Not-equal-to operator between two wptrs.
      *
-     * @param other Input reference of a wptr object.
-     * @return Return if two pointers have different value.
+     * @param other Input reference to a wptr object.
+     * @return `true` if two pointers have different values; `false` otherwise.
      */
     inline bool operator!=(const wptr<T> &other) const
     {
@@ -1186,18 +1199,18 @@ public:
     }
 
     /**
-     * @brief Equal-to operator between wptr and a input sptr object.
+     * @brief Equal-to operator between the wptr and input sptr object.
      *
-     * @param other Input reference of an sptr object.
-     * @return Comparison result.
+     * @param other Input reference to an sptr object.
+     * @return true` if two pointers have the same value; `false` otherwise.
      */
     bool operator==(const sptr<T> &other) const;
 
     /**
-     * @brief Not-Equal-to operator between wptr and a input sptr object.
+     * @brief Not-equal-to operator between the wptr and input sptr object.
      *
-     * @param other Input reference of an sptr object.
-     * @return Comparison result.
+     * @param other Input reference to an sptr object.
+     * @return `true` if two pointers have different values; `false` otherwise.
      */
     inline bool operator!=(const sptr<T> &other) const
     {
@@ -1205,19 +1218,20 @@ public:
     }
 
     /**
-     * @brief Get the pointer to the RefBase object.
+     * @brief Gets the pointer to the RefBase object.
      *
      * @return Raw pointer to the RefBase object.
-     * @note Return `nullptr` if the managed object has been deallocated.
+     * @note `nullptr` will be returned if the managed object has been
+     * deallocated.
      */
     T *GetRefPtr() const;
 
     /**
-     * @brief Get the count value of corresponding WeakRefCounter object.
+     * @brief Gets the count of weak references in a WeakRefCounter object.
      *
      * The value indicates how many wptrs share the same WeakRefCounter object.
      *
-     * @return Value of the count.
+     * @return Count of weak references.
      * @note Only for test.
      */
     inline int GetWeakRefCount() const
@@ -1226,11 +1240,11 @@ public:
     }
 
     /**
-     * @brief Attempt to increment the strong reference count of
+     * @brief Attempts to increment the count of strong references in
      * the managed object.
      *
-     * @return Return true after a success increment.
-     * @note Avoid using it independently. Use `promote()`.
+     * @return `true` if the increment is successful; `false` otherwise.
+     * @note Avoid using this function independently. Use `promote()` instead.
      */
     inline bool AttemptIncStrongRef(const void *objectId) const
     {
@@ -1238,20 +1252,20 @@ public:
     }
 
     /**
-     * @brief Promote a wptr to an sptr.
+     * @brief Promotes a wptr to an sptr.
      *
-     * It will create an sptr object based on
-     * object managed by this wptr.
+     * This function will create an sptr object based on the object
+     * managed by this wptr.
      *
-     * @note Original weak reference will be retained. Promote may fail,
-     * and then return a "null sptr".
+     * @note The original weak reference will be retained.
+     * If the promotion fails, a "null sptr" will be returned.
      */
     const sptr<T> promote() const;
 
     ~wptr();
 
 private:
-    WeakRefCounter *refs_ = nullptr; // Pointer to the corresponding weak reference counter object
+    WeakRefCounter *refs_ = nullptr; // Pointer to the corresponding WeakRefCounter object
 };
 
 template <typename T>

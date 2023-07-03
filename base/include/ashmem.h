@@ -16,8 +16,8 @@
  /**
  * @file ashmem.h
  *
- * @brief Provide class Ashmem implemented in c_utils to operate the
- * Anonymous Shared Memory(Ashmem).
+ * @brief Provides the <b>Ashmem</b> class implemented in c_utils to operate the
+ * Anonymous Shared Memory (Ashmem).
  */
 
 #ifndef UTILS_BASE_ASHMEM_H
@@ -42,53 +42,58 @@ std::shared_ptr<Ashmem> CreateAshmemStd(const char *name, int32_t size);
 #endif
 
 /**
- * @brief Create ashmem in kernel with specified name and size.
+ * @brief Creates an <b>Ashmem</b> region in the kernel.
  *
- * @param name Name for identifying the ashmem in kernel.
- * @param size Size of the ashmem region.
- * @return File descriptor of the ashmem.
+ * @param name Indicates the pointer to the name that will be
+ * copied and assigned to the <b>Ashmem</b> region in the kernel.
+ * @param size Indicates the size of the <b>Ashmem</b> region to create.
+ * @return Returns the file descriptor of the <b>Ashmem</b> region.
  */
 int AshmemCreate(const char *name, size_t size);
 
 /**
- * @brief Set protection flag of specified ashmem region in kernel.
-
- * @param fd Corresponding file descriptor.
- * @param prot Value of protection flag.
- * @return Return 0 on success, -1 on failure.
+ * @brief Sets the protection flag of an <b>Ashmem</b> region in the kernel.
+ *
+ * @param fd Indicates the file descriptor of an <b>Ashmem</b> region.
+ * @param prot Indicates the value of the protection flag.
+ * @return Returns <b>0</b> if the operation is successful;
+ * returns <b>-1</b> otherwise.
  */
 int AshmemSetProt(int fd, int prot);
 
 /**
- * @brief Get size of specified ashmem region in kernel.
+ * @brief Obtains the size of a specific <b>Ashmem</b> region in the kernel.
  *
- * @param fd Corresponding file descriptor.
- * @return Size of ashmem.
+ * @param fd Indicates the file descriptor of an <b>Ashmem</b> region.
+ * @return Returns the size of the <b>Ashmem</b> region.
  */
 int AshmemGetSize(int fd);
 
 /**
- * @brief Ashmem implemented in c_utils, to operate the
- * Anonymous Shared Memory(Ashmem).
+ * @brief Provides the <b>Ashmem</b> class implemented in c_utils to
+ * operate the Anonymous Shared Memory (Ashmem).
  *
- * Including create, map an ashmem region and thus write/read to/from it, etc.
+ * You can use the interfaces in this class to create <b>Ashmem</b> regions
+ * and map them to implement write and read operations.
  *
- * @note Ashmem object should be unmapped and closed manually, though managed
- * by smart pointer.
+ * @note <b>Ashmem</b> regions should be unmapped and closed manually,
+ * though managed by a smart pointer.
  */
 class Ashmem : public virtual RefBase {
 public:
     /**
-     * @brief Create an Ashmem object with specified name and region size.
+     * @brief Creates an <b>Ashmem</b> region in the kernel.
      *
-     * File '/dev/ashmem' will be opened whose file descriptor will be held by
-     * this Ashmem object.
+     * The <b>/dev/ashmem</b> file will be opened, whose file
+     * descriptor will be held by the created <b>Ashmem</b> region.
      *
-     * @param name Name for identifying the ashmem in kernel.
-     * @param size Size of the ashmem region.
-     * @return An Ashmem object referenced by a smart pointer.
-     * @note Memory has not been mapped, use `MapAshmem()` before
-     * writing/reading.
+     * @param name Indicates the pointer to the name that will be
+	 * copied and assigned to the <b>Ashmem</b> region in the kernel.
+     * @param size Indicates the size of the <b>Ashmem</b> region.
+     * @return Returns the created <b>Ashmem</b> region referenced by a
+     * smart pointer.
+     * @note Before writing/reading data in the region, use `MapAshmem()`.
+     *
      */
     static sptr<Ashmem> CreateAshmem(const char *name, int32_t size);
 
@@ -144,88 +149,92 @@ public:
     const void *ReadFromAshmem(int32_t size, int32_t offset) const;
     #else
     /**
-     * @brief Close the ashmem(i.e. close it via file descriptor).
+     * @brief Closes this <b>Ashmem</b> region (through the file descriptor).
      *
      * All inner parameters will be cleared.
      *
-     * @note An ashmem  will be unmapped first by `UnmapAshmem()` before close.
+     * @note An <b>Ashmem</b> region will be unmapped by `UnmapAshmem()`
+	 * before being closed.
      */
     void CloseAshmem();
 
     /**
-     * @brief Map the ashmem region in the kernel to user space.
+     * @brief Maps this <b>Ashmem</b> region in the kernel to user space.
      *
-     * @param mapType Protection flag of the mapped region in user space.
-     * @return True if mapping successful.
+     * @param mapType Indicates the protection flag of the mapped region in
+     * user space.
+     * @return Returns <b>true</b> if mapping is successful.
      */
     bool MapAshmem(int mapType);
 
     /**
-     * @brief Map the ashmem region in Read/Write mode.
+     * @brief Maps this <b>Ashmem</b> region in read/write mode.
      *
      * It calls `MapAshmem(PROT_READ | PROT_WRITE)`.
      *
-     * @return True if mapping successful.
+     * @return Returns <b>true</b> if mapping is successful.
      */
     bool MapReadAndWriteAshmem();
 
     /**
-     * @brief Map the ashmem region in Read-Only mode.
+     * @brief Maps this <b>Ashmem</b> region in read-only mode.
      *
      * It calls `MapAshmem(PROT_READ)`.
      *
-     * @return True if mapping successful.
+     * @return Returns <b>true</b> if mapping is successful.
      */
     bool MapReadOnlyAshmem();
 
     /**
-     * @brief Unmap the ashmem.
+     * @brief Unmaps this <b>Ashmem</b> region.
      *
-     * Unmap when mapped ashmem exists, protection flag will be cleared
-     * meanwhile.
+     * Unmapping works only when the <b>Ashmem</b> region has been mapped.
+     * It will clear the protection flag.
      */
     void UnmapAshmem();
 
     /**
-     * @brief Write data to the `offset` position of ashmem region.
+     * @brief Writes data to the `offset` position of this <b>Ashmem</b> region.
      *
-     * Bounds and protection flag will be checked.
+     * Bounds and the protection flag will be checked.
      *
-     * @param data Pointer to input data.
-     * @param size Size of the input data(bytes).
-     * @param offset Offset from beginning of the region.
-     * @return True if writting successful. False if data to be write overflows
-     * or protection flag is illegal.
-     * @note Require write authority of both ashmem in kernel and the mapped
-     * one in user space.
+     * @param data Indicates the pointer to the data to write.
+     * @param size Indicates the size of the data to write, in bytes.
+     * @param offset Indicates the offset from the start position of the
+	 * <b>Ashmem</b> region.
+     * @return Returns <b>True</b> if the operation is successful; returns
+     * <b>False</b> if overflow occurs or the protection flag is illegal.
+     * @note This operation requires the write permission on both the
+     * <b>Ashmem</b> region in the kernel and the mapped region in user space.
      */
     bool WriteToAshmem(const void *data, int32_t size, int32_t offset);
 
     /**
-     * @brief Read data from the `offset` position of ashmem region.
+     * @brief Reads data from the `offset` position of this <b>Ashmem</b> region.
      *
-     * Bounds and protection flag will be checked.
+     * Bounds and the protection flag will be checked.
      *
-     * @param size Size of data to be read(bytes).
-     * @param offset Offset from beginning of the region.
-     * @return Void-type pointer to the data. `nullptr` returns if data to be
-     * read overflows or protection flag is illegal.
-     * @note Require read authority of both ashmem in kernel and the mapped one
-     * in user space.
+     * @param size Indicates the size of the data to read, in bytes.
+     * @param offset Indicates the offset from the start position of
+	 * the <b>Ashmem</b> region.
+     * @return Returns the void-type pointer to the data. `nullptr` is returned
+     * if overflow occurs or the protection flag is illegal.
+     * @note This operation requires the read permission on both the
+     * <b>Ashmem</b> region in the kernel and the mapped region in user space.
      */
     const void *ReadFromAshmem(int32_t size, int32_t offset);
     #endif
 private:
     #ifdef UTILS_CXX_RUST
-    mutable int memoryFd_; // corresponding file descriptor of ashmem.
-    mutable int32_t memorySize_; // size of ashmem.
-    mutable int flag_; // protection flag of ashmem in user space.
-    mutable void *startAddr_; // start address of ashmem region.
+    mutable int memoryFd_; // File descriptor of the Ashmem region.
+    mutable int32_t memorySize_; // Size of the Ashmem region.
+    mutable int flag_; // Protection flag of the Ashmem region in user space.
+    mutable void *startAddr_; // Start address of the Ashmem region.
     #else
-    int memoryFd_; // corresponding file descriptor of ashmem.
-    int32_t memorySize_; // size of ashmem.
-    int flag_; // protection flag of ashmem in user space.
-    void *startAddr_; // start address of ashmem region.
+    int memoryFd_; // File descriptor of the Ashmem region.
+    int32_t memorySize_; // Size of the Ashmem region.
+    int flag_; // Protection flag of the Ashmem region in user space.
+    void *startAddr_; // Start address of the Ashmem region.
     #endif
 
     bool CheckValid(int32_t size, int32_t offset, int cmd) const;
