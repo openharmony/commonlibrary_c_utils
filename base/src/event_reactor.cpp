@@ -103,7 +103,7 @@ uint32_t EventReactor::ScheduleTimer(const TimerCallback& cb, uint32_t interval,
         return ret;
     }
 
-    timerFd = handler->GetTimerFd();
+    timerFd = handler->GetHandle();
     timerEventHandlers_.push_back(handler);
     return TIMER_ERR_OK;
 }
@@ -114,7 +114,7 @@ void EventReactor::CancelTimer(int timerFd)
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     auto itor = timerEventHandlers_.begin();
     for (; itor != timerEventHandlers_.end(); ++itor) {
-        if ((*itor)->GetTimerFd() == timerFd) {
+        if ((*itor)->GetHandle() == timerFd) {
             (*itor)->Uninitialize();
             timerEventHandlers_.erase(itor);
             return;

@@ -36,9 +36,10 @@ public:
     EventHandler(const EventHandler&) = delete;
     EventHandler& operator=(const EventHandler&&) = delete;
     EventHandler(const EventHandler&&) = delete;
-    ~EventHandler() {}
+    virtual ~EventHandler() {}
 
     int GetHandle() const { return (fd_); }
+    void SetHandle(int fd) { fd_ = fd; }
     uint32_t Events() const { return (events_); }
 
     void EnableRead();

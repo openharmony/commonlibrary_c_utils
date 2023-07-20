@@ -15,7 +15,6 @@
 
 #include "timer_event_handler.h"
 #include "event_reactor.h"
-#include "event_handler.h"
 #include "common_timer_errors.h"
 #include "utils_log.h"
 
@@ -31,24 +30,22 @@ static const int NANO_TO_BASE = 1000000000;
 constexpr int MILLI_TO_NANO = NANO_TO_BASE / MILLI_TO_BASE;
 
 TimerEventHandler::TimerEventHandler(EventReactor* p, uint32_t timeout /* ms */, bool once)
-    : once_(once),
-      timerFd_(timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC)),
+    : EventHandler(timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC), p),
+      once_(once),
       interval_(timeout),
-      reactor_(p),
-      handler_(new EventHandler(timerFd_, p)),
       callback_()
 {
 }
 
 TimerEventHandler::~TimerEventHandler()
 {
-    close(timerFd_);
-    timerFd_ = INVALID_TIMER_FD;
+    close(GetHandle());
+    SetHandle(INVALID_TIMER_FD);
 }
 
 uint32_t TimerEventHandler::Initialize()
 {
-    if ((timerFd_ == INVALID_TIMER_FD) || (reactor_ == nullptr) || (handler_ == nullptr)) {
+    if ((GetHandle() == INVALID_TIMER_FD)) {
         UTILS_LOGE("TimerEventHandler::initialize failed.");
         return TIMER_ERR_INVALID_VALUE;
     }
@@ -78,36 +75,34 @@ uint32_t TimerEventHandler::Initialize()
         newValue.it_interval.tv_nsec = (interval_ % MILLI_TO_BASE) * MILLI_TO_NANO;
     }
 
-    if (timerfd_settime(timerFd_, TFD_TIMER_ABSTIME, &newValue, nullptr) == -1) {
+    if (timerfd_settime(GetHandle(), TFD_TIMER_ABSTIME, &newValue, nullptr) == -1) {
         UTILS_LOGE("Failed in timerFd_settime");
         return TIMER_ERR_DEAL_FAILED;
     }
 
-    handler_->SetReadCallback(std::bind(&TimerEventHandler::TimeOut, this));
-    handler_->EnableRead();
+    SetReadCallback(std::bind(&TimerEventHandler::TimeOut, this));
+    EnableRead();
     return TIMER_ERR_OK;
 }
 
 void TimerEventHandler::Uninitialize()
 {
-    if (handler_ != nullptr) {
-        handler_->DisableAll();
-    }
+    DisableAll();
 }
 
 void TimerEventHandler::TimeOut()
 {
-    if (timerFd_ == INVALID_TIMER_FD) {
+    if (GetHandle() == INVALID_TIMER_FD) {
         UTILS_LOGE("timerFd_ is invalid.");
         return;
     }
     uint64_t expirations = 0;
-    ssize_t n = ::read(timerFd_, &expirations, sizeof(expirations));
+    ssize_t n = ::read(GetHandle(), &expirations, sizeof(expirations));
     if (n != sizeof(expirations)) {
         UTILS_LOGE("epoll_loop::on_timer() reads %{public}d bytes instead of 8.", static_cast<int>(n));
     }
     if (callback_) {
-        callback_(timerFd_);
+        callback_(GetHandle());
     }
 }
 
