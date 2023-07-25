@@ -129,7 +129,7 @@ void EventDemultiplexer::Polling(int timeout /* ms */)
         }
     }
 
-    for (int idx = 0; idx < taskQue.size() && idx < eventQue.size(); idx++) {
+    for (size_t idx = 0u; idx < taskQue.size() && idx < eventQue.size(); idx++) {
         taskQue[idx]->HandleEvents(eventQue[idx]);
     }
 
