@@ -31,7 +31,7 @@ class TimerEventHandler : public EventHandler {
 
 public:
     TimerEventHandler(EventReactor* p, uint32_t timeout, bool once);
-    ~TimerEventHandler();
+    ~TimerEventHandler() override;
 
     TimerEventHandler(const TimerEventHandler&) = delete;
     TimerEventHandler& operator=(const TimerEventHandler&) = delete;
