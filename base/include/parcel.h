@@ -820,6 +820,12 @@ private:
 
     bool WriteParcelableOffset(size_t offset);
 
+    const uint8_t *BasicReadBuffer(size_t length);
+
+    bool ValidateReadData(size_t upperBound);
+
+    void ClearObjects();
+
 private:
     uint8_t *data_;
     size_t readCursor_;
@@ -828,6 +834,7 @@ private:
     size_t dataCapacity_;
     size_t maxDataCapacity_;
     binder_size_t *objectOffsets_;
+    size_t nextObjectIdx_;
     size_t objectCursor_;
     size_t objectsCapacity_;
     Allocator *allocator_;

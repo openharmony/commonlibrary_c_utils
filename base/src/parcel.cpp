@@ -48,6 +48,7 @@ Parcel::Parcel(Allocator *allocator)
 
     maxDataCapacity_ = DEFAULT_CPACITY;
     objectOffsets_ = nullptr;
+    nextObjectIdx_ = 0;
     objectCursor_ = 0;
     objectsCapacity_ = 0;
 }
@@ -59,6 +60,7 @@ Parcel::~Parcel()
 {
     FlushBuffer();
     delete allocator_;
+    allocator_ = nullptr;
 }
 
 size_t Parcel::GetWritableBytes() const
@@ -145,6 +147,33 @@ bool Parcel::EnsureWritableCapacity(size_t desireCapacity)
     }
 
     return false;
+}
+
+// ValidateReadData only works in basic type read. It doesn't work when read remote object.
+// And read/write remote object has no effect on "nextObjectIdx_".
+bool Parcel::ValidateReadData([[maybe_unused]]size_t upperBound)
+{
+#ifdef PARCEL_OBJECT_CHECK
+    if (objectOffsets_ == nullptr || objectCursor_ == 0) {
+        return true;
+    }
+    size_t readPos = readCursor_;
+    size_t objSize = objectCursor_;
+    binder_size_t *objects = objectOffsets_;
+    if (nextObjectIdx_ < objSize && upperBound > objects[nextObjectIdx_]) {
+        size_t nextObj = nextObjectIdx_;
+        do {
+            if (readPos < objects[nextObj] + sizeof(parcel_flat_binder_object)) {
+                UTILS_LOGE("Non-object Read object data, readPos = %{public}zu, upperBound = %{public}zu",
+                           readPos, upperBound);
+                return false;
+            }
+            nextObj++;
+        } while (nextObj < objSize && upperBound > objects[nextObj]);
+        nextObjectIdx_ = nextObj;
+    }
+#endif
+    return true;
 }
 
 size_t Parcel::GetDataSize() const
@@ -254,6 +283,16 @@ void Parcel::InjectOffsets(binder_size_t offsets, size_t offsetSize)
     }
 }
 
+void Parcel::ClearObjects()
+{
+    objectHolder_.clear();
+    free(objectOffsets_);
+    nextObjectIdx_ = 0;
+    objectCursor_ = 0;
+    objectOffsets_ = nullptr;
+    objectsCapacity_ = 0;
+}
+
 void Parcel::FlushBuffer()
 {
     if (allocator_ == nullptr) {
@@ -270,11 +309,7 @@ void Parcel::FlushBuffer()
     }
 
     if (objectOffsets_) {
-        objectHolder_.clear();
-        free(objectOffsets_);
-        objectCursor_ = 0;
-        objectOffsets_ = nullptr;
-        objectsCapacity_ = 0;
+        ClearObjects();
     }
 }
 
@@ -691,6 +726,13 @@ bool Parcel::Read(T &value)
 
     if (desireCapacity <= GetReadableBytes()) {
         const void *data = data_ + readCursor_;
+#ifdef PARCEL_OBJECT_CHECK
+        size_t upperBound = readCursor_ + desireCapacity;
+        if (!ValidateReadData(upperBound)) {
+            readCursor_ += desireCapacity;
+            return false;
+        }
+#endif
         readCursor_ += desireCapacity;
         value = *reinterpret_cast<const T *>(data);
         return true;
@@ -717,6 +759,11 @@ bool Parcel::ParseFrom(uintptr_t data, size_t size)
     dataSize_ = size;
     /* data is alloc by driver, can not write again */
     writable_ = false;
+#ifdef PARCEL_OBJECT_CHECK
+    if (objectOffsets_) {
+        ClearObjects();
+    }
+#endif
     return true;
 }
 
@@ -728,6 +775,23 @@ const uint8_t *Parcel::ReadBuffer(size_t length)
         return buffer;
     }
 
+    return nullptr;
+}
+
+const uint8_t *Parcel::BasicReadBuffer([[maybe_unused]]size_t length)
+{
+#ifdef PARCEL_OBJECT_CHECK
+    if (GetReadableBytes() >= length) {
+        uint8_t *buffer = data_ + readCursor_;
+        size_t upperBound = readCursor_ + length;
+        if (!ValidateReadData(upperBound)) {
+            readCursor_ += length;
+            return nullptr;
+        }
+        readCursor_ += length;
+        return buffer;
+    }
+#endif
     return nullptr;
 }
 
@@ -763,6 +827,7 @@ bool Parcel::RewindRead(size_t newPosition)
         return false;
     }
     readCursor_ = newPosition;
+    nextObjectIdx_ = 0;
     return true;
 }
 
@@ -778,6 +843,35 @@ bool Parcel::RewindWrite(size_t newPosition)
     }
     writeCursor_ = newPosition;
     dataSize_ = newPosition;
+#ifdef PARCEL_OBJECT_CHECK
+    if (objectOffsets_ == nullptr || objectCursor_ == 0) {
+        return true;
+    }
+    size_t objectSize = objectCursor_;
+    if (objectOffsets_[objectSize - 1] + sizeof(parcel_flat_binder_object) > newPosition) {
+        while (objectSize > 0) {
+            if (objectOffsets_[objectSize - 1] + sizeof(parcel_flat_binder_object) <= newPosition) {
+                break;
+            }
+            objectSize--;
+        }
+        if (objectSize == 0) {
+            ClearObjects();
+            return true;
+        }
+        size_t newBytes = objectSize * sizeof(binder_size_t);
+        void *newOffsets = realloc(objectOffsets_, newBytes);
+        if (newOffsets == nullptr) {
+            return false;
+        }
+        objectOffsets_ = reinterpret_cast<binder_size_t *>(newOffsets);
+        objectCursor_ = objectSize;
+        objectsCapacity_ = objectCursor_;
+        objectHolder_.resize(objectSize);
+        nextObjectIdx_ = 0;
+        return true;
+    }
+#endif
     return true;
 }
 
@@ -966,7 +1060,11 @@ const std::string Parcel::ReadString()
 
     size_t readCapacity = static_cast<size_t>(dataLength) + 1;
     if (readCapacity <= GetReadableBytes()) {
+#ifdef PARCEL_OBJECT_CHECK
+        const uint8_t *dest = BasicReadBuffer(readCapacity);
+#else
         const uint8_t *dest = ReadBuffer(readCapacity);
+#endif
         if (dest != nullptr) {
             const auto *str = reinterpret_cast<const char *>(dest);
             SkipBytes(GetPadSize(readCapacity));
@@ -992,7 +1090,11 @@ bool Parcel::ReadString(std::string &value)
 
     size_t readCapacity = static_cast<size_t>(dataLength) + 1;
     if (readCapacity <= GetReadableBytes()) {
+#ifdef PARCEL_OBJECT_CHECK
+        const uint8_t *dest = BasicReadBuffer(readCapacity);
+#else
         const uint8_t *dest = ReadBuffer(readCapacity);
+#endif
         if (dest != nullptr) {
             const auto *str = reinterpret_cast<const char *>(dest);
             SkipBytes(GetPadSize(readCapacity));
@@ -1019,7 +1121,11 @@ const std::u16string Parcel::ReadString16()
 
     size_t readCapacity = (static_cast<size_t>(dataLength) + 1) * sizeof(char16_t);
     if ((readCapacity > (static_cast<size_t>(dataLength))) && (readCapacity <= GetReadableBytes())) {
+#ifdef PARCEL_OBJECT_CHECK
+        const uint8_t *str = BasicReadBuffer(readCapacity);
+#else
         const uint8_t *str = ReadBuffer(readCapacity);
+#endif
         if (str != nullptr) {
             const auto *u16Str = reinterpret_cast<const char16_t *>(str);
             SkipBytes(GetPadSize(readCapacity));
@@ -1045,7 +1151,11 @@ bool Parcel::ReadString16(std::u16string &value)
 
     size_t readCapacity = (static_cast<size_t>(dataLength) + 1) * sizeof(char16_t);
     if ((readCapacity > (static_cast<size_t>(dataLength))) && (readCapacity <= GetReadableBytes())) {
+#ifdef PARCEL_OBJECT_CHECK
+        const uint8_t *str = BasicReadBuffer(readCapacity);
+#else
         const uint8_t *str = ReadBuffer(readCapacity);
+#endif
         if (str != nullptr) {
             const auto *u16Str = reinterpret_cast<const char16_t *>(str);
             SkipBytes(GetPadSize(readCapacity));
@@ -1077,7 +1187,11 @@ const std::u16string Parcel::ReadString16WithLength(int32_t &readLength)
 
     size_t readCapacity = (static_cast<size_t>(dataLength) + 1) * sizeof(char16_t);
     if ((readCapacity > (static_cast<size_t>(dataLength))) && (readCapacity <= GetReadableBytes())) {
+#ifdef PARCEL_OBJECT_CHECK
+        const uint8_t *str = BasicReadBuffer(readCapacity);
+#else
         const uint8_t *str = ReadBuffer(readCapacity);
+#endif
         if (str != nullptr) {
             const auto *u16Str = reinterpret_cast<const char16_t *>(str);
             SkipBytes(GetPadSize(readCapacity));
@@ -1108,7 +1222,11 @@ const std::string Parcel::ReadString8WithLength(int32_t &readLength)
 
     size_t readCapacity = (static_cast<size_t>(dataLength) + 1) * sizeof(char);
     if (readCapacity <= GetReadableBytes()) {
+#ifdef PARCEL_OBJECT_CHECK
+        const uint8_t *str = BasicReadBuffer(readCapacity);
+#else
         const uint8_t *str = ReadBuffer(readCapacity);
+#endif
         if (str != nullptr) {
             const auto *u8Str = reinterpret_cast<const char *>(str);
             SkipBytes(GetPadSize(readCapacity));

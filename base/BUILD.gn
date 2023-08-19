@@ -20,6 +20,7 @@ declare_args() {
   c_utils_print_track_at_once = false
   c_utils_debug_log_enabled = false
   c_utils_feature_intsan = true
+  c_utils_parcel_object_check = true
 }
 
 config("utils_config") {
@@ -52,6 +53,11 @@ config("print_track_at_once") {
 config("track_all") {
   visibility = [ ":*" ]
   defines = [ "TRACK_ALL" ]
+}
+
+config("parcel_object_check") {
+  visibility = [ ":*" ]
+  defines = [ "PARCEL_OBJECT_CHECK" ]
 }
 
 sources_utils = [
@@ -166,6 +172,9 @@ ohos_shared_library("utils") {
       if (c_utils_print_track_at_once) {
         configs += [ ":print_track_at_once" ]
       }
+    }
+    if (c_utils_parcel_object_check) {
+      configs += [ ":parcel_object_check" ]
     }
     all_dependent_configs = [ ":utils_config" ]
     if (current_os != "android" && current_os != "ios") {
