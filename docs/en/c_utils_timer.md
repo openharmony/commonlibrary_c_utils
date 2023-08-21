@@ -3,6 +3,10 @@
 ### Introduction
 This is a timer manager. After "Timer" started, users can register several timed events, which can be continuous or once, to it. 
 
+- Timer is a millisecond-level high-precision timer, which is generally used for short-term timing tasks. It is not recommended for long-term timing tasks, otherwise it will bring a certain performance burden.
+
+- As a timer in user mode, Timer does not have the ability to wake up in the sleep state, and cannot perform normal counting functions in the sleep state.
+
 `#include <timer.h>`
 
 ## Related Interfaces
@@ -34,4 +38,6 @@ run -t UT -tp utils -ts UtilsTimerTest
 
 1. Set up Timer again would not reset this Timer, but return `TIMER_ERR_INVALID_VALUE`. If a reset operation is required, shut Timer down first and then set it up.
 
-1. Parameter in Shutdown() determines whether the thread in Timer would be detach or join. (True(default) --> join; False --> detach). Detach operation would cause possible multithreading problems, thus is not recommended. If a detach operation is required, availability of related objects used in `thread_` should be guaranteed. 
+1. Parameter in Shutdown() determines whether the thread in Timer would be detach or join. (True(default) --> join; False --> detach). Detach operation would cause possible multithreading problems, thus is not recommended. If a detach operation is required, availability of related objects used in `thread_` should be guaranteed.
+
+1. If the system sleeps during the scheduled task, the Timer cannot wake up automatically during the sleep phase, and will not perform counting operations, which will cause abnormal timing results.
