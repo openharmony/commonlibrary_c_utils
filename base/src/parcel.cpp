@@ -960,7 +960,7 @@ const std::string Parcel::ReadString()
     int32_t dataLength = 0;
     size_t oldCursor = readCursor_;
 
-    if (!Read<int32_t>(dataLength) || dataLength < 0) {
+    if (!Read<int32_t>(dataLength) || dataLength < 0 || dataLength >= INT32_MAX) {
         return std::string();
     }
 
@@ -985,7 +985,7 @@ bool Parcel::ReadString(std::string &value)
     int32_t dataLength = 0;
     size_t oldCursor = readCursor_;
 
-    if (!Read<int32_t>(dataLength) || dataLength < 0) {
+    if (!Read<int32_t>(dataLength) || dataLength < 0 || dataLength >= INT32_MAX) {
         value = std::string();
         return false;
     }
@@ -1013,7 +1013,7 @@ const std::u16string Parcel::ReadString16()
     int32_t dataLength = 0;
     size_t oldCursor = readCursor_;
 
-    if (!Read<int32_t>(dataLength) || dataLength < 0) {
+    if (!Read<int32_t>(dataLength) || dataLength < 0 || dataLength >= INT32_MAX) {
         return std::u16string();
     }
 
@@ -1038,7 +1038,7 @@ bool Parcel::ReadString16(std::u16string &value)
     int32_t dataLength = 0;
     size_t oldCursor = readCursor_;
 
-    if (!Read<int32_t>(dataLength) || dataLength < 0) {
+    if (!Read<int32_t>(dataLength) || dataLength < 0 || dataLength >= INT32_MAX) {
         value = std::u16string();
         return false;
     }
@@ -1070,7 +1070,7 @@ const std::u16string Parcel::ReadString16WithLength(int32_t &readLength)
         return std::u16string();
     }
 
-    if (dataLength < 0) {
+    if (dataLength < 0 || dataLength >= INT32_MAX) {
         readLength = dataLength;
         return std::u16string();
     }
@@ -1101,7 +1101,7 @@ const std::string Parcel::ReadString8WithLength(int32_t &readLength)
         return std::string();
     }
 
-    if (dataLength < 0) {
+    if (dataLength < 0 || dataLength >= INT32_MAX) {
         readLength = dataLength;
         return std::string();
     }
