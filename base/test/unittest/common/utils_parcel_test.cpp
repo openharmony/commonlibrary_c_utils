@@ -42,6 +42,38 @@ void UtilsParcelTest::TearDownTestCase(void)
     }
 }
 
+class RemoteObject : public virtual Parcelable {
+public:
+    RemoteObject() { asRemote_ = true; };
+    bool Marshalling(Parcel &parcel) const override;
+    static sptr<RemoteObject> Unmarshalling(Parcel &parcel);
+};
+
+bool RemoteObject::Marshalling(Parcel &parcel) const
+{
+    parcel_flat_binder_object flat;
+    flat.hdr.type = 0xff;
+    flat.flags = 0x7f;
+    flat.binder = 0;
+    flat.handle = (uint32_t)(-1);
+    flat.cookie = reinterpret_cast<uintptr_t>(this);
+    bool status = parcel.WriteBuffer(&flat, sizeof(parcel_flat_binder_object));
+    if (!status) {
+        return false;
+    }
+    return true;
+}
+
+sptr<RemoteObject> RemoteObject::Unmarshalling(Parcel &parcel)
+{
+    const uint8_t *buffer = parcel.ReadBuffer(sizeof(parcel_flat_binder_object));
+    if (buffer == nullptr) {
+        return nullptr;
+    }
+    sptr<RemoteObject> obj = new RemoteObject();
+    return obj;
+}
+
 /*-------------------------------base data------------------------------------*/
 
 struct TestData {
@@ -1815,6 +1847,169 @@ HWTEST_F(UtilsParcelTest, test_SetMaxCapacity_002, TestSize.Level0)
     vector<std::u16string> val;
     ret = parcel.ReadString16Vector(&val);
     EXPECT_EQ(false, ret);
+}
+
+HWTEST_F(UtilsParcelTest, test_ValidateReadData_001, TestSize.Level0)
+{
+    Parcel parcel(nullptr);
+    parcel.WriteBool(true);
+    string strWrite = "test";
+    bool result = parcel.WriteString(strWrite);
+    EXPECT_EQ(result, true);
+
+    RemoteObject obj1;
+    result = parcel.WriteRemoteObject(&obj1);
+    EXPECT_EQ(result, true);
+    parcel.WriteInt32(5);
+    RemoteObject obj2;
+    result = parcel.WriteRemoteObject(&obj2);
+    EXPECT_EQ(result, true);
+    u16string str16Write = u"12345";
+    result = parcel.WriteString16(str16Write);
+    EXPECT_EQ(result, true);
+
+    bool readBool = parcel.ReadBool();
+    EXPECT_EQ(readBool, true);
+
+    string strRead = parcel.ReadString();
+    EXPECT_EQ(0, strcmp(strRead.c_str(), strWrite.c_str()));
+
+    sptr<RemoteObject> readObj1 = parcel.ReadObject<RemoteObject>();
+    EXPECT_EQ(true, readObj1.GetRefPtr() != nullptr);
+
+    int32_t readInt32 = parcel.ReadInt32();
+    EXPECT_EQ(readInt32, 5);
+
+    sptr<RemoteObject> readObj2 = parcel.ReadObject<RemoteObject>();
+    EXPECT_EQ(true, readObj2.GetRefPtr() != nullptr);
+
+    u16string str16Read = parcel.ReadString16();
+    EXPECT_EQ(0, str16Read.compare(str16Write));
+}
+
+HWTEST_F(UtilsParcelTest, test_ValidateReadData_002, TestSize.Level0)
+{
+    Parcel parcel(nullptr);
+    parcel.WriteBool(true);
+    string strWrite = "test";
+    bool result = parcel.WriteString(strWrite);
+    EXPECT_EQ(result, true);
+
+    RemoteObject obj1;
+    result = parcel.WriteRemoteObject(&obj1);
+    EXPECT_EQ(result, true);
+    parcel.WriteInt32(5);
+    RemoteObject obj2;
+    result = parcel.WriteRemoteObject(&obj2);
+    EXPECT_EQ(result, true);
+    u16string str16Write = u"12345";
+    result = parcel.WriteString16(str16Write);
+    EXPECT_EQ(result, true);
+
+    bool readBool = parcel.ReadBool();
+    EXPECT_EQ(readBool, true);
+
+    string strRead = parcel.ReadString();
+    EXPECT_EQ(0, strcmp(strRead.c_str(), strWrite.c_str()));
+
+    int32_t readInt32 = parcel.ReadInt32();
+    EXPECT_EQ(readInt32, 0);
+
+    u16string str16Read = parcel.ReadString16();
+    EXPECT_EQ(0, str16Read.compare(std::u16string()));
+
+    sptr<RemoteObject> readObj1 = parcel.ReadObject<RemoteObject>();
+    EXPECT_EQ(true, readObj1.GetRefPtr() == nullptr);
+}
+
+HWTEST_F(UtilsParcelTest, test_RewindWrite_001, TestSize.Level0)
+{
+    Parcel parcel(nullptr);
+    parcel.WriteInt32(5);
+    string strWrite = "test";
+    parcel.WriteString(strWrite);
+    RemoteObject obj1;
+    parcel.WriteRemoteObject(&obj1);
+    size_t pos = parcel.GetWritePosition();
+    parcel.WriteInt32(5);
+    RemoteObject obj2;
+    parcel.WriteRemoteObject(&obj2);
+    u16string str16Write = u"12345";
+    parcel.WriteString16(str16Write);
+
+    bool result = parcel.RewindWrite(pos);
+    EXPECT_EQ(result, true);
+    parcel.WriteInt32(5);
+    parcel.WriteInt32(5);
+
+    int32_t readint32 = parcel.ReadInt32();
+    EXPECT_EQ(readint32, 5);
+    string strRead = parcel.ReadString();
+    EXPECT_EQ(0, strcmp(strRead.c_str(), strWrite.c_str()));
+    sptr<RemoteObject> readObj1 = parcel.ReadObject<RemoteObject>();
+    EXPECT_EQ(true, readObj1.GetRefPtr() != nullptr);
+    readint32 = parcel.ReadInt32();
+    EXPECT_EQ(readint32, 5);
+    sptr<RemoteObject> readObj2 = parcel.ReadObject<RemoteObject>();
+    EXPECT_EQ(true, readObj2.GetRefPtr() == nullptr);
+    readint32 = parcel.ReadInt32();
+    EXPECT_EQ(readint32, 5);
+}
+
+HWTEST_F(UtilsParcelTest, test_RewindWrite_002, TestSize.Level0)
+{
+    Parcel parcel(nullptr);
+    parcel.WriteInt32(5);
+    string strWrite = "test";
+    parcel.WriteString(strWrite);
+    RemoteObject obj1;
+    parcel.WriteRemoteObject(&obj1);
+    parcel.WriteInt32(5);
+    RemoteObject obj2;
+    parcel.WriteRemoteObject(&obj2);
+    size_t pos = parcel.GetWritePosition();
+    u16string str16Write = u"12345";
+    parcel.WriteString16(str16Write);
+
+    bool result = parcel.RewindWrite(pos);
+    EXPECT_EQ(result, true);
+
+    int32_t readint32 = parcel.ReadInt32();
+    EXPECT_EQ(readint32, 5);
+    string strRead = parcel.ReadString();
+    EXPECT_EQ(0, strcmp(strRead.c_str(), strWrite.c_str()));
+    uint32_t readUint32 = parcel.ReadUint32();
+    EXPECT_EQ(readUint32, 0);
+    string strRead2 = parcel.ReadString();
+    EXPECT_EQ(0, strRead2.compare(std::string()));
+    sptr<RemoteObject> readObj1 = parcel.ReadObject<RemoteObject>();
+    EXPECT_EQ(true, readObj1.GetRefPtr() == nullptr);
+    double readDouble = parcel.ReadDouble();
+    EXPECT_EQ(readDouble, 0);
+}
+
+HWTEST_F(UtilsParcelTest, test_RewindWrite_003, TestSize.Level0)
+{
+    Parcel parcel(nullptr);
+    std::vector<int32_t> val{1, 2, 3, 4, 5};
+    EXPECT_EQ(val.size(), 5);
+    bool result = parcel.WriteInt32Vector(val);
+    EXPECT_EQ(result, true);
+    size_t pos = parcel.GetWritePosition() - sizeof(int32_t);
+    result = parcel.RewindWrite(pos);
+    EXPECT_EQ(result, true);
+    RemoteObject obj;
+    parcel.WriteRemoteObject(&obj);
+
+    std::vector<int32_t> int32Read;
+    result = parcel.ReadInt32Vector(&int32Read);
+    EXPECT_EQ(result, false);
+    EXPECT_EQ(int32Read.size(), 5);
+    EXPECT_EQ(int32Read[0], 1);
+    EXPECT_EQ(int32Read[1], 2);
+    EXPECT_EQ(int32Read[2], 3);
+    EXPECT_EQ(int32Read[3], 4);
+    EXPECT_EQ(int32Read[4], 0);
 }
 }  // namespace
 }  // namespace OHOS
