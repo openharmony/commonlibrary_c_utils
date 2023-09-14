@@ -593,10 +593,24 @@ public:
     ~sptr();
 
     /**
+     * @brief Create a new object with class type (T) and provide a new sptr to manage it.
+     *
+     * @note We strongly recommend using `sptr::MakeSptr` to create a object and manage it.
+     * This approach avoids object pointer leaks, which can avoid many potential memory problems.
+     *
+     * @return A sptr which manage a new object with class type (T).
+     * @param args Constructor parameters of the new object to be managed by sptr.
+     */
+    template <typename... Args>
+    static inline sptr<T> MakeSptr(Args&&... args);
+
+    /**
      * @brief Constructor with the specified object to be managed.
+     * And We do not recommend using this interface to create an sptr object.
+     * Using the interface `sptr::MakeSptr` is better
      *
      * @note A null sptr will be created if `other` is `nullptr`.
-     * @param other Object to be managed by wptr.
+     * @param other Object to be managed by sptr.
      */
     sptr(T *other);
 
@@ -681,6 +695,16 @@ public:
     }
 
     /**
+     * @brief Explicit boolean conversion operator.
+     *
+     * @return `true` if refbase object is not a "null ptr"; `false` otherwise.
+     */
+    inline explicit operator bool() const
+    {
+        return refs_ != nullptr;
+    }
+
+    /**
      * @brief Dereference operator.
      *
      * This function will return the object managed by this sptr.
@@ -704,18 +728,9 @@ public:
     }
 
     /**
-     * @brief Logical-NOT operator, which is used to check if
-     * the sptr is a "null sptr".
-     *
-     * @return `true` if sptr is a "null sptr"; `false` otherwise.
-     */
-    inline bool operator!() const
-    {
-        return refs_ == nullptr;
-    }
-
-    /**
      * @brief Copy assignment operator with the specified object to be managed.
+     * And We do not recommend using this interface to create an sptr object.
+     * Using the interface `sptr::MakeSptr` is better.
      *
      * @note The original reference will be removed, and a new reference to the
      * input object will be established.
@@ -822,6 +837,17 @@ public:
 private:
     T *refs_ = nullptr; // Raw pointer to the specific managed object
 };
+
+template <typename T>
+template <typename... Args>
+sptr<T> sptr<T>::MakeSptr(Args&&... args)
+{
+    T *ptr = new T(std::forward<Args>(args)...);
+    sptr<T> res;
+    res.ForceSetRefPtr(ptr);
+    ptr->IncStrongRef(ptr);
+    return res;
+}
 
 template <typename T>
 inline void sptr<T>::ForceSetRefPtr(T *other)
