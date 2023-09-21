@@ -49,10 +49,15 @@ public:
         }
     }
 
-    void Erase(T& object)
+    void Erase(const T& object)
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        deque_.remove(object);
+        for (auto iter = deque_.begin(); iter != deque_.end(); iter++) {
+            if (*iter == object) {
+                deque_.erase(iter);
+                break;
+            }
+        }
     }
 
     bool Empty()
