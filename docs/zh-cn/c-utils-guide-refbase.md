@@ -45,17 +45,18 @@ class OHOS::sptr;
 | 返回类型                                    | 名称                                                                               |
 | --------------------------------------- | -------------------------------------------------------------------------------- |
 |                                         | **sptr**()                                                                       |
+|sptr< T >                                | template <typename... Args><br>**MakeSptr**(Args&&... args)<br>构造T类型的被管理对象并创建sptr管控，传递参数args为T类型构造函数所需参数<br> **注意:强烈建议使用该方法构造sptr并管控对象，可以避免对象指针对外暴露，将对象的生命周期完全处于智能指针的管控之下**   |
 | template <typename O \> <br>            | **sptr**(const sptr< O >& other)<br>拷贝构造函数，参数与当前sptr具有不同的管理类型(O)                |
 |                                         | **sptr**(const sptr< T >& other)<br>拷贝构造函数。其以参数指定具体管理对象                         |
 |                                         | **sptr**(sptr< T >&& other)<br>移动构造函数                                           |
-|                                         | **sptr**(T* other)<br>构造函数。其以参数指定具体管理对象                                         |
+|                                         | **sptr**(T* other)<br>构造函数。其以参数指定具体管理对象<br> **注意: 不建议使用对象指针的形式构造sptr对象，这会导致对象的生命周期不完全在sptr的看护下，很可能误用造成对象提前释放**                                         |
 |                                         | **sptr**(WeakRefCount* p, bool force)<br>构造函数。仅用于wptr的promote操作                 |
 |                                         | **~sptr**()                                                                      |
 | void                                    | **clear**()<br>移除当前sptr与所管理对象的引用关系                                               |
 | void                                    | **ForceSetRefPtr**(T* other)<br>强制更改被管理对象指针的指向                                  |
 | T*                                     | **GetRefPtr**() const<br>获取sptr管理对象的指针                                           |
 |                                         | **operator T***() const<br>类型转换运算符                                               |
-| bool                                    | **operator!**() const<br>逻辑非运算符。检查sptr对象是否为空sptr对象                               |
+|                                    | **operator bool**() const<br>布尔类型转换运算符。检查sptr对象是否为空对象                               |
 | bool                                    | **operator!=**(const sptr< T >& other) const<br>sptr对象间的不等运算符                   |
 | bool                                    | **operator!=**(const T* other) const<br>sptr对象与裸指针间的不等运算符                       |
 | bool                                    | **operator!=**(const wptr< T >& other) const<br>sptr对象与wptr间的相等运算符               |
@@ -65,7 +66,7 @@ class OHOS::sptr;
 | sptr< T >&                             | **operator=**(const sptr< T >& other)<br>拷贝赋值运算符，参数与当前sptr对象具有相同管理类型            |
 | sptr< T >&                             | **operator=**(const wptr< T >& other)<br>拷贝赋值运算符，参数为一个wptr对象，但与当前sptr对象具有相同管理类型  |
 | sptr< T >&                             | **operator=**(sptr< T >&& other)<br>移动构造运算符                                     |
-| sptr< T >&                             | **operator=**(T* other)<br>拷贝赋值运算符，参数为待管理的具体对象                                  |
+| sptr< T >&                             | **operator=**(T* other)<br>拷贝赋值运算符，参数为待管理的具体对象<br>**注意: 不建议以指针赋值的形式创建sptr对象，这会导致对象的生命周期不完全在sptr的看护下，很可能误用造成对象提前释放**                                  |
 | bool                                    | **operator==**(const sptr< T >& other) const<br>sptr对象间的相等运算符                   |
 | bool                                    | **operator==**(const T* other) const<br>sptr对象与裸指针间的相等运算符                       |
 | bool                                    | **operator==**(constwptr< T >& other) const<br>sptr对象与wptr间的相等运算符               |
@@ -308,3 +309,29 @@ sptr<RefBase> s(a); // 裸指针a容易被误delete,造成sptr功能失常
 
    * 易造成误解。
    * 因编译器优化程度具有不确定的行为，易造成问题。
+
+5. **不建议使用对象指针构造智能指针对象**
+
+   * 外部提前以指针形式释放对象后，继续通过智能指针中使用
+   * sptr引用计数为0释放对象，对象指针依旧在外被继续使用
+
+```cpp
+Refbase *a = new Refbase(arg1, arg2);
+sptr<Refbase> sp1 = a; // 不建议，对象指针a暴露在外，存在风险
+sptr<Refbase> sp2(a); // 不建议，对象指针a暴露在外，存在风险
+sptr<Refbase> sp3 = sptr<Refbase>::MakeSptr(arg1, arg2); // 建议，在内部构造Refbase对象，直接交与sptr管控使用
+```
+6. **wptr使用注意**
+
+   * 在未设置**ExtendObjectLifetime**的情况下，wptr不参与被管理对象的生命周期控制，对象生命周期由sptr的引用计数控制，但在极特殊情况下存在例外
+
+```cpp
+// 由于历史设计原因，可以在sptr不存在的情况下，基于对象指针创建wptr对象。
+// 在未设置ExtendObjectLifetime，且无sptr被创建的特殊少见情况下，为了防止内存泄漏，在wptr引用计数归0时会释放管理对象
+Refbase *a = new Refbase(arg1, arg2);
+wptr<Refbase> wp1(a);
+wp1 = nullptr; // 弱引用计数归0，对象释放，应避免再次手动释放
+
+wptr<Refbase> wp2 = new Refbase(arg1, arg2);
+wp2 = nullptr; // 弱引用计数归0，对象释放，这种情况无法手动释放, 如果wptr不能控制对象释放则必然会发生内存泄漏
+```

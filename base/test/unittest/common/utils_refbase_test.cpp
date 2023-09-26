@@ -658,6 +658,25 @@ HWTEST_F(UtilsRefbaseTest, testSptrefbase010, TestSize.Level0)
     EXPECT_EQ(testObject1->GetSptrRefCount(), 1);
 }
 
+/*
+ * @tc.name: testSptrefbase011
+ * @tc.desc: Refbase
+ */
+HWTEST_F(UtilsRefbaseTest, testSptrefbase011, TestSize.Level0)
+{
+    sptr<RefBaseTest> testobject = sptr<RefBaseTest>::MakeSptr();
+    testobject->ExtendObjectLifetime();
+    EXPECT_TRUE(testobject->IsExtendLifeTimeSet());
+    EXPECT_EQ(g_refbaseflag, 1);
+    wptr<RefBaseTest> weakObject(testobject);
+    int count = testobject->GetWptrRefCount();
+    EXPECT_EQ(count, 2);
+    testobject = nullptr;
+
+    sptr<RefBaseTest> strongObject = weakObject.promote();
+    EXPECT_EQ(strongObject->GetSptrRefCount(), 1);
+}
+
 class SptrTest : public RefBase {
 public:
     SptrTest()

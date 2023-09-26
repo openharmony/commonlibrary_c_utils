@@ -14,8 +14,8 @@
  */
 
 #include "refbase.h"
-#ifdef DEBUG_REFBASE
 #include "utils_log.h"
+#ifdef DEBUG_REFBASE
 #include <unistd.h>
 #endif
 
@@ -247,6 +247,7 @@ int RefCounter::DecStrongRefCount(const void* objectId)
     int curCount = GetStrongRefCount();
     if (curCount == INITIAL_PRIMARY_VALUE) {
         // unexpected case: there had never a strong reference.
+        UTILS_LOGF("decStrongRef when there is nerver a strong reference");
     } else if (curCount > 0) {
         // we should update the current count here.
         // it may be changed after last operation.
@@ -294,14 +295,15 @@ int RefCounter::DecWeakRefCount(const void* objectId)
     if (curCount != 1) {
         return curCount;
     }
-
-    if (IsLifeTimeExtended() && GetStrongRefCount() == 0) {
+    std::atomic_thread_fence(std::memory_order_acquire);
+    if (IsLifeTimeExtended()) {
         if (callback_) {
             callback_();
         }
     } else {
-        // only weak ptr case: no strong reference, delete the object
+        // only weak ptr but never had a strong ref, we should do nothing here theoretically. But it may cause a leak.
         if (GetStrongRefCount() == INITIAL_PRIMARY_VALUE) {
+            UTILS_LOGW("dec the last weakRef before it had a strong reference, delete refbase to avoid Memory Leak");
             if (callback_) {
                 callback_();
             }
@@ -373,7 +375,7 @@ bool RefCounter::AttemptIncStrongRef(const void *objectId, int &outCount)
     }
 
 ATTEMPT_SUCCESS:
-    if (curCount >= INITIAL_PRIMARY_VALUE) {
+    if (curCount == INITIAL_PRIMARY_VALUE) {
         outCount = curCount;
         atomicStrong_.fetch_sub(INITIAL_PRIMARY_VALUE, std::memory_order_release);
         return true;
@@ -493,6 +495,9 @@ void RefBase::IncStrongRef(const void *objectId)
 
     IncWeakRef(objectId);
     const int curCount = refs_->IncStrongRefCount(objectId);
+    if (!refs_->IsLifeTimeExtended() && curCount == 0) {
+        UTILS_LOGF("%{public}p still incStrongRef after last strong ref", this);
+    }
     if (curCount == INITIAL_PRIMARY_VALUE) {
         OnFirstStrongRef(objectId);
     }
@@ -511,7 +516,11 @@ void RefBase::DecStrongRef(const void *objectId)
 
     RefCounter * const refs = refs_;
     const int curCount = refs->DecStrongRefCount(objectId);
+    if (curCount <= 0) {
+        UTILS_LOGF("%{public}p call decStrongRef too many times", this);
+    }
     if (curCount == 1) {
+        std::atomic_thread_fence(std::memory_order_acquire);
         OnLastStrongRef(objectId);
         if (!refs->IsLifeTimeExtended()) {
             if (refs->callback_) {
