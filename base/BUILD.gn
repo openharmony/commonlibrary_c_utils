@@ -142,6 +142,7 @@ ohos_shared_library("utils") {
   innerapi_tags = [
     "chipsetsdk",
     "platformsdk",
+    "sasdk",
   ]
   if (current_os == "ios") {
     sources = sources_utils_ios
