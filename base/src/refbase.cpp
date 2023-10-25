@@ -21,6 +21,19 @@
 
 namespace OHOS {
 
+void DebugRefBase()
+{
+#ifdef DEBUG_REFBASE
+    if (enableTrack) {
+#ifdef PRINT_TRACK_AT_ONCE
+        PrintRefs(objectId);
+#else
+        GetNewTrace(objectId);
+#endif
+    }
+#endif
+}
+
 WeakRefCounter::WeakRefCounter(RefCounter *counter, void *cookie)
     : atomicWeak_(0), refCounter_(counter), cookie_(cookie)
 {
@@ -209,19 +222,6 @@ RefCounter::~RefCounter()
 #endif
     }
 #endif
-}
-
-void RefCounter::DebugRefBase()
-{
-#ifdef DEBUG_REFBASE
-    if (enableTrack) {
-#ifdef PRINT_TRACK_AT_ONCE
-        PrintRefs(objectId);
-#else
-        GetNewTrace(objectId);
-#endif
-    }
-#endif   
 }
 
 int RefCounter::IncStrongRefCount(const void* objectId)
