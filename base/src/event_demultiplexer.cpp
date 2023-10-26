@@ -111,7 +111,7 @@ void EventDemultiplexer::Polling(int timeout /* ms */)
         return;
     }
     if (nfds == -1) {
-        UTILS_LOGE("epoll_wait failed.");
+        UTILS_LOGE("epoll_wait failed, errno %{public}d", errno);
         return;
     }
 
