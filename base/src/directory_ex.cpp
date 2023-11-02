@@ -195,12 +195,12 @@ bool ForceCreateDirectory(const string& path)
     return access(path.c_str(), F_OK) == 0;
 }
 
-bool ForceRemoveDirectory(const string& path)
+bool ForceRemoveDirectoryInteral(DIR *dir)
 {
-    string subPath;
     bool ret = true;
-    DIR *dir = opendir(path.c_str());
-    if (dir == nullptr) {
+    int rootFd = dirfd(dir);
+    if (rootFd < 0) {
+        UTILS_LOGD("Failed to get dirfd, fd: %{public}d: %{public}s ", rootFd, strerror(errno));
         return false;
     }
 
@@ -209,28 +209,63 @@ bool ForceRemoveDirectory(const string& path)
         if (ptr == nullptr) {
             break;
         }
+        const char *name = ptr->d_name;
 
         // current dir or parent dir
-        if (strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0) {
+        if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
             continue;
         }
-        subPath = IncludeTrailingPathDelimiter(path) + string(ptr->d_name);
+
         if (ptr->d_type == DT_DIR) {
-            ret = ForceRemoveDirectory(subPath);
+            int subFd = openat(rootFd, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+            if (subFd < 0) {
+                UTILS_LOGD("Failed in subFd openat: %{public}s ", name);
+                ret = false;
+                continue;
+            }
+            DIR *subDir = fdopendir(subFd);
+            if (subDir == nullptr) {
+                close(subFd);
+                UTILS_LOGD("Failed in fdopendir: %{public}s", strerror(errno));
+                ret = false;
+                continue;
+            }
+            ret = ForceRemoveDirectoryInteral(subDir);
+            closedir(subDir);
+            if (unlinkat(rootFd, name, AT_REMOVEDIR) < 0) {
+                UTILS_LOGD("Couldn't unlinkat subDir %{public}s: %{public}s", name, strerror(errno));
+                ret = false;
+                continue;
+            }
         } else {
-            if (faccessat(AT_FDCWD, subPath.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
-                if (remove(subPath.c_str()) != 0) {
-                    closedir(dir);
+            if (faccessat(rootFd, name, F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
+                if (unlinkat(rootFd, name, 0) < 0) {
+                    UTILS_LOGD("Couldn't unlinkat subFile %{public}s: %{public}s", name, strerror(errno));
                     return false;
                 }
+            } else {
+                UTILS_LOGD("Access to file: %{public}s is failed", name);
+                return false;
             }
         }
     }
-    closedir(dir);
 
-    string currentPath = ExcludeTrailingPathDelimiter(path);
-    if (faccessat(AT_FDCWD, currentPath.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
-        if (remove(currentPath.c_str()) != 0) {
+    return ret;
+}
+
+bool ForceRemoveDirectory(const string& path)
+{
+    bool ret = true;
+    DIR *dir = opendir(path.c_str());
+    if (dir == nullptr) {
+        UTILS_LOGD("Failed to open root dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
+        return false;
+    }
+    ret = ForceRemoveDirectoryInteral(dir);
+    closedir(dir);
+    if (faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
+        if (remove(path.c_str()) != 0) {
+            UTILS_LOGD("Failed to remove root dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
             return false;
         }
     }
