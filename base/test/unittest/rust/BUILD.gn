@@ -13,7 +13,7 @@
 import("//build/ohos.gni")
 import("//build/test.gni")
 
-if (host_os == "linux" && !is_asan && !build_cross_platform_version) {
+if (host_os == "linux" && !is_asan && !is_arkui_x) {
   config("module_private_config") {
     visibility = [ ":*" ]
 
