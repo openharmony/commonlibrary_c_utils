@@ -150,7 +150,7 @@ ohos_shared_library("utils") {
     sources = sources_utils
     configs = [ ":utils_coverage_config" ]
 
-    if (!build_cross_platform_version) {
+    if (!is_arkui_x) {
       if (c_utils_feature_intsan) {
         sanitize = {
           integer_overflow = true
@@ -188,7 +188,7 @@ ohos_shared_library("utils") {
 
 ########## modules for `c_utils` in rust ##########
 # rust compiler is not supportted on mac
-if (host_os == "linux" && !is_asan && !build_cross_platform_version) {
+if (host_os == "linux" && !is_asan && !is_arkui_x) {
   import("//build/templates/rust/rust_cxx.gni")  # used for templates rust_cxx()
   rust_cxx("cxx_rust_gen") {
     sources = [
@@ -249,7 +249,7 @@ if (host_os == "linux" && !is_asan && !build_cross_platform_version) {
 
 group("utils_rust") {
   public_deps = []
-  if (host_os == "linux" && !is_asan && !build_cross_platform_version) {
+  if (host_os == "linux" && !is_asan && !is_arkui_x) {
     public_deps += [ ":utils_rs" ]
   }
 }
