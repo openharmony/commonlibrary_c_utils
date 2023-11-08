@@ -195,6 +195,24 @@ HWTEST_F(UtilsDirectoryTest, testForceRemoveDirectory002, TestSize.Level0)
     EXPECT_EQ(ret, false);
 }
 
+
+/*
+ * @tc.name: testForceRemoveDirectory003
+ * @tc.desc: test whether it works when the full path is over than 255.
+ */
+HWTEST_F(UtilsDirectoryTest, testForceRemoveDirectory003, TestSize.Level0)
+{
+    string dirpath = "/data/test/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/"
+        "tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/"
+        "tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/"
+        "tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp";
+    bool ret = ForceCreateDirectory(dirpath);
+    EXPECT_EQ(ret, true);
+    string rootpath = "/data/test/tmp";
+    ret = ForceRemoveDirectory(rootpath);
+    EXPECT_EQ(ret, true);
+}
+
 /*
  * @tc.name: testRemoveFile001
  * @tc.desc: directory unit test
