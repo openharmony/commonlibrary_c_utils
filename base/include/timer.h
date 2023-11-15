@@ -25,10 +25,9 @@
 #include <thread>
 #include <vector>
 
-#include "../src/event_reactor.h"
-
 namespace OHOS {
 namespace Utils {
+class EventReactor;
 /**
  * @brief Implements a timer manager.
  *
@@ -69,7 +68,7 @@ public:
      * triggered). `0` means not to wait, which occupies too much CPU time.
      */
     explicit Timer(const std::string& name, int timeoutMs = 1000);
-    virtual ~Timer() {}
+    virtual ~Timer();
 
     /**
      * @brief Sets up a timer.
@@ -142,7 +141,7 @@ private:
     std::string name_;
     int timeoutMs_;
     std::thread thread_;
-    std::unique_ptr<EventReactor> reactor_;
+    EventReactor *reactor_;
     std::map<uint32_t, uint32_t> timers_;  // timer_fd to interval
     std::mutex mutex_;
 };
