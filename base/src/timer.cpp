@@ -14,6 +14,7 @@
  */
 
 #include "timer.h"
+#include "event_reactor.h"
 
 #include <algorithm>
 #include "common_timer_errors.h"
@@ -27,6 +28,11 @@ namespace Utils {
 Timer::Timer(const std::string& name, int timeoutMs) : name_(name), timeoutMs_(timeoutMs),
     reactor_(new EventReactor())
 {
+}
+
+Timer::~Timer()
+{
+    delete reactor_;
 }
 
 uint32_t Timer::Setup()
