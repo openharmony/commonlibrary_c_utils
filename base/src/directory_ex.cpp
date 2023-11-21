@@ -195,7 +195,7 @@ bool ForceCreateDirectory(const string& path)
     return access(path.c_str(), F_OK) == 0;
 }
 
-bool ForceRemoveDirectoryInteral(DIR *dir)
+bool ForceRemoveDirectoryInternal(DIR *dir)
 {
     bool ret = true;
     int rootFd = dirfd(dir);
@@ -230,7 +230,7 @@ bool ForceRemoveDirectoryInteral(DIR *dir)
                 ret = false;
                 continue;
             }
-            ret = ForceRemoveDirectoryInteral(subDir);
+            ret = ForceRemoveDirectoryInternal(subDir);
             closedir(subDir);
             if (unlinkat(rootFd, name, AT_REMOVEDIR) < 0) {
                 UTILS_LOGD("Couldn't unlinkat subDir %{public}s: %{public}s", name, strerror(errno));
@@ -261,7 +261,10 @@ bool ForceRemoveDirectory(const string& path)
         UTILS_LOGD("Failed to open root dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
         return false;
     }
-    ret = ForceRemoveDirectoryInteral(dir);
+    ret = ForceRemoveDirectoryInternal(dir);
+    if (!ret) {
+        UTILS_LOGD("Failed to remove some subfile under path: %{public}s", path.c_str());
+    }
     closedir(dir);
     if (faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
         if (remove(path.c_str()) != 0) {
@@ -270,7 +273,7 @@ bool ForceRemoveDirectory(const string& path)
         }
     }
 
-    return ret && (faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) != 0);
+    return faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) != 0;
 }
 
 bool RemoveFile(const string& fileName)
