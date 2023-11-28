@@ -50,6 +50,19 @@ public:
         return map_[key];
     }
 
+    V ReadVal(const K& key)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        return map_[key];
+    }
+
+    template<typename LambdaCallback>
+    void ChangeValueByLambda(const K& key, LambdaCallback callback)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        callback(map_[key]);
+    }
+
     /**
      * @brief Obtains the map size.
      *
