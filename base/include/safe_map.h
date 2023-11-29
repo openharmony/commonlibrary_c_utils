@@ -45,11 +45,6 @@ public:
         return *this;
     }
 
-    V& operator[](const K& key)
-    {
-        return map_[key];
-    }
-
     V ReadVal(const K& key)
     {
         std::lock_guard<std::mutex> lock(mutex_);
