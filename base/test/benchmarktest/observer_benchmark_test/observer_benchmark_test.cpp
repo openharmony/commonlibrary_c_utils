@@ -52,7 +52,7 @@ const int EXPECTED_COUNT_ZERO = 0;
 const int EXPECTED_COUNT_ONE = 1;
 const int EXPECTED_COUNT_TWO = 2;
 
-class BookList: public Observable {
+class BookList : public Observable {
 public:
     BookList() { books_.clear(); }
     void AddBook(const string& book)
@@ -82,12 +82,12 @@ public:
     const set<string>& GetBooks() { return books_; }
 private:
     set<string> books_;
-
 };
 
-class BookObserver: public Observer {
+class BookObserver : public Observer {
 public:
-    virtual void Update(const Observable* o, const ObserverArg* /* arg */) {
+    virtual void Update(const Observable* o, const ObserverArg* /* arg */)
+    {
         BookList* bookList = reinterpret_cast<BookList*>(const_cast<Observable*>(o));
         books_ = bookList->GetBooks();
     }
@@ -126,7 +126,6 @@ BENCHMARK_F(BenchmarkObserverTest, test_ObserverNotify)(benchmark::State& state)
         shared_ptr<BookObserver> bookObserver1 = make_shared<BookObserver>();
         shared_ptr<BookObserver> bookObserver2 = make_shared<BookObserver>();
         shared_ptr<BookObserver> bookObserver3 = make_shared<BookObserver>();
-
         bookList.AddObserver(bookObserver1);
         bookList.AddObserver(bookObserver2);
         bookList.AddObserver(bookObserver3);
@@ -170,7 +169,6 @@ BENCHMARK_F(BenchmarkObserverTest, test_RemoveAllObserver)(benchmark::State& sta
         shared_ptr<BookObserver> bookObserver1 = make_shared<BookObserver>();
         shared_ptr<BookObserver> bookObserver2 = make_shared<BookObserver>();
         shared_ptr<BookObserver> bookObserver3 = make_shared<BookObserver>();
-
         bookList.AddObserver(bookObserver1);
         bookList.AddObserver(bookObserver2);
         bookList.AddObserver(bookObserver3);

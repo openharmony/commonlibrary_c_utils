@@ -731,25 +731,29 @@ BENCHMARK_F(BenchmarkStringTest, DexToHexString_01)(benchmark::State& state)
 {
     BENCHMARK_LOGD("StringTest DexToHexString_01 start.");
     while (state.KeepRunning()) {
-        string result = DexToHexString(0);
+        int zeroValue = 0;
+        string result = DexToHexString(zeroValue);
         AssertEqual(result, "0", "result did not equal \"0\" as expected.", state);
 
-        result = DexToHexString(14);
+        int positiveValue = 14;
+        result = DexToHexString(positiveValue);
         AssertEqual(result, "E", "result did not equal \"E\" as expected.", state);
 
-        result = DexToHexString(14, false);
+        result = DexToHexString(positiveValue, false);
         AssertEqual(result, "e", "result did not equal \"e\" as expected.", state);
 
-        result = DexToHexString(-14, false);
+        int negativeValue = -14;
+        result = DexToHexString(negativeValue, false);
         AssertEqual(result, "fffffff2", "result did not equal \"fffffff2\" as expected.", state);
 
-        result = DexToHexString(-14);
+        result = DexToHexString(negativeValue);
         AssertEqual(result, "FFFFFFF2", "result did not equal \"FFFFFFF2\" as expected.", state);
 
-        result = DexToHexString(11259375);
+        int largeValue = 11259375;
+        result = DexToHexString(largeValue);
         AssertEqual(result, "ABCDEF", "result did not equal \"ABCDEF\" as expected.", state);
 
-        result = DexToHexString(11259375, false);
+        result = DexToHexString(largeValue, false);
         AssertEqual(result, "abcdef", "result did not equal \"abcdef\" as expected.", state);
     }
     BENCHMARK_LOGD("StringTest DexToHexString_01 end.");

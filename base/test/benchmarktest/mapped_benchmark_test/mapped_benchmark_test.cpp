@@ -67,7 +67,8 @@ protected:
     const int32_t iterations = 1000;
 };
 
-void PrintStatus(MappedFile& mf) {
+void PrintStatus(MappedFile& mf)
+{
     BENCHMARK_LOGD("MappedFileTest void PrintStatus is called.");
     BENCHMARK_LOGD("Mapped Region Start: %{public}p\n"
                    "Mapped Region End: %{public}p\n"
@@ -97,7 +98,8 @@ bool CreateTestFile(const std::string& path, const std::string& content)
     return false;
 }
 
-int RemoveTestFile(const std::string& path) {
+int RemoveTestFile(const std::string& path)
+{
     BENCHMARK_LOGD("MappedFileTest int RemoveTestFile is called.");
     return unlink(path.c_str());
 }
