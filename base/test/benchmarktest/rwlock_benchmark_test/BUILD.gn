@@ -11,19 +11,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-group("benchmarktest") {
-  testonly = true
-  deps = []
-  deps += [
-    # deps file
-    "ashemem_benchmark_test:AshememTest",
-    "datatime_benchmark_test:DatatimeTest",
-    "mapped_benchmark_test:MappedTest",
-    "observer_benchmark_test:ObserverTest",
-    "parcel_benchmark_test:ParcelTest",
-    "refbase_benchmark_test:RefbaseTest",
-    "rwlock_benchmark_test:RwlockTest",
-    "string_benchmark_test:StringTest",
-    "timer_benchmark_test:TimerTest",
+import("//build/test.gni")
+
+module_output_path = "commonlibrary_c_utils/rwlock"
+
+ohos_benchmarktest("RwlockTest") {
+  module_out_path = module_output_path
+
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+  sources = [ "rwlock_benchmark_test.cpp" ]
+
+  deps = [ "//third_party/benchmark:benchmark" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog_base",
   ]
 }
