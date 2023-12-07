@@ -260,7 +260,7 @@ BENCHMARK_F(BenchmarkDirectoryTest, testRemoveFile001)(benchmark::State& state)
         AssertEqual(ret, true, "ret did not equal true as expected.", state);
         string filename = dirpath + "/test.txt";
         FILE *fp = fopen(filename.c_str(), "w");
-        if (nullptr != fp) {
+        if (fp != nullptr) {
             fclose(fp);
             ret = RemoveFile(filename);
             AssertEqual(ret, true, "ret did not equal true as expected.", state);
@@ -285,7 +285,7 @@ BENCHMARK_F(BenchmarkDirectoryTest, testRemoveFile002)(benchmark::State& state)
 
         string targetname = "/data/test_target.txt";
         FILE *fp = fopen(targetname.c_str(), "w");
-        if (nullptr != fp) {
+        if (fp != nullptr) {
             fclose(fp);
         }
 
