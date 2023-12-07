@@ -18,6 +18,7 @@ group("benchmarktest") {
     # deps file
     "ashemem_benchmark_test:AshememTest",
     "datatime_benchmark_test:DatatimeTest",
+    "directory_benchmark_test:DirectoryTest",
     "mapped_benchmark_test:MappedTest",
     "observer_benchmark_test:ObserverTest",
     "parcel_benchmark_test:ParcelTest",
@@ -27,6 +28,8 @@ group("benchmarktest") {
     "singleton_benchmark_test:SingletonTest",
     "sorted_vector_benchmark_test:SortedVectorTest",
     "string_benchmark_test:StringTest",
+    "thread_benchmark_test:ThreadTest",
+    "thread_pool_benchmark_test:ThreadPoolTest",
     "timer_benchmark_test:TimerTest",
   ]
 }
