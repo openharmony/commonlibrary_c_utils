@@ -15,7 +15,6 @@
 
 #include <benchmark/benchmark.h>
 #include "sorted_vector.h"
-
 #include <iostream>
 #include "../log.h"
 #include "../assert.h"

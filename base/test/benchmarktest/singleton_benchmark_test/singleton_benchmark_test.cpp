@@ -77,7 +77,7 @@ public:
 SingletonDeclearTest::~SingletonDeclearTest() {};
 SingletonDeclearTest::SingletonDeclearTest() {};
 
-class SingletonTest: public Singleton<SingletonTest> {
+class SingletonTest : public Singleton<SingletonTest> {
 public:
     void* GetObjAddr()
     {
@@ -86,7 +86,7 @@ public:
     }
 };
 
-class DelayedSingletonTest: public DelayedSingleton<DelayedSingletonTest> {
+class DelayedSingletonTest : public DelayedSingleton<DelayedSingletonTest> {
 public:
     void* GetObjAddr()
     {
@@ -109,7 +109,7 @@ public:
 DelayedRefSingletonDeclearTest::DelayedRefSingletonDeclearTest() {};
 DelayedRefSingletonDeclearTest::~DelayedRefSingletonDeclearTest() {};
 
-class DelayedRefSingletonTest: public DelayedRefSingleton<DelayedRefSingletonTest> {
+class DelayedRefSingletonTest : public DelayedRefSingleton<DelayedRefSingletonTest> {
 public:
     void* GetObjAddr()
     {
@@ -124,18 +124,17 @@ BENCHMARK_F(BenchmarkSingletonTest, test_DelayedSingletonDeclearTest)(benchmark:
     while (state.KeepRunning()) {
         shared_ptr<DelayedSingletonDeclearTest> sp1 = DelayedSingleton<DelayedSingletonDeclearTest>::GetInstance();
         AssertEqual(sp1.use_count(), DELAYEDSINGLETON_SP1_USE_COUNT,
-            "sp1.use_count() did not equal 2 as expected.", state);
+            "sp1.use_count() did not equal DELAYEDSINGLETON_SP1_USE_COUNT as expected.", state);
 
         shared_ptr<DelayedSingletonDeclearTest> sp2 = DelayedSingleton<DelayedSingletonDeclearTest>::GetInstance();
         AssertEqual(sp1->GetObjAddr(), sp2->GetObjAddr(),
             "sp1->GetObjAddr() did not equal sp2->GetObjAddr() as expected.", state);
         AssertEqual(sp1.get(), sp2.get(), "sp1.get() did not equal sp2.get() as expected.", state);
         AssertEqual(sp2.use_count(), DELAYEDSINGLETON_SP2_USE_COUNT,
-            "sp2.use_count() did not equal 3 as expected.", state);
+            "sp2.use_count() did not equal DELAYEDSINGLETON_SP2_USE_COUNT as expected.", state);
     }
     BENCHMARK_LOGD("SingletonTest test_DelayedSingletonDeclearTest end.");
 }
-
 
 BENCHMARK_F(BenchmarkSingletonTest, test_SingletonDeclearTest)(benchmark::State& state)
 {
@@ -149,7 +148,6 @@ BENCHMARK_F(BenchmarkSingletonTest, test_SingletonDeclearTest)(benchmark::State&
     BENCHMARK_LOGD("SingletonTest test_SingletonDeclearTest end.");
 }
 
-
 BENCHMARK_F(BenchmarkSingletonTest, test_SingletonTest)(benchmark::State& state)
 {
     BENCHMARK_LOGD("SingletonTest test_SingletonTest start.");
@@ -162,21 +160,20 @@ BENCHMARK_F(BenchmarkSingletonTest, test_SingletonTest)(benchmark::State& state)
     BENCHMARK_LOGD("SingletonTest test_SingletonTest end.");
 }
 
-
 BENCHMARK_F(BenchmarkSingletonTest, test_DelayedSingletonTest)(benchmark::State& state)
 {
     BENCHMARK_LOGD("SingletonTest test_DelayedSingletonTest start.");
     while (state.KeepRunning()) {
         shared_ptr<DelayedSingletonTest> sp1 = DelayedSingletonTest::GetInstance();
         AssertEqual(sp1.use_count(), DELAYEDSINGLETON_SP1_USE_COUNT,
-            "sp1.use_count() did not equal 2 as expected..", state);
+            "sp1.use_count() did not equal DELAYEDSINGLETON_SP1_USE_COUNT as expected.", state);
 
         shared_ptr<DelayedSingletonTest> sp2 = DelayedSingletonTest::GetInstance();
         AssertEqual(sp1->GetObjAddr(), sp2->GetObjAddr(),
             "sp1->GetObjAddr() did not equal sp2->GetObjAddr() as expected.", state);
         AssertEqual(sp1.get(), sp2.get(), "sp1.get() did not equal sp2.get() as expected.", state);
         AssertEqual(sp2.use_count(), DELAYEDSINGLETON_SP2_USE_COUNT,
-            "sp2.use_count() did not equal 3 as expected.", state);
+            "sp2.use_count() did not equal DELAYEDSINGLETON_SP2_USE_COUNT as expected.", state);
     }
     BENCHMARK_LOGD("SingletonTest test_DelayedSingletonTest end.");
 }

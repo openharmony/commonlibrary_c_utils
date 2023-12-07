@@ -370,7 +370,6 @@ BENCHMARK_F(BenchmarkSafeMap, testSafeMapOperator001)(benchmark::State& state)
         AssertTrue(foundTwo, "Key \"TWO\" was not found as expected.", state);
         AssertEqual(valueOne, INSERT_ONE, "Value for key \"ONE\" did not equal INSERT_ONE as expected.", state);
         AssertEqual(valueTwo, INSERT_TWO, "Value for key \"TWO\" did not equal INSERT_TWO as expected.", state);
-
     }
     BENCHMARK_LOGD("SafeMap testSafeMapOperator001 end.");
 }
@@ -443,7 +442,6 @@ BENCHMARK_F(BenchmarkSafeMap, testUtilsConcurrentIterate001)(benchmark::State& s
         for (int i = 0; i < DATA_NUM - 1; i++) {
             int valueCurrent;
             int valueNext;
-            
             bool foundCurrent = demoData.Find("A" + std::to_string(i), valueCurrent);
             bool foundNext = demoData.Find("A" + std::to_string(i + 1), valueNext);
 
