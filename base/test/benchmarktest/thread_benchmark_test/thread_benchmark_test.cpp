@@ -97,7 +97,6 @@ public:
         runFunc_(runFunc)
         {};
 
-
     TestThread() = delete;
     ~TestThread() {}
 
@@ -311,7 +310,6 @@ BENCHMARK_F(BenchmarkThreadTest, testThread005)(benchmark::State& state)
             "status == ThreadStatus::OK did not equal true as expected.", state);
 
         pthread_t thread = test->GetThread();
-
         // pthread_equal return non-zero if equal
         AssertEqual((pthread_equal(thread, INVALID_THREAD_ID) != 0), (test->IsRunning() ? false : true),
             "pthread_equal(thread, INVALID_THREAD_ID) != 0 did not equal \

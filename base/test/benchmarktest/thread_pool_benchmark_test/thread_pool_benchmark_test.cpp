@@ -308,7 +308,6 @@ BENCHMARK_F(BenchmarkThreadPoolTest, test_07)(benchmark::State& state)
         pool.Stop();
         g_times = 0;
         g_ready = false;
-
     }
     BENCHMARK_LOGD("ThreadPoolTest test_07 end.");
 }
@@ -371,7 +370,6 @@ BENCHMARK_F(BenchmarkThreadPoolTest, test_08)(benchmark::State& state)
         pool.Stop();
         g_times = 0;
         g_ready = false;
-
     }
     BENCHMARK_LOGD("ThreadPoolTest test_08 end.");
 }
