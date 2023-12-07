@@ -53,8 +53,7 @@ public:
 
     void TearDown(const ::benchmark::State& state) override
     {
-        for (int i = 0; i < MAX_PARCEL_SIZE; i++)
-        {
+        for (int i = 0; i < MAX_PARCEL_SIZE; i++) {
             g_data[i] = 0;
         }
     }
