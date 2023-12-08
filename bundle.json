@@ -111,7 +111,8 @@
       ],
       "test": [
         "//commonlibrary/c_utils/base/test:unittest",
-        "//commonlibrary/c_utils/base/test/benchmarktest:benchmarktest"
+        "//commonlibrary/c_utils/base/test/benchmarktest:benchmarktest",
+        "//commonlibrary/c_utils/base/test/fuzztest:fuzztest"
       ]
     }
   }
