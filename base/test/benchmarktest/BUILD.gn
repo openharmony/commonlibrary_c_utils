@@ -26,6 +26,8 @@ group("benchmarktest") {
     "parcel_benchmark_test:ParcelTest",
     "refbase_benchmark_test:RefbaseTest",
     "rwlock_benchmark_test:RwlockTest",
+    "safe_block_queue_benchmark_test:SafeBlockQueueTest",
+    "safe_block_queue_tracking_benchmark_test:SafeBlockQueueTrackingTest",
     "safe_map_benchmark_test:SafeMapTest",
     "safe_queue_benchmark_test:SafeQueueTest",
     "singleton_benchmark_test:SingletonTest",
@@ -34,5 +36,6 @@ group("benchmarktest") {
     "thread_benchmark_test:ThreadTest",
     "thread_pool_benchmark_test:ThreadPoolTest",
     "timer_benchmark_test:TimerTest",
+    "unique_fd_benchmark_test:UniqueFdTest",
   ]
 }

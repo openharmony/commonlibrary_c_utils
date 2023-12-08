@@ -132,8 +132,6 @@ BENCHMARK_F(BenchmarkDateTimeTest, testTime002)(benchmark::State& state)
         const int64_t secondsInAnHour = 3600;
         const int64_t hoursInADay = 24;
         int64_t resultdays = seconds / (secondsInAnHour * hoursInADay);
-        BENCHMARK_LOGD("DateTimeTest testTime002 days:%{public}lld result:%{public}lld seconds:%{public}lld",
-            days, resultdays, seconds);
         AssertEqual(days, resultdays, "days did not equal resultdays as expected.", state);
     }
     BENCHMARK_LOGD("DateTimeTest testTime002 end.");
@@ -210,6 +208,5 @@ BENCHMARK_F(BenchmarkDateTimeTest, testGetMicroTickCount001)(benchmark::State& s
 }
 }  // namespace
 }  // namespace OHOS
-
 // Run the benchmark
 BENCHMARK_MAIN();

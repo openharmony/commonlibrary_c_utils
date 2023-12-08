@@ -19,7 +19,6 @@
 #include "rwlock.h"
 #include "../log.h"
 #include "../assert.h"
-
 using namespace std;
 
 namespace OHOS {
@@ -50,39 +49,39 @@ protected:
 
 const int SLEEP_DURATION_MS = 4;
 
-// This class is designed for test RWLock. "buf" is protected by "rwLock".
+// This class is designed for test RWLock. "buf_" is protected by "rwLock_".
 class TestRWLock {
 public:
-    TestRWLock():rwLock(), buf() {}
+    TestRWLock():rwLock_(), buf_() {}
 
-    explicit TestRWLock(bool writeFirst):rwLock(writeFirst), buf() {}
+    explicit TestRWLock(bool writeFirst):rwLock_(writeFirst), buf_() {}
 
     void WriteStr(const string& str)
     {
         BENCHMARK_LOGD("RWLockTest void WriteStr is called.");
-        rwLock.LockWrite();
+        rwLock_.LockWrite();
         for (auto it = str.begin(); it != str.end(); it++) {
-            buf.push_back(*it);
+            buf_.push_back(*it);
             this_thread::sleep_for(std::chrono::milliseconds(10)); // 10: Extend time of holding the lock
         }
-        rwLock.UnLockWrite();
+        rwLock_.UnLockWrite();
         return;
     }
 
     void ReadStr(string& str)
     {
         BENCHMARK_LOGD("RWLockTest void ReadStr is called.");
-        rwLock.LockRead();
-        for (auto it = buf.begin(); it != buf.end(); it++) {
+        rwLock_.LockRead();
+        for (auto it = buf_.begin(); it != buf_.end(); it++) {
             str.push_back(*it);
             this_thread::sleep_for(std::chrono::milliseconds(10)); // 10: Extend time of holding the lock
         }
-        rwLock.UnLockRead();
+        rwLock_.UnLockRead();
         return;
     }
 private:
-    Utils::RWLock rwLock;
-    string buf;
+    Utils::RWLock rwLock_;
+    string buf_;
 };
 
 const string WRITE_IN_1("write1");
@@ -197,10 +196,10 @@ BENCHMARK_F(BenchmarkRWLockTest, testUniqueWriteGuardScope001)(benchmark::State&
 {
     BENCHMARK_LOGD("RWLockTest testUniqueWriteGuardScope001 start.");
     while (state.KeepRunning()) {
-        OHOS::Utils::RWLock rwLock;
+        OHOS::Utils::RWLock rwLock_;
         TestRWLock test;
         string readOut1("");
-        OHOS::Utils::UniqueWriteGuard<OHOS::Utils::RWLock> guard(rwLock);
+        OHOS::Utils::UniqueWriteGuard<OHOS::Utils::RWLock> guard(rwLock_);
         test.WriteStr(WRITE_IN_1);
         test.ReadStr(readOut1);
         AssertEqual(readOut1, WRITE_IN_1, "readOut1 did not equal WRITE_IN_1 as expected.", state);
@@ -221,11 +220,11 @@ BENCHMARK_F(BenchmarkRWLockTest, testUniqueReadGuardScope001)(benchmark::State& 
 {
     BENCHMARK_LOGD("RWLockTest testUniqueReadGuardScope001 start.");
     while (state.KeepRunning()) {
-        OHOS::Utils::RWLock rwLock;
+        OHOS::Utils::RWLock rwLock_;
         TestRWLock test;
         string readOut1("");
         test.WriteStr(WRITE_IN_1);  // Write a string to the buffer before acquiring the read lock.
-        OHOS::Utils::UniqueReadGuard<OHOS::Utils::RWLock> guard(rwLock);
+        OHOS::Utils::UniqueReadGuard<OHOS::Utils::RWLock> guard(rwLock_);
         test.ReadStr(readOut1);
         AssertEqual(readOut1, WRITE_IN_1, "readOut1 did not equal WRITE_IN_1 as expected.", state);
     }

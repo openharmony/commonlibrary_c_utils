@@ -226,7 +226,6 @@ BENCHMARK_F(BenchmarkDirectoryTest, testForceRemoveDirectory001)(benchmark::Stat
         bool ret = ForceCreateDirectory(dirpath);
         AssertEqual(ret, true, "ret did not equal true as expected.", state);
         ret = ForceRemoveDirectory(dirpath);
-        BENCHMARK_LOGD("DirectoryTest testForceRemoveDirectory001 ret:%{public}d.", ret);
         AssertEqual(ret, true, "ret did not equal true as expected.", state);
     }
     BENCHMARK_LOGD("DirectoryTest testForceRemoveDirectory001 end.");
