@@ -31,6 +31,7 @@ namespace Utils {
 static const int EPOLL_MAX_EVENS_INIT = 8;
 static const int HALF_OF_MAX_EVENT = 2;
 static const int EPOLL_INVALID_FD = -1;
+static const int INTERRUPTED_SYS_CALL = 4;
 
 EventDemultiplexer::EventDemultiplexer()
     : epollFd_(epoll_create1(EPOLL_CLOEXEC)), maxEvents_(EPOLL_MAX_EVENS_INIT), mutex_(), eventHandlers_()
@@ -111,7 +112,9 @@ void EventDemultiplexer::Polling(int timeout /* ms */)
         return;
     }
     if (nfds == -1) {
-        UTILS_LOGE("epoll_wait failed, errno %{public}d", errno);
+        if (errno != INTERRUPTED_SYS_CALL) {
+            UTILS_LOGE("epoll_wait failed, errno %{public}d", errno);
+        }
         return;
     }
 
