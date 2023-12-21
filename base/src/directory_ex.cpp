@@ -17,6 +17,7 @@
 #include <dirent.h>
 #include <cerrno>
 #include <fcntl.h>
+#include <stack>
 #include "securec.h"
 #include "unistd.h"
 #include "utils_log.h"
@@ -195,63 +196,11 @@ bool ForceCreateDirectory(const string& path)
     return access(path.c_str(), F_OK) == 0;
 }
 
-bool ForceRemoveDirectoryInternal(DIR *dir)
-{
-    bool ret = true;
-    int rootFd = dirfd(dir);
-    if (rootFd < 0) {
-        UTILS_LOGD("Failed to get dirfd, fd: %{public}d: %{public}s ", rootFd, strerror(errno));
-        return false;
-    }
-
-    while (true) {
-        struct dirent *ptr = readdir(dir);
-        if (ptr == nullptr) {
-            break;
-        }
-        const char *name = ptr->d_name;
-
-        // current dir or parent dir
-        if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
-            continue;
-        }
-
-        if (ptr->d_type == DT_DIR) {
-            int subFd = openat(rootFd, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
-            if (subFd < 0) {
-                UTILS_LOGD("Failed in subFd openat: %{public}s ", name);
-                ret = false;
-                continue;
-            }
-            DIR *subDir = fdopendir(subFd);
-            if (subDir == nullptr) {
-                close(subFd);
-                UTILS_LOGD("Failed in fdopendir: %{public}s", strerror(errno));
-                ret = false;
-                continue;
-            }
-            ret = ForceRemoveDirectoryInternal(subDir);
-            closedir(subDir);
-            if (unlinkat(rootFd, name, AT_REMOVEDIR) < 0) {
-                UTILS_LOGD("Couldn't unlinkat subDir %{public}s: %{public}s", name, strerror(errno));
-                ret = false;
-                continue;
-            }
-        } else {
-            if (faccessat(rootFd, name, F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
-                if (unlinkat(rootFd, name, 0) < 0) {
-                    UTILS_LOGD("Couldn't unlinkat subFile %{public}s: %{public}s", name, strerror(errno));
-                    return false;
-                }
-            } else {
-                UTILS_LOGD("Access to file: %{public}s is failed", name);
-                return false;
-            }
-        }
-    }
-
-    return ret;
-}
+struct DirectoryNode {
+    DIR *dir;
+    int dirFd;
+    const char *name;
+};
 
 bool ForceRemoveDirectory(const string& path)
 {
@@ -261,18 +210,77 @@ bool ForceRemoveDirectory(const string& path)
         UTILS_LOGD("Failed to open root dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
         return false;
     }
-    ret = ForceRemoveDirectoryInternal(dir);
+    stack<DIR *> dirStack1;
+    stack<DirectoryNode> dirStack2;
+    dirStack1.push(dir);
+    while (!dirStack1.empty()) {
+        DIR *currentDir = dirStack1.top();
+        dirStack1.pop();
+        DirectoryNode node;
+        int currentFd = dirfd(currentDir);
+        while (true) {
+            struct dirent *ptr = readdir(currentDir);
+            if (ptr == nullptr) {
+                break;
+            }
+            const char *name = ptr->d_name;
+            if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0 ) {
+                continue;
+            }
+            if (ptr->d_type == DT_DIR) {
+                node.dir = currentDir;
+                node.dirFd = currentFd;
+                node.name = name;
+                dirStack2.push(node);
+                int subFd = openat(currentFd, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+                if (subFd < 0) {
+                    UTILS_LOGD("Failed in subFd openat: %{public}s ", name);
+                    ret = false;
+                    break;
+                }
+                DIR *subDir = fdopendir(subFd);
+                if (subDir == nullptr) {
+                    close(subFd);
+                    UTILS_LOGD("Failed in fdopendir: %{public}s", strerror(errno));
+                    ret = false;
+                    break;
+                }
+                dirStack1.push(subDir);
+            } else {
+                if (faccessat(currentFd, name, F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
+                    if (unlinkat(currentFd, name, 0) < 0) {
+                        UTILS_LOGD("Couldn't unlinkat subFile %{public}s: %{public}s", name, strerror(errno));
+                        ret = false;
+                        break;
+                    }
+                } else {
+                        UTILS_LOGD("Access to file: %{public}s is failed", name);
+                        ret = false;
+                        break;
+                }
+            }
+        }
+    }
     if (!ret) {
         UTILS_LOGD("Failed to remove some subfile under path: %{public}s", path.c_str());
+        return ret;
     }
-    closedir(dir);
+    while (!dirStack2.empty()) {
+        DirectoryNode node = dirStack2.top();
+        dirStack2.pop();
+        if (unlinkat(node.dirFd, node.name, AT_REMOVEDIR) < 0) {
+            UTILS_LOGD("Couldn't unlinkat subDir %{public}s: %{public}s", name, strerror(errno));
+            return false;
+        }
+        close(node.dirFd);
+        closedir(node.dir);
+    }
     if (faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
-        if (remove(path.c_str()) != 0) {
+        if (unlinkat(AT_FDCWD, path.c_str(), 0) != 0) {
             UTILS_LOGD("Failed to remove root dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
             return false;
         }
     }
-
     return faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) != 0;
 }
 
