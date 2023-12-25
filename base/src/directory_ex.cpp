@@ -198,7 +198,8 @@ bool ForceCreateDirectory(const string& path)
 
 struct DirectoryNode {
     DIR *dir;
-    int dirFd;
+    int currentFd;
+    int subFd;
     const char *name;
 };
 
@@ -228,10 +229,6 @@ bool ForceRemoveDirectory(const string& path)
                 continue;
             }
             if (ptr->d_type == DT_DIR) {
-                node.dir = currentDir;
-                node.dirFd = currentFd;
-                node.name = name;
-                dirStack2.push(node);
                 int subFd = openat(currentFd, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
                 if (subFd < 0) {
                     UTILS_LOGD("Failed in subFd openat: %{public}s ", name);
@@ -245,6 +242,11 @@ bool ForceRemoveDirectory(const string& path)
                     ret = false;
                     break;
                 }
+                node.dir = subDir;
+                node.subFd = subFd;
+                node.currentFd = currentFd;
+                node.name = name;
+                dirStack2.push(node);
                 dirStack1.push(subDir);
             } else {
                 if (faccessat(currentFd, name, F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
@@ -268,15 +270,15 @@ bool ForceRemoveDirectory(const string& path)
     while (!dirStack2.empty()) {
         DirectoryNode node = dirStack2.top();
         dirStack2.pop();
-        if (unlinkat(node.dirFd, node.name, AT_REMOVEDIR) < 0) {
+        if (unlinkat(node.currentFd, node.name, AT_REMOVEDIR) < 0) {
             UTILS_LOGD("Couldn't unlinkat subDir %{public}s: %{public}s", name, strerror(errno));
             return false;
         }
-        close(node.dirFd);
         closedir(node.dir);
     }
+    closedir(dir);
     if (faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
-        if (unlinkat(AT_FDCWD, path.c_str(), 0) != 0) {
+        if (unlinkat(AT_FDCWD, path.c_str(), AT_REMOVEDIR) != 0) {
             UTILS_LOGD("Failed to remove root dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
             return false;
         }
