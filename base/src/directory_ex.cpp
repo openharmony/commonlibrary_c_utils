@@ -219,6 +219,11 @@ bool ForceRemoveDirectory(const string& path)
         dirStack1.pop();
         DirectoryNode node;
         int currentFd = dirfd(currentDir);
+        if (currentFd < 0) {
+            UTILS_LOGD("Failed in currentFd openat: %{public}s ", name);
+            ret = false;
+            break;
+        }
         while (true) {
             struct dirent *ptr = readdir(currentDir);
             if (ptr == nullptr) {
