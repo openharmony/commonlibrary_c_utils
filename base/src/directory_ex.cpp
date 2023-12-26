@@ -237,14 +237,14 @@ bool ForceRemoveDirectory(const string& path)
                 if (subFd < 0) {
                     UTILS_LOGD("Failed in subFd openat: %{public}s ", name);
                     ret = false;
-                    break;
+                    continue;
                 }
                 DIR *subDir = fdopendir(subFd);
                 if (subDir == nullptr) {
                     close(subFd);
                     UTILS_LOGD("Failed in fdopendir: %{public}s", strerror(errno));
                     ret = false;
-                    break;
+                    continue;
                 }
                 node.dir = subDir;
                 node.currentFd = currentFd;
