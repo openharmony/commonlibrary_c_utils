@@ -199,7 +199,6 @@ bool ForceCreateDirectory(const string& path)
 struct DirectoryNode {
     DIR *dir;
     int currentFd;
-    int subFd;
     const char *name;
 };
 
@@ -248,7 +247,6 @@ bool ForceRemoveDirectory(const string& path)
                     break;
                 }
                 node.dir = subDir;
-                node.subFd = subFd;
                 node.currentFd = currentFd;
                 node.name = name;
                 dirStack2.push(node);
@@ -283,7 +281,7 @@ bool ForceRemoveDirectory(const string& path)
     }
     closedir(dir);
     if (faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
-        if (unlinkat(AT_FDCWD, path.c_str(), AT_REMOVEDIR) != 0) {
+        if (remove(path.c_str()) != 0) {
             UTILS_LOGD("Failed to remove root dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
             return false;
         }
