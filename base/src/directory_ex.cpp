@@ -210,12 +210,12 @@ bool ForceRemoveDirectory(const string& path)
         UTILS_LOGD("Failed to open root dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
         return false;
     }
-    stack<DIR *> dirStack1;
-    stack<DirectoryNode> dirStack2;
-    dirStack1.push(dir);
-    while (!dirStack1.empty()) {
-        DIR *currentDir = dirStack1.top();
-        dirStack1.pop();
+    stack<DIR *> traversStack;
+    stack<DirectoryNode> removeStack;
+    traversStack.push(dir);
+    while (!traversStack.empty()) {
+        DIR *currentDir = traversStack.top();
+        traversStack.pop();
         DirectoryNode node;
         int currentFd = dirfd(currentDir);
         if (currentFd < 0) {
@@ -229,9 +229,12 @@ bool ForceRemoveDirectory(const string& path)
                 break;
             }
             const char *name = ptr->d_name;
-            if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0 ) {
+
+            // current dir or parent dir
+            if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
                 continue;
             }
+            
             if (ptr->d_type == DT_DIR) {
                 int subFd = openat(currentFd, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
                 if (subFd < 0) {
@@ -249,8 +252,8 @@ bool ForceRemoveDirectory(const string& path)
                 node.dir = subDir;
                 node.currentFd = currentFd;
                 node.name = name;
-                dirStack2.push(node);
-                dirStack1.push(subDir);
+                removeStack.push(node);
+                traversStack.push(subDir);
             } else {
                 if (faccessat(currentFd, name, F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
                     if (unlinkat(currentFd, name, 0) < 0) {
@@ -270,12 +273,13 @@ bool ForceRemoveDirectory(const string& path)
         UTILS_LOGD("Failed to remove some subfile under path: %{public}s", path.c_str());
         return ret;
     }
-    while (!dirStack2.empty()) {
-        DirectoryNode node = dirStack2.top();
-        dirStack2.pop();
+    while (!removeStack.empty()) {
+        DirectoryNode node = removeStack.top();
+        removeStack.pop();
         if (unlinkat(node.currentFd, node.name, AT_REMOVEDIR) < 0) {
-            UTILS_LOGD("Couldn't unlinkat subDir %{public}s: %{public}s", name, strerror(errno));
-            return false;
+            closedir(node.dir);
+            UTILS_LOGD("Couldn't unlinkat subDir %{public}s: %{public}s", node.name, strerror(errno));
+            continue;
         }
         closedir(node.dir);
     }
