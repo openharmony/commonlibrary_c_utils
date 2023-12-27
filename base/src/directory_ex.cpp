@@ -221,7 +221,7 @@ bool ForceRemoveDirectory(const string& path)
         if (currentFd < 0) {
             UTILS_LOGD("Failed to get dirfd, fd: %{public}d: %{public}s ", currentFd, strerror(errno));
             ret = false;
-            break;
+            continue;
         }
         while (true) {
             struct dirent *ptr = readdir(currentDir);
