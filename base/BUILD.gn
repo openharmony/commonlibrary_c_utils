@@ -124,7 +124,7 @@ ohos_static_library("utilsbase") {
 }
 
 ohos_static_library("utilsbase_rtti") {
-  visibility = [ "//foundation/multimedia/histreamer/engine/plugin/plugins/source/video_capture:std_video_capture" ]
+  visibility = [ "//foundation/multimedia/media_foundation/engine/plugin/plugins/source/video_capture:std_video_capture" ]
   sources = sources_utils
   all_dependent_configs = [ ":utils_config" ]
   if (current_os != "android" && current_os != "ios") {
