@@ -271,7 +271,6 @@ bool ForceRemoveDirectory(const string& path)
     }
     if (!ret) {
         UTILS_LOGD("Failed to remove some subfile under path: %{public}s", path.c_str());
-        return ret;
     }
     while (!removeStack.empty()) {
         DirectoryNode node = removeStack.top();
