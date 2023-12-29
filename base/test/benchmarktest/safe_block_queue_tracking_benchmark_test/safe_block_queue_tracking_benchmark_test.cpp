@@ -632,11 +632,11 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, testMutilthreadConcurrentGetAndPopI
         AssertEqual(getedOut, THREAD_NUM, "getedOut did not equal THREAD_NUM as expected.", state);
         AssertFalse((demoDatas[0].joinStatus), "step 2: demoDatas[0].joinStatus did not equal false.", state);
         demoDatas[0].joinStatus = false;
-        for (auto& t : threadsout) {
-            t.join();
+        for (auto& outThread : threadsout) {
+            outThread.join();
         }
-        for (auto& t : threadsin) {
-            t.join();
+        for (auto& inThread : threadsin) {
+            inThread.join();
         }
         processSharedQueueTasks(demoDatas[0]);
         joinThread.join();

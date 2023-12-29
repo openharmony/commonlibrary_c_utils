@@ -425,8 +425,8 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentGetAndBlockInfullq
         AssertEqual(getedOut, THREAD_NUM, "getedOut did not equal THREAD_NUM as expected.", state);
         AssertEqual(ungetedOut, static_cast<unsigned int>(0),
             "ungetedOut did not equal static_cast<unsigned int>(0) as expected.", state);
-        for (auto& t : threads) {
-            t.join();
+        for (auto& singleThread : threads) {
+            singleThread.join();
         }
         while (!DemoThreadData::shareQueue.IsEmpty()) {
             demoDatas[0].Get();
@@ -633,11 +633,11 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentGetAndPopInfullque
         GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
         AssertEqual(pushedIn, THREAD_NUM, "pushedIn did not equal THREAD_NUM as expected.", state);
         AssertEqual(getedOut, THREAD_NUM, "getedOut did not equal THREAD_NUM as expected.", state);
-        for (auto& t : threadsout) {
-            t.join();
+        for (auto& outThread : threadsout) {
+            outThread.join();
         }
-        for (auto& t : threadsin) {
-            t.join();
+        for (auto& inThread : threadsin) {
+            inThread.join();
         }
         while (!DemoThreadData::shareQueue.IsEmpty()) {
             demoDatas[0].Get();
