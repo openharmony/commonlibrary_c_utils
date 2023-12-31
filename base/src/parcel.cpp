@@ -1280,9 +1280,32 @@ bool Parcel::WriteVector(const std::vector<T1> &val, bool (Parcel::*Write)(T2))
     return true;
 }
 
+template <typename Type, typename T1, typename T2>
+bool Parcel::WriteFixedAlignVector(const std::vector<T1> &originVal, bool (Parcel::*SpecialWrite)(T2))
+{
+    if (originVal.size() > INT_MAX) {
+        return false;
+    }
+
+    if (!this->WriteInt32(static_cast<int32_t>(originVal.size()))) {
+        return false;
+    }
+    // Use the specified interface to write a single element.
+    for (const auto &v : originVal) {
+        if (!(this->*SpecialWrite)(v)) {
+            return false;
+        }
+    }
+    // The write length of these interfaces is different from the original type.
+    // They need to use the specified write length and calculate the padSize based on this.
+    size_t padSize = this->GetPadSize(originVal.size() * sizeof(Type));
+    this->WritePadBytes(padSize);
+    return true;
+}
+
 bool Parcel::WriteBoolVector(const std::vector<bool> &val)
 {
-    return WriteVector(val, &Parcel::WriteBool);
+    return WriteFixedAlignVector<int32_t>(val, &Parcel::WriteBool);
 }
 
 bool Parcel::WriteInt8Vector(const std::vector<int8_t> &val)
@@ -1292,7 +1315,7 @@ bool Parcel::WriteInt8Vector(const std::vector<int8_t> &val)
 
 bool Parcel::WriteInt16Vector(const std::vector<int16_t> &val)
 {
-    return WriteVector(val, &Parcel::WriteInt16);
+    return WriteFixedAlignVector<int32_t>(val, &Parcel::WriteInt16);
 }
 
 bool Parcel::WriteInt32Vector(const std::vector<int32_t> &val)
