@@ -204,11 +204,12 @@ const std::vector<std::function<void(FuzzedDataProvider*, Parcel&)>> operations 
         size_t bufferSize = dataProvider->ConsumeIntegralInRange<size_t>(1, MAX_BUFFER_SIZE);
         void* buffer = malloc(bufferSize);
         size_t writtenBytes = dataProvider->ConsumeData(buffer, bufferSize);
+        const size_t maxTypeSize = 4; // max type size is 4 bytes.
         if (writtenBytes == 0) {
             free(buffer);
             return;
         }
-        size_t typeSize = dataProvider->ConsumeIntegralInRange<size_t>(0, writtenBytes);
+        size_t typeSize = dataProvider->ConsumeIntegralInRange<size_t>(0, maxTypeSize);
         parcel.WriteBufferAddTerminator(buffer, writtenBytes, typeSize);
         free(buffer);
     },
@@ -486,19 +487,19 @@ const std::vector<std::function<void(FuzzedDataProvider*, Parcel&)>> other_opera
 
     // cannot call randomly with other operations.
     [](FuzzedDataProvider* dataProvider, Parcel& parcel) {
-        FUZZ_LOGI("RewindWrite");
+        FUZZ_LOGI("SetDataCapacity");
         size_t capacity = dataProvider->ConsumeIntegralInRange<size_t>(1, MAX_BUFFER_SIZE);
         parcel.SetDataCapacity(capacity);
     },
 
     [](FuzzedDataProvider* dataProvider, Parcel& parcel) {
-        FUZZ_LOGI("RewindWrite");
+        FUZZ_LOGI("SetDataSize");
         size_t dataSize = dataProvider->ConsumeIntegralInRange<size_t>(1, MAX_BUFFER_SIZE);
         parcel.SetDataSize(dataSize);
     },
 
     [](FuzzedDataProvider* dataProvider, Parcel& parcel) {
-        FUZZ_LOGI("RewindWrite");
+        FUZZ_LOGI("SetMaxCapacity");
         size_t maxCapacity = dataProvider->ConsumeIntegralInRange<size_t>(1, MAX_BUFFER_SIZE);
         parcel.SetMaxCapacity(maxCapacity);
     },

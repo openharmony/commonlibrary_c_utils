@@ -715,6 +715,8 @@ public:
      */
     template <typename T1, typename T2>
     bool WriteVector(const std::vector<T1> &val, bool (Parcel::*Write)(T2));
+    template <typename Type, typename T1, typename T2>
+    bool WriteFixedAlignVector(const std::vector<T1> &originVal, bool (Parcel::*SpecialWrite)(T2));
     bool WriteBoolVector(const std::vector<bool> &val);
     bool WriteInt8Vector(const std::vector<int8_t> &val);
     bool WriteInt16Vector(const std::vector<int16_t> &val);
