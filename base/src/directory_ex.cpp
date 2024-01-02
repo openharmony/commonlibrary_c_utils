@@ -225,7 +225,6 @@ bool ForceRemoveDirectory(const string& path)
         }
         struct dirent *ptr = readdir(currentDir);
         if (ptr == nullptr) {
-            ptr = readdir(currentDir);
             continue;
         }
         do {
@@ -233,6 +232,7 @@ bool ForceRemoveDirectory(const string& path)
 
             // current dir or parent dir
             if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
+                ptr = readdir(currentDir);
                 continue;
             }
             
@@ -241,6 +241,7 @@ bool ForceRemoveDirectory(const string& path)
                 if (subFd < 0) {
                     UTILS_LOGD("Failed in subFd openat: %{public}s ", name);
                     ret = false;
+                    ptr = readdir(currentDir);
                     continue;
                 }
                 DIR *subDir = fdopendir(subFd);
@@ -248,6 +249,7 @@ bool ForceRemoveDirectory(const string& path)
                     close(subFd);
                     UTILS_LOGD("Failed in fdopendir: %{public}s", strerror(errno));
                     ret = false;
+                    ptr = readdir(currentDir);
                     continue;
                 }
                 node.dir = subDir;
