@@ -275,12 +275,11 @@ bool ForceRemoveDirectory(const string& path)
     while (!removeStack.empty()) {
         DirectoryNode node = removeStack.top();
         removeStack.pop();
+        closedir(node.dir);
         if (unlinkat(node.currentFd, node.name, AT_REMOVEDIR) < 0) {
-            closedir(node.dir);
             UTILS_LOGD("Couldn't unlinkat subDir %{public}s: %{public}s", node.name, strerror(errno));
             continue;
         }
-        closedir(node.dir);
     }
     closedir(dir);
     if (faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
