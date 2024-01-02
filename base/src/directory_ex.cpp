@@ -227,7 +227,7 @@ bool ForceRemoveDirectory(const string& path)
         if (ptr == nullptr) {
             continue;
         }
-        do {            
+        do {
             const char *name = ptr->d_name;
 
             // current dir or parent dir
