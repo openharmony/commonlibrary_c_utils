@@ -223,11 +223,11 @@ bool ForceRemoveDirectory(const string& path)
             ret = false;
             continue;
         }
-        while (true) {
-            struct dirent *ptr = readdir(currentDir);
-            if (ptr == nullptr) {
-                break;
-            }
+        struct dirent *ptr = readdir(currentDir);
+        if (ptr == nullptr) {
+            continue;
+        }
+        do {            
             const char *name = ptr->d_name;
 
             // current dir or parent dir
@@ -267,7 +267,8 @@ bool ForceRemoveDirectory(const string& path)
                         break;
                 }
             }
-        }
+            ptr = readdir(currentDir);
+        } while (ptr != nullptr);
     }
     if (!ret) {
         UTILS_LOGD("Failed to remove some subfile under path: %{public}s", path.c_str());
