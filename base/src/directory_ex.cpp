@@ -225,6 +225,7 @@ bool ForceRemoveDirectory(const string& path)
         }
         struct dirent *ptr = readdir(currentDir);
         if (ptr == nullptr) {
+            ptr = readdir(currentDir);
             continue;
         }
         do {
