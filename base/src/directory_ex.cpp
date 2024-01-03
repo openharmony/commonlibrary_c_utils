@@ -232,7 +232,6 @@ bool ForceRemoveDirectory(const string& path)
             if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
                 continue;
             }
-            
             if (currentPtr->d_type == DT_DIR) {
                 int subFd = openat(currentFd, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
                 if (subFd < 0) {
