@@ -224,24 +224,20 @@ bool ForceRemoveDirectory(const string& path)
             continue;
         }
         struct dirent *ptr = readdir(currentDir);
-        if (ptr == nullptr) {
-            continue;
-        }
-        do {
-            const char *name = ptr->d_name;
-
+        while (ptr != nullptr) {
+            struct dirent *currentPtr = ptr;
+            ptr = readdir(currentDir);
+            const char *name = currentPtr->d_name;
             // current dir or parent dir
             if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
-                ptr = readdir(currentDir);
                 continue;
             }
             
-            if (ptr->d_type == DT_DIR) {
+            if (currentPtr->d_type == DT_DIR) {
                 int subFd = openat(currentFd, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
                 if (subFd < 0) {
                     UTILS_LOGD("Failed in subFd openat: %{public}s ", name);
                     ret = false;
-                    ptr = readdir(currentDir);
                     continue;
                 }
                 DIR *subDir = fdopendir(subFd);
@@ -249,7 +245,6 @@ bool ForceRemoveDirectory(const string& path)
                     close(subFd);
                     UTILS_LOGD("Failed in fdopendir: %{public}s", strerror(errno));
                     ret = false;
-                    ptr = readdir(currentDir);
                     continue;
                 }
                 node.dir = subDir;
@@ -269,9 +264,8 @@ bool ForceRemoveDirectory(const string& path)
                         ret = false;
                         break;
                 }
-            }
-            ptr = readdir(currentDir);
-        } while (ptr != nullptr);
+            }   
+        } 
     }
     if (!ret) {
         UTILS_LOGD("Failed to remove some subfile under path: %{public}s", path.c_str());
