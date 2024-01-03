@@ -260,9 +260,9 @@ bool ForceRemoveDirectory(const string& path)
                         break;
                     }
                 } else {
-                        UTILS_LOGD("Access to file: %{public}s is failed", name);
-                        ret = false;
-                        break;
+                    UTILS_LOGD("Access to file: %{public}s is failed", name);
+                    ret = false;
+                    break;
                 }
             }
         }
