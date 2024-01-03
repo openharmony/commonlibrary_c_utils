@@ -264,7 +264,7 @@ bool ForceRemoveDirectory(const string& path)
                         ret = false;
                         break;
                 }
-            }   
+            }
         } 
     }
     if (!ret) {
