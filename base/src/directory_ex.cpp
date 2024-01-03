@@ -265,7 +265,7 @@ bool ForceRemoveDirectory(const string& path)
                         break;
                 }
             }
-        } 
+        }
     }
     if (!ret) {
         UTILS_LOGD("Failed to remove some subfile under path: %{public}s", path.c_str());
