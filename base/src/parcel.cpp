@@ -1305,7 +1305,7 @@ bool Parcel::WriteFixedAlignVector(const std::vector<T1> &originVal, bool (Parce
 
 bool Parcel::WriteBoolVector(const std::vector<bool> &val)
 {
-    return WriteFixedAlignVector<int32_t>(val, &Parcel::WriteBool);
+    return WriteVector(val, &Parcel::WriteBool);
 }
 
 bool Parcel::WriteInt8Vector(const std::vector<int8_t> &val)
@@ -1315,7 +1315,7 @@ bool Parcel::WriteInt8Vector(const std::vector<int8_t> &val)
 
 bool Parcel::WriteInt16Vector(const std::vector<int16_t> &val)
 {
-    return WriteFixedAlignVector<int32_t>(val, &Parcel::WriteInt16);
+    return WriteVector(val, &Parcel::WriteInt16);
 }
 
 bool Parcel::WriteInt32Vector(const std::vector<int32_t> &val)
