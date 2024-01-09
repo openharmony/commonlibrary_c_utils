@@ -251,7 +251,7 @@ bool Parcel::CheckOffsets()
 {
     size_t readPos = readCursor_;
     if ((readPos + sizeof(parcel_flat_binder_object)) > dataSize_) {
-        UTILS_LOGW("CheckOffsets Invalid obj, obj size overflow. objSize:%{public}zu, dataSize:%{public}zu",
+        UTILS_LOGD("CheckOffsets Invalid obj, obj size overflow. objSize:%{public}zu, dataSize:%{public}zu",
             readPos + sizeof(parcel_flat_binder_object), dataSize_);
         return false;
     }
