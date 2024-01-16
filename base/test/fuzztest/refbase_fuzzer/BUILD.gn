@@ -14,7 +14,7 @@ import("//build/test.gni")
 
 ##############################fuzztest##########################################
 ohos_fuzztest("RefbaseFuzzTest") {
-  module_out_path = "utils/base"
+  module_out_path = "c_utils/c_utils"
   fuzz_config_file = "."
   include_dirs = [ "../" ]
   cflags = [
