@@ -51,7 +51,7 @@ uint32_t ThreadPool::Start(int numThreads)
         // Give the name of ThreadPool to threads created by the ThreadPool.
         int err = pthread_setname_np(t.native_handle(), (myName_ + std::to_string(i)).c_str());
         if (err != 0) {
-            UTILS_LOGW("Failed to set name to thread. %{public}s", strerror(err));
+            UTILS_LOGD("Failed to set name to thread. %{public}s", strerror(err));
         }
         threads_.push_back(std::move(t));
     }
