@@ -250,6 +250,62 @@ const std::vector<std::function<void(SingleThreadRefCounts*, WeakRefCounter*&)>>
     },
 };
 
+// Clean up WeakRefCounter
+void CleanUpWeakRefCounter(SingleThreadRefCounts& state, WeakRefCounter* newWeakRef)
+{
+    if (state.weakRefCounterExists) {
+        FUZZ_LOGI("thread = %{public}u, delete newWeakRef", GetThreadId());
+        delete newWeakRef;
+    } else if (state.weakRefCount > 0) {
+        for (; state.weakRefCount > 0; --state.weakRefCount) {
+            bool shouldLock = state.strongCount == 0 && state.weakCount == 0 && state.weakRefCount == 0;
+            if (shouldLock) {
+                g_strongLock.LockWrite();
+            }
+            FUZZ_LOGI("thread = %{public}u, clean up DecWeakRefCount, refState->weakRefCount = %{public}d",
+                GetThreadId(), state.weakRefCount);
+            newWeakRef->DecWeakRefCount(nullptr);
+            if (shouldLock) {
+                g_strongLock.UnLockWrite();
+            }
+        }
+    }
+}
+
+// Clean up any weak references
+void CleanUpWeakCounter(SingleThreadRefCounts& state)
+{
+    for (; state.weakCount > 0; state.weakCount--) {
+        bool shouldLock = state.strongCount == 0 && state.weakCount == 1;
+        if (shouldLock) {
+            g_strongLock.LockWrite();
+        }
+        FUZZ_LOGI("thread = %{public}u, clean up DecWeakRef, refState->weakCount = %{public}d", GetThreadId(),
+            state.weakCount - 1);
+        g_ref->DecWeakRef(nullptr);
+        if (shouldLock) {
+            g_strongLock.UnLockWrite();
+        }
+    }
+}
+
+// Clean up any strong references
+void CleanUpStrongCounter(SingleThreadRefCounts& state)
+{
+    for (; state.strongCount > 0; state.strongCount--) {
+        bool shouldLock = state.strongCount == 1;
+        if (shouldLock) {
+            g_strongLock.LockWrite();
+        }
+        FUZZ_LOGI("thread = %{public}u, clean up DecStrongRef, refState->strongCount = %{public}d", GetThreadId(),
+            state.strongCount - 1);
+        g_ref->DecStrongRef(nullptr);
+        if (shouldLock) {
+            g_strongLock.UnLockWrite();
+        }
+    }
+}
+
 void TestLoop(const std::vector<uint8_t>& fuzzOps)
 {
     SingleThreadRefCounts state;
@@ -282,52 +338,9 @@ void TestLoop(const std::vector<uint8_t>& fuzzOps)
         }
     }
 
-    // Clean up WeakRefCounter
-    if (state.weakRefCounterExists) {
-        FUZZ_LOGI("thread = %{public}u, delete newWeakRef", GetThreadId());
-        delete newWeakRef;
-    } else if (state.weakRefCount > 0) {
-        for (; state.weakRefCount > 0; --state.weakRefCount) {
-            bool shouldLock = state.strongCount == 0 && state.weakCount == 0 && state.weakRefCount == 0;
-            if (shouldLock) {
-                g_strongLock.LockWrite();
-            }
-            FUZZ_LOGI("thread = %{public}u, clean up DecWeakRefCount, refState->weakRefCount = %{public}d",
-                GetThreadId(), state.weakRefCount);
-            newWeakRef->DecWeakRefCount(nullptr);
-            if (shouldLock) {
-                g_strongLock.UnLockWrite();
-            }
-        }
-    }
-
-    // Clean up any weak references
-    for (; state.weakCount > 0; state.weakCount--) {
-        bool shouldLock = state.strongCount == 0 && state.weakCount == 1;
-        if (shouldLock) {
-            g_strongLock.LockWrite();
-        }
-        FUZZ_LOGI("thread = %{public}u, clean up DecWeakRef, refState->weakCount = %{public}d", GetThreadId(),
-            state.weakCount - 1);
-        g_ref->DecWeakRef(nullptr);
-        if (shouldLock) {
-            g_strongLock.UnLockWrite();
-        }
-    }
-
-    // Clean up any strong references
-    for (; state.strongCount > 0; state.strongCount--) {
-        bool shouldLock = state.strongCount == 1;
-        if (shouldLock) {
-            g_strongLock.LockWrite();
-        }
-        FUZZ_LOGI("thread = %{public}u, clean up DecStrongRef, refState->strongCount = %{public}d", GetThreadId(),
-            state.strongCount - 1);
-        g_ref->DecStrongRef(nullptr);
-        if (shouldLock) {
-            g_strongLock.UnLockWrite();
-        }
-    }
+    CleanUpWeakRefCounter(state, newWeakRef);
+    CleanUpWeakCounter(state);
+    CleanUpStrongCounter(state);
 }
 
 void RefbaseTestFunc(const uint8_t* data, size_t size, FuzzedDataProvider* dataProvider)
@@ -353,6 +366,7 @@ void RefbaseTestFunc(const uint8_t* data, size_t size, FuzzedDataProvider* dataP
 
     if (!g_refModified && !g_refDeleted) {
         delete g_ref;
+        g_ref = nullptr;
     }
     FUZZ_LOGI("RefbaseTestFunc end");
 }
