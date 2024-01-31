@@ -24,7 +24,8 @@
 | bool | **IsEmpty**()<br>判断map是否为空。  |
 | void | **Iterate**(const SafeMapCallBack& callback)<br>遍历map中的元素。  |
 | SafeMap& | **operator=**(const SafeMap& rhs) |
-| V& | **operator[]**(const K& key) |
+| V | **ReadVal**(const K& key) <br> 线程安全地读map内元素|
+| void | **ChangeValueByLambda**(const K& key, LambdaCallback callback) <br> 线程安全地操作safemap内元素，操作行为需要自定义|
 | int | **Size**()<br>获取map的size大小。  |
 
 ## 使用示例
@@ -100,4 +101,37 @@ int main()
 
 ```bash
 run -t UT -tp utils -ts UtilsSafeMapTest
+```
+
+3. 接口使用变更
+
+- operator[]接口被废弃：该接口返回类型为引用，可以使用于读写场景，但在写场景情况下，该接口无法进行线程安全防护，因写行为本身基于引用由调用方触发，而非接口内部行为，接口内部持锁无法控制，因此失去线程安全的意义。
+
+```cpp
+SafeMap<int, string> sm;
+// Thread 1:
+sm[1] = "abc";
+
+// Thread 2:
+sm[2] = "def";
+```
+
+- 提供专用的线程安全读接口：ReadVal，该接口只具有safemap的读取能力，但保证线程安全
+
+```cpp
+SafeMap<string, int> sm;
+// Thread 1:
+sm.Insert("A", 1);
+int val = sm.ReadVal("A");
+```
+
+- 针对之前利用operator[]返回引用进行的特殊元素操作行为，提供了接口ChangeValueByLambda进行替换，调用者自定义元素操作函数，可保证在线程安全的情况下操作safemap元素。
+
+```cpp
+SafeMap<string, std::set<int>> sm;
+int val = 1;
+auto fn = [&](std::set<int> &value) -> void { // 自定义callback
+    value.emplace(val);
+}
+sm.ChangeValueByLambda("A", fn);
 ```

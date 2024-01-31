@@ -42,3 +42,18 @@ run -t UT -tp utils -ts UtilsThreadTest
 ```
 
 ## 常见问题
+
+- 主线程对象生命周期终止前，一定要调用NotifyExitSync或NotifyExitAsync终止子线程运行，否则子线程在主线程对象消亡后继续工作，而由于Run函数由主线程对象真正实现，此时主线程对象消亡，Run函数会调用虚基类的纯虚函数而报错。
+
+```cpp
+class RealThread : public Thread { // 使用方继承虚基类并实现Run函数
+    bool Run() override;
+};
+
+{
+    std::unique_ptr<RealThread> test = std::make_unique<RealThread>();
+    ThreadStatus status = test->Start("test_thread_01", THREAD_PROI_LOW, 1024); // 创建并启动子线程对象
+    test->NotifyExitSync(); // 在test对象生命周期结束前，一定要终止子线程的继续运行
+}
+
+```

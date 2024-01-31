@@ -143,7 +143,7 @@ class OHOS::Parcel;
 | bool | **WriteUint8**(uint8_t value) |
 | bool | **WriteUint8Unaligned**(uint8_t value) |
 | bool | **WriteUInt8Vector**(const std::vector< uint8_t >& val) |
-| bool | **WriteUnpadBuffer**(const void* data, size_t size) |
+| bool | **WriteUnpadBuffer**(const void* data, size_t size)<br>基于数据区指针及数据长度写入一段数据，功能与WriteBuffer完全相同，`注:`该接口内部会自动计算并写入对齐长度|
 | template <typename T1 ,typename T2 \> <br>bool | **WriteVector**(const std::vector< T1 >& val, bool(Parcel::*)(T2) Write)<br>向当前parcel写入一个`std::vector`对象。  |
 
 #### Protected Functions
@@ -270,7 +270,91 @@ uint16_t readuint16 = parcel.ReadUint16();
 uint32_t readuint32 = parcel.ReadUint32();
 ```
 
-2. 测试用例编译运行方法
+2. 常见接口限制及使用误区
+
+- ReadBuffer/ReadUnpadBuffer/WriteBuffer/WriteUnpadBuffer
+
+    不推荐ReadBuffer与WriteBuffer/WriteUnpadBuffer对应配合使用，可能因为对齐问题导致ReadBuffer后的Read操作从错误的偏移位置进行读取，进而导致读取异常；
+    ReadUnpadBuffer与WriteBuffer/WriteUnpadBuffer配合使用为正确的使用方式。
+
+```cpp
+// ReadBuffer: 读取buffer，且内部数据区按参数设置长度偏移，不考虑数据对齐
+// ReadUnpadBuffer: 读取buffer，内部数据区基于读取长度自动计算对齐并偏移，将数据对齐考虑在内
+// WriteBuffer: 写入数据，内部数据区会基于写入长度计算对齐长度并自动偏移
+// WriteUnpadBuffer: 与WriteBuffer完全相同
+
+struct Padded {
+    char title;
+    int32_t handle;
+    uint64_t cookie;
+};
+
+struct Unpadded {
+    char tip;
+};
+
+Parcel parcel(nullptr);
+const struct Padded pad = { 'p', 0x34567890, -0x2345678998765432 };
+const struct Unpadded unpad = { 'u' };
+// CASE 1:写入对齐数据
+// 后续代码为单case下不同情况的使用代码，并非真实连续调用
+parcel.WriteBuffer(static_cast<const void *>(&pad), sizeof(struct Padded));
+parcel.WriteInt32(1);
+
+// 错误使用但结果正常：
+parcel.ReadBuffer(sizeof(struct Padded)); // 可以正常读取buffer内容
+parcel.ReadInt32(); // 后续读取内容正常
+
+// 正确使用：
+parcel.ReadUnpadBuffer(sizeof(struct Padded)); // 可以正常读取buffer内容
+parcel.ReadInt32(); // 后续读取内容正常
+
+// CASE 2:写入非对齐数据
+// 后续代码为单case下不同情况的使用代码，并非真实连续调用
+parcel.WriteBuffer(static_cast<const void *>(&unpad), sizeof(struct Unpadded));
+parcel.WriteInt32(1);
+
+// 错误使用，结果异常：
+parcel.ReadBuffer(sizeof(struct Unpadded)); // 可以正常读取buffer内容
+parcel.ReadInt32(); // 后续读取内容异常
+
+// 正确使用：
+parcel.ReadUnpadBuffer(sizeof(struct Unpadded)); // 可以正常读取buffer内容
+parcel.ReadInt32(); // 后续读取内容正常
+```
+
+- 基础类型的Read接口，如ReadInt32，ReadFloat等读取失败
+    
+    当前在基础Read接口内加入了安全校验机制，当发现基础类型的读操作在读取Object对象数据内容时，该行为会被拦截
+
+```cpp
+// 伪代码：
+
+Parcel parcel(nullptr);
+Parcelable object;
+parcel.WriteRemoteObject(object);
+parcel.ReadInt32(); // False
+
+```
+
+- 使用WriteBuffer写入字符串，忽略结束符导致读取字符串长度异常
+
+    WriteBuffer接口并非专门处理字符串写入的接口，因此错误传递写入长度，可能会导致字符串的结束符丢失
+
+```cpp
+// 伪代码：
+
+string str = "abcdefg";
+Parcel parcel(nullptr);
+char *strPtr = str.c_str();
+auto len = str.length();
+parcel.WriteBuffer(strPtr, len);
+
+parcel.ReadBuffer(len); // 读取字符串长度异常
+
+```
+
+3. 测试用例编译运行方法
 
 - 测试用例代码参见 base/test/unittest/common/utils_parcel_test.cpp
 
