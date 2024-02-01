@@ -42,3 +42,40 @@ run -t UT -tp utils -ts UtilsTimerTest
 1. Shutdown接口的参数决定了Timer中的线程的阻塞与否，默认阻塞（true），若为false则非阻塞。非阻塞选项 可能会导致线程问题，因此不推荐。如果一定要使用非阻塞选项，请自行保证线程中对象的生命周期。
 
 1. 如果定时任务中发生系统休眠，在休眠阶段Timer无法自唤醒，不会执行计数操作，因此会导致计时结果异常。
+
+## 典型案例
+1. Timer的unregister存在临界情况，刚好在事件响应的时间点触发对应事件的删除，可能会导致一次额外的回调响应
+
+```cpp
+// 伪代码
+Timer timer("timer_test");
+CallBack func;
+timer.Setup();
+uint32_t timerId = timer.Register(func, 1000); // 定时一分钟响应回调，假设定时生效时间为0:00
+......
+/*
+刚好在1:00触发事件删除，此时为临界状态，轮询线程如果提前于删除行为获取到响应事件，则会在unregister后发现响应事件被额外触发了一次，如果轮询线程响应晚于删除行为，则轮询线程不会感知该事件响应，unregister后对应事件不会额外触发一次
+*/
+timer.Unregister(timerId);
+
+```
+
+2. 出于节省资源，提高性能的考虑，相同interval事件会复用timerFd，这可能导致部分事件响应时间与预期存在偏差，如果开发者对该响应时间有强要求，建议设置interval略带偏差(如1ms)
+
+```cpp
+// 伪代码
+Timer timer("timer_test");
+CallBack func1;
+CallBack func2;
+timer.Setup();
+
+// 假设起始定时器生效时间为0:00, 则func1的后续响应时间为1:00, 2:00, 3:00, 4:00......
+uint32_t timerId_1 = timer.Register(func1, 1000); // 定时一分钟循环响应回调
+
+// 假设func2的定时起始时间为0:30, 原期望的后续响应为1:30, 2:30, 3:30, 4:30......
+// 但因timer fd复用，与func2共用timerfd，后续时间响应也与func1相同，即为1:00, 2:00, 3:00, 4:00......
+uint32_t timerId_2 = timer.Register(func2, 1000); // 定时一分钟循环响应回调，timerfd复用func1的timerfd
+
+// 假设func2的定时起始时间为0:30, 则func1的后续响应时间约(1ms偏差)为1:30, 2:30, 3:30, 4:30......
+uint32_t timerId_3 = timer.Register(func2, 1001); // 定时一分钟循环响应回调，timerfd不复用func1的timerfd
+```
