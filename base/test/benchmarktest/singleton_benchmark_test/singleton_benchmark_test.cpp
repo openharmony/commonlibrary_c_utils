@@ -18,8 +18,8 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
-#include "../log.h"
-#include "../assert.h"
+#include "benchmark_log.h"
+#include "benchmark_assert.h"
 using namespace std;
 
 namespace OHOS {

@@ -35,8 +35,8 @@
 #include "io_event_handler.h"
 #include "io_event_reactor.h"
 #include <sys/time.h>
-#include "../log.h"
-#include "../assert.h"
+#include "benchmark_log.h"
+#include "benchmark_assert.h"
 using namespace OHOS::Utils;
 
 namespace OHOS {

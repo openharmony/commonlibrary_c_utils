@@ -20,8 +20,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#include "../log.h"
-#include "../assert.h"
+#include "benchmark_log.h"
+#include "benchmark_assert.h"
 using namespace std;
 
 namespace OHOS {

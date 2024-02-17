@@ -20,8 +20,8 @@
 #include <sys/prctl.h>
 #include <unistd.h>
 #include <sys/resource.h>
-#include "../log.h"
-#include "../assert.h"
+#include "benchmark_log.h"
+#include "benchmark_assert.h"
 using namespace std;
 
 namespace OHOS {

@@ -17,7 +17,7 @@ module_output_path = "commonlibrary_c_utils/parcel"
 
 ohos_benchmarktest("ParcelTest") {
   module_out_path = module_output_path
-
+  include_dirs = [ "../" ]
   cflags = [
     "-g",
     "-O0",
