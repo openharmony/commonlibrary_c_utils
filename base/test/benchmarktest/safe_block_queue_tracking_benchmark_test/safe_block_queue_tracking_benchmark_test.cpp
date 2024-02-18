@@ -20,8 +20,8 @@
 #include <thread>
 #include <iostream>
 #include <chrono>
-#include "../log.h"
-#include "../assert.h"
+#include "benchmark_log.h"
+#include "benchmark_assert.h"
 using namespace std;
 
 namespace OHOS {

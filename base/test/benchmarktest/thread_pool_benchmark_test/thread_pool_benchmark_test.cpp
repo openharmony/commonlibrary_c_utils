@@ -18,8 +18,8 @@
 #include <cstdio>
 #include <sys/prctl.h>
 #include "thread_pool.h"
-#include "../log.h"
-#include "../assert.h"
+#include "benchmark_log.h"
+#include "benchmark_assert.h"
 #include <unistd.h>
 
 namespace OHOS {

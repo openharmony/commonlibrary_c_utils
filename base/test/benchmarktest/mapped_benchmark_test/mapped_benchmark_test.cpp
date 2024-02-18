@@ -23,8 +23,8 @@
 #include "directory_ex.h"
 #include "errors.h"
 #include "file_ex.h"
-#include "../log.h"
-#include "../assert.h"
+#include "benchmark_log.h"
+#include "benchmark_assert.h"
 using namespace OHOS::Utils;
 
 namespace OHOS {

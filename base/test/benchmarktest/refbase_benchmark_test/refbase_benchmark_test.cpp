@@ -24,8 +24,8 @@
 #include <mutex>
 #include "refbase.h"
 #include "singleton.h"
-#include "../log.h"
-#include "../assert.h"
+#include "benchmark_log.h"
+#include "benchmark_assert.h"
 #include <future>
 using namespace std;
 
