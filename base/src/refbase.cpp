@@ -21,19 +21,6 @@
 
 namespace OHOS {
 
-void DebugRefBase()
-{
-#ifdef DEBUG_REFBASE
-    if (enableTrack) {
-#ifdef PRINT_TRACK_AT_ONCE
-        PrintRefs(objectId);
-#else
-        GetNewTrace(objectId);
-#endif
-    }
-#endif
-}
-
 WeakRefCounter::WeakRefCounter(RefCounter *counter, void *cookie)
     : atomicWeak_(0), refCounter_(counter), cookie_(cookie)
 {
@@ -172,6 +159,19 @@ void RefCounter::EnableTracker()
 #endif
 #endif
 
+void RefCounter::DebugRefBase([[maybe_unused]]const void* objectId)
+{
+#ifdef DEBUG_REFBASE
+    if (enableTrack) {
+#ifdef PRINT_TRACK_AT_ONCE
+        PrintRefs(objectId);
+#else
+        GetNewTrace(objectId);
+#endif
+    }
+#endif
+}
+
 RefCounter::RefCounter()
     : atomicStrong_(INITIAL_PRIMARY_VALUE), atomicWeak_(0), atomicRefCount_(0), atomicFlags_(0), atomicAttempt_(0)
 {
@@ -226,7 +226,7 @@ RefCounter::~RefCounter()
 
 int RefCounter::IncStrongRefCount(const void* objectId)
 {
-    DebugRefBase();
+    DebugRefBase(objectId);
     int curCount = atomicStrong_.load(std::memory_order_relaxed);
     if (curCount >= 0) {
         curCount = atomicStrong_.fetch_add(1, std::memory_order_relaxed);
@@ -240,7 +240,7 @@ int RefCounter::IncStrongRefCount(const void* objectId)
 
 int RefCounter::DecStrongRefCount(const void* objectId)
 {
-    DebugRefBase();
+    DebugRefBase(objectId);
     int curCount = GetStrongRefCount();
     if (curCount == INITIAL_PRIMARY_VALUE) {
         // unexpected case: there had never a strong reference.
@@ -261,13 +261,13 @@ int RefCounter::GetStrongRefCount()
 
 int RefCounter::IncWeakRefCount(const void* objectId)
 {
-    DebugRefBase();
+    DebugRefBase(objectId);
     return atomicWeak_.fetch_add(1, std::memory_order_relaxed);
 }
 
 int RefCounter::DecWeakRefCount(const void* objectId)
 {
-    DebugRefBase();
+    DebugRefBase(objectId);
     int curCount = GetWeakRefCount();
     if (curCount > 0) {
         curCount = atomicWeak_.fetch_sub(1, std::memory_order_release);
