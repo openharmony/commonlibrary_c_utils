@@ -243,6 +243,8 @@ public:
 #endif
 
 private:
+    void DebugRefBase(const void *objectId);
+
     std::atomic<int> atomicStrong_; // = (num of sptr) or Initial-value
     std::atomic<int> atomicWeak_; // = (num of sptr)+(num of WeakRefCounter)
     std::atomic<int> atomicRefCount_; // = (num of WeakRefCounter) + 1
