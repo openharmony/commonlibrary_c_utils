@@ -99,8 +99,11 @@ ohos_static_library("utilsbase") {
   if (current_os == "ios") {
     sources = sources_utils_ios
     configs = [ ":utils_coverage_config" ]
+    public_configs = [ ":utils_config" ]
     all_dependent_configs = [ ":utils_config" ]
-    public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+
+    #public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+    public_external_deps = [ "bounds_checking_function:libsec_static" ]
     defines = [ "IOS_PLATFORM" ]
 
     subsystem_name = "commonlibrary"
@@ -109,6 +112,7 @@ ohos_static_library("utilsbase") {
     sources = sources_utils
     configs = [ ":utils_coverage_config" ]
     all_dependent_configs = [ ":utils_config" ]
+    public_configs = [ ":utils_config" ]
     if (current_os != "android" && current_os != "ios") {
       defines = [ "CONFIG_HILOG" ]
     }
@@ -116,8 +120,9 @@ ohos_static_library("utilsbase") {
       configs += [ ":debug_log_enabled" ]
     }
     external_deps = [ "hilog:libhilog_base" ]
-    public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
 
+    #public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+    public_external_deps = [ "bounds_checking_function:libsec_static" ]
     subsystem_name = "commonlibrary"
     part_name = "c_utils"
   }
@@ -127,11 +132,14 @@ ohos_static_library("utilsbase_rtti") {
   visibility = [ "//foundation/multimedia/media_foundation/engine/plugin/plugins/source/video_capture:std_video_capture" ]
   sources = sources_utils
   all_dependent_configs = [ ":utils_config" ]
+  public_configs = [ ":utils_config" ]
   if (current_os != "android" && current_os != "ios") {
     defines = [ "CONFIG_HILOG" ]
   }
   external_deps = [ "hilog:libhilog_base" ]
-  public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+
+  #public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+  public_external_deps = [ "bounds_checking_function:libsec_static" ]
   remove_configs = [ "//build/config/compiler:no_rtti" ]
   cflags = [ "-frtti" ]
   subsystem_name = "commonlibrary"
@@ -148,7 +156,7 @@ ohos_shared_library("utils") {
     sources = sources_utils_ios
     configs = [ ":utils_coverage_config" ]
     all_dependent_configs = [ ":utils_config" ]
-    public_deps = [ "//third_party/bounds_checking_function:libsec_shared" ]
+    public_external_deps = [ "bounds_checking_function:libsec_shared" ]
     defines = [ "IOS_PLATFORM" ]
 
     subsystem_name = "commonlibrary"
@@ -185,8 +193,7 @@ ohos_shared_library("utils") {
       configs += [ ":debug_log_enabled" ]
     }
     external_deps = [ "hilog:libhilog_base" ]
-    public_deps = [ "//third_party/bounds_checking_function:libsec_shared" ]
-
+    public_external_deps = [ "bounds_checking_function:libsec_shared" ]
     subsystem_name = "commonlibrary"
     part_name = "c_utils"
     install_images = [
@@ -226,8 +233,7 @@ if (host_os == "linux" && !is_arkui_x) {
       ":cxx_rust_gen",
       "//third_party/rust/crates/cxx:cxx_cppdeps",
     ]
-    public_deps = [ "//third_party/bounds_checking_function:libsec_shared" ]
-
+    public_external_deps = [ "bounds_checking_function:libsec_shared" ]
     subsystem_name = "commonlibrary"
     part_name = "c_utils"
   }
