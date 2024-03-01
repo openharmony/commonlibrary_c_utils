@@ -23,7 +23,7 @@ use std::fs::File;
 #[test]
 fn test_get_current_proc_full_file_name_001()
 {
-    let str_base_name = "/system/bin/rust_utils_directory_test";
+    let str_base_name = "/data/test/rust_utils_directory_test";
     let str_filename = directory_ex::ffi::RustGetCurrentProcFullFileName();
     assert_eq!(str_base_name, str_filename);
 }
@@ -31,7 +31,7 @@ fn test_get_current_proc_full_file_name_001()
 #[test]
 fn test_get_current_proc_path_001()
 {
-    let str_path_name = "/system/bin/";
+    let str_path_name = "/data/test/";
     let str_cur_path_name = directory_ex::ffi::RustGetCurrentProcPath();
     assert_eq!(str_path_name, str_cur_path_name);
 }
@@ -39,7 +39,7 @@ fn test_get_current_proc_path_001()
 #[test]
 fn test_extract_file_path_001()
 {
-    let str_file_path = "/system/bin/";
+    let str_file_path = "/data/test/";
     let str_path = directory_ex::ffi::RustExtractFilePath(&directory_ex::ffi::RustGetCurrentProcFullFileName());
     assert_eq!(str_file_path, str_path);
 }
@@ -239,7 +239,7 @@ fn test_path_to_real_path_003()
     let mut realpath = String::new();
     let ret = directory_ex::ffi::RustPathToRealPath(&path, &mut realpath);
     assert!(ret);
-    assert_eq!("/system/bin", realpath);
+    assert_eq!("/data/test", realpath);
 }
 
 #[test]
