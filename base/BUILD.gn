@@ -102,7 +102,6 @@ ohos_static_library("utilsbase") {
     public_configs = [ ":utils_config" ]
     all_dependent_configs = [ ":utils_config" ]
 
-    #public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
     public_external_deps = [ "bounds_checking_function:libsec_static" ]
     defines = [ "IOS_PLATFORM" ]
 
@@ -121,7 +120,6 @@ ohos_static_library("utilsbase") {
     }
     external_deps = [ "hilog:libhilog_base" ]
 
-    #public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
     public_external_deps = [ "bounds_checking_function:libsec_static" ]
     subsystem_name = "commonlibrary"
     part_name = "c_utils"
@@ -138,7 +136,6 @@ ohos_static_library("utilsbase_rtti") {
   }
   external_deps = [ "hilog:libhilog_base" ]
 
-  #public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
   public_external_deps = [ "bounds_checking_function:libsec_static" ]
   remove_configs = [ "//build/config/compiler:no_rtti" ]
   cflags = [ "-frtti" ]
