@@ -17,6 +17,7 @@
 #include <dirent.h>
 #include <cerrno>
 #include <fcntl.h>
+#include <stack>
 #include "securec.h"
 #include "unistd.h"
 #include "utils_log.h"
@@ -195,47 +196,103 @@ bool ForceCreateDirectory(const string& path)
     return access(path.c_str(), F_OK) == 0;
 }
 
+struct DirectoryNode {
+    DIR *dir;
+    int currentFd;
+    char name[256]; // the same max char length with d_name in struct dirent
+};
+
 bool ForceRemoveDirectory(const string& path)
 {
-    string subPath;
     bool ret = true;
+    int strRet;
     DIR *dir = opendir(path.c_str());
     if (dir == nullptr) {
+        UTILS_LOGD("Failed to open root dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
         return false;
     }
-
-    while (true) {
-        struct dirent *ptr = readdir(dir);
-        if (ptr == nullptr) {
-            break;
-        }
-
-        // current dir or parent dir
-        if (strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0) {
+    stack<DIR *> traversStack;
+    stack<DirectoryNode> removeStack;
+    traversStack.push(dir);
+    while (!traversStack.empty()) {
+        DIR *currentDir = traversStack.top();
+        traversStack.pop();
+        DirectoryNode node;
+        int currentFd = dirfd(currentDir);
+        if (currentFd < 0) {
+            UTILS_LOGD("Failed to get dirfd, fd: %{public}d: %{public}s ", currentFd, strerror(errno));
+            ret = false;
             continue;
         }
-        subPath = IncludeTrailingPathDelimiter(path) + string(ptr->d_name);
-        if (ptr->d_type == DT_DIR) {
-            ret = ForceRemoveDirectory(subPath);
-        } else {
-            if (faccessat(AT_FDCWD, subPath.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
-                if (remove(subPath.c_str()) != 0) {
-                    closedir(dir);
-                    return false;
+
+        while (true) {
+            struct dirent *ptr = readdir(currentDir);
+            if (ptr == nullptr) {
+                break;
+            }
+            const char *name = ptr->d_name;
+            // current dir or parent dir
+            if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
+                continue;
+            }
+
+            if (ptr->d_type == DT_DIR) {
+                int subFd = openat(currentFd, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+                if (subFd < 0) {
+                    UTILS_LOGD("Failed in subFd openat: %{public}s ", name);
+                    ret = false;
+                    continue;
+                }
+                DIR *subDir = fdopendir(subFd);
+                if (subDir == nullptr) {
+                    close(subFd);
+                    UTILS_LOGD("Failed in fdopendir: %{public}s", strerror(errno));
+                    ret = false;
+                    continue;
+                }
+                node.dir = subDir;
+                node.currentFd = currentFd;
+                strRet = strcpy_s(node.name, sizeof(node.name), name);
+                if (strRet != EOK) {
+                    UTILS_LOGE("Failed to exec strcpy_s, name= %{public}s, strRet= %{public}d", name, strRet);
+                }
+                removeStack.push(node);
+                traversStack.push(subDir);
+            } else {
+                if (faccessat(currentFd, name, F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
+                    if (unlinkat(currentFd, name, 0) < 0) {
+                        UTILS_LOGD("Couldn't unlinkat subFile %{public}s: %{public}s", name, strerror(errno));
+                        ret = false;
+                        break;
+                    }
+                } else {
+                    UTILS_LOGD("Access to file: %{public}s is failed", name);
+                    ret = false;
+                    break;
                 }
             }
         }
     }
+    if (!ret) {
+        UTILS_LOGD("Failed to remove some subfile under path: %{public}s", path.c_str());
+    }
+    while (!removeStack.empty()) {
+        DirectoryNode node = removeStack.top();
+        removeStack.pop();
+        closedir(node.dir);
+        if (unlinkat(node.currentFd, node.name, AT_REMOVEDIR) < 0) {
+            UTILS_LOGD("Couldn't unlinkat subDir %{public}s: %{public}s", node.name, strerror(errno));
+            continue;
+        }
+    }
     closedir(dir);
-
-    string currentPath = ExcludeTrailingPathDelimiter(path);
-    if (faccessat(AT_FDCWD, currentPath.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
-        if (remove(currentPath.c_str()) != 0) {
+    if (faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
+        if (remove(path.c_str()) != 0) {
+            UTILS_LOGD("Failed to remove root dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
             return false;
         }
     }
-
-    return ret && (faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) != 0);
+    return faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) != 0;
 }
 
 bool RemoveFile(const string& fileName)
