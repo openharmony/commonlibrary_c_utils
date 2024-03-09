@@ -63,19 +63,19 @@ HWTEST_F(UtilsSafeMap, testUtilsoperator001, TestSize.Level0)
     demoData.Insert("A", 1);
     ASSERT_FALSE(demoData.IsEmpty());
     ASSERT_EQ(demoData.Size(), 1);
-    ASSERT_EQ(demoData["A"], 1);
+    ASSERT_EQ(demoData.ReadVal("A"), 1);
 
     SafeMap<string, int> newdemo = demoData;
-    ASSERT_EQ(newdemo["A"], 1);
+    ASSERT_EQ(newdemo.ReadVal("A"), 1);
 
     int tar = -1;
-    newdemo["B"] = 6;
+    newdemo.Insert("B", 6);
     ASSERT_TRUE(newdemo.Find("B", tar));
     ASSERT_EQ(6, tar);
 
     SafeMap<string, int> newdemo2;
     newdemo2 = newdemo;
-    ASSERT_EQ(newdemo2["A"], 1);
+    ASSERT_EQ(newdemo2.ReadVal("A"), 1);
 }
 
 /*
@@ -216,10 +216,10 @@ HWTEST_F(UtilsSafeMap, testUtilsNormalFeatureIterate001, TestSize.Level0)
     demoData.Iterate(callback);
 
     ASSERT_EQ(demoData.Size(), 4);
-    ASSERT_EQ(demoData["A"], 2);
-    ASSERT_EQ(demoData["B"], 3);
-    ASSERT_EQ(demoData["C"], 4);
-    ASSERT_EQ(demoData["D"], 5);
+    ASSERT_EQ(demoData.ReadVal("A"), 2);
+    ASSERT_EQ(demoData.ReadVal("B"), 3);
+    ASSERT_EQ(demoData.ReadVal("C"), 4);
+    ASSERT_EQ(demoData.ReadVal("D"), 5);
 }
 
 /*
@@ -261,7 +261,7 @@ HWTEST_F(UtilsSafeMap, testUtilsConcurrentIterate001, TestSize.Level0)
         }
 
         for (int i = 0; i < DATA_NUM - 1; i++) {
-            ASSERT_EQ(demoData["A" + std::to_string(i)], demoData["A" + std::to_string(i + 1)]);
+            ASSERT_EQ(demoData.ReadVal("A" + std::to_string(i)), demoData.ReadVal("A" + std::to_string(i + 1)));
         }
     });
 }
