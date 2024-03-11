@@ -149,29 +149,52 @@ string IncludeTrailingPathDelimiter(const std::string& path)
 
 void GetDirFiles(const string& path, vector<string>& files)
 {
-    string pathStringWithDelimiter;
     DIR *dir = opendir(path.c_str());
     if (dir == nullptr) {
+        UTILS_LOGD("Failed to open root dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
         return;
     }
 
-    while (true) {
-        struct dirent *ptr = readdir(dir);
+    string currentPath = ExcludeTrailingPathDelimiter(path);
+    stack<DIR *> traverseStack;
+    traverseStack.push(dir);
+    while (!traverseStack.empty()) {
+        DIR *topNode = traverseStack.top();
+        dirent *ptr = readdir(topNode);
         if (ptr == nullptr) {
-            break;
+            closedir(topNode);
+            traverseStack.pop();
+            currentPath.erase(currentPath.find_last_of("/"));
+            continue;
         }
 
-        // current dir or parent dir
-        if ((strcmp(ptr->d_name, ".") == 0) || (strcmp(ptr->d_name, "..") == 0)) {
+        string name = ptr->d_name;
+        if (name == "." || name == "..") {
             continue;
-        } else if (ptr->d_type == DT_DIR) {
-            pathStringWithDelimiter = IncludeTrailingPathDelimiter(path) + string(ptr->d_name);
-            GetDirFiles(pathStringWithDelimiter, files);
+        }
+        if (ptr->d_type == DT_DIR) {
+            int currentFd = dirfd(topNode);
+            if (currentFd < 0) {
+                UTILS_LOGD("Failed to get dirfd, fd: %{public}d: %{public}s ", currentFd, strerror(errno));
+                continue;
+            }
+            int subFd = openat(currentFd, name.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+            if (subFd < 0) {
+                UTILS_LOGD("Failed in subFd openat: %{public}s ", name.c_str());
+                continue;
+            }
+            DIR *subDir = fdopendir(subFd);
+            if (subDir == nullptr) {
+                close(subFd);
+                UTILS_LOGD("Failed in fdopendir: %{public}s", strerror(errno));
+                continue;
+            }
+            traverseStack.push(subDir);
+            currentPath = IncludeTrailingPathDelimiter(currentPath) + name;
         } else {
-            files.push_back(IncludeTrailingPathDelimiter(path) + string(ptr->d_name));
+            files.push_back(IncludeTrailingPathDelimiter(currentPath) + name);
         }
     }
-    closedir(dir);
 }
 
 bool ForceCreateDirectory(const string& path)

@@ -19,6 +19,8 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
+#include <vector>
 
 using namespace testing::ext;
 using namespace std;
@@ -139,25 +141,157 @@ HWTEST_F(UtilsDirectoryTest, testIncludeTrailingPathDelimiter001, TestSize.Level
 
 /*
  * @tc.name: testGetDirFiles001
- * @tc.desc: directory unit test
+ * @tc.desc: test GetDirFiles works on multi-level directory
  */
 HWTEST_F(UtilsDirectoryTest, testGetDirFiles001, TestSize.Level0)
 {
-    string resultfile[2] = { "/data/test/TestFile.txt", "/data/test/UtilsDirectoryTest" };
-    // prepare test data
-    ofstream file(resultfile[0], fstream::out);
+    string parent_path = "/data/test_dir";
 
-    string dirpath = "/data/";
-    vector<string> filenames;
-    GetDirFiles(dirpath, filenames);
-    auto pos = find(filenames.begin(), filenames.end(), resultfile[0]);
-    EXPECT_NE(pos, filenames.end());
+    ForceCreateDirectory(parent_path);
 
-    pos = find(filenames.begin(), filenames.end(), resultfile[1]);
-    EXPECT_NE(pos, filenames.end());
+    string dirs[6] = {
+        "/data/test_dir/level1_1",
+        "/data/test_dir/level1_2",
+        "/data/test_dir/level1_2/level2_1",
+        "/data/test_dir/level1_2/level2_2",
+        "/data/test_dir/level1_2/level2_2/level3_1",
+        "/data/test_dir/level1_3",
+    };
 
-    // delete test data
-    RemoveFile(resultfile[0]);
+    string resultfiles[9] = {
+        "/data/test_dir/level1_1/test_file",
+        "/data/test_dir/level1_2/level2_2/level3_1/test_file_1",
+        "/data/test_dir/level1_2/level2_2/level3_1/test_file_2",
+        "/data/test_dir/level1_2/level2_2/test_file_1",
+        "/data/test_dir/level1_2/level2_2/test_file_2",
+        "/data/test_dir/level1_2/level2_2/test_file_3",
+        "/data/test_dir/level1_2/level2_2/test_file_4",
+        "/data/test_dir/level1_2/test_file",
+        "/data/test_dir/level1_3/test_file",
+    };
+
+    for (auto &path : dirs) {
+        ForceCreateDirectory(path);
+    }
+
+    for (auto &filepath : resultfiles) {
+        ofstream(filepath, fstream::out);
+    }
+
+    vector<string> files;
+
+    GetDirFiles(parent_path, files);
+
+    for (auto &filepath : resultfiles) {
+        auto pos = find(files.begin(), files.end(), filepath);
+        EXPECT_NE(pos, files.end());
+    }
+
+    ForceRemoveDirectory(parent_path);
+}
+
+/*
+ * @tc.name: testGetDirFiles002
+ * @tc.desc: test GetDirFiles works on deeply nested directory and handles very long path
+ */
+HWTEST_F(UtilsDirectoryTest, testGetDirFiles002, TestSize.Level0)
+{
+    string parentPath = "/data/test_dir/";
+    string veryLongPath = "/data/test_dir/";
+
+    int length = 10000;
+
+    for (int i = 0; i < length; i++) {
+        veryLongPath += "0";
+        veryLongPath += "/";
+    }
+
+    EXPECT_EQ(mkdir("/data/test_dir", S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH), 0);
+    chdir(parentPath.c_str());
+
+    for (int i = 0; i < length; i++) {
+        EXPECT_EQ(mkdir("./0", S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH), 0);
+        EXPECT_EQ(chdir("./0"), 0);
+    }
+
+    ofstream file("./test_file");
+    file.close();
+    EXPECT_EQ(chdir("/data/test"), 0);
+
+    auto files = vector<string>();
+
+    GetDirFiles(parentPath, files);
+
+    EXPECT_EQ(files.size(), 1);
+    EXPECT_EQ((veryLongPath + "test_file").length(), files[0].length());
+    EXPECT_EQ(veryLongPath + "test_file", files[0]);
+
+    ForceRemoveDirectory(parentPath);
+}
+
+/*
+ * @tc.name: testGetDirFiles003
+ * @tc.desc: test GetDirFiles works on symlink
+ */
+HWTEST_F(UtilsDirectoryTest, testGetDirFiles003, TestSize.Level0)
+{
+    // create a test dir
+    string original_data_path = "/data/original";
+    EXPECT_EQ(ForceCreateDirectory(original_data_path), true);
+
+    string original_file_path = "/data/original/original_file";
+    string original_directory_path = "/data/original/original_directory";
+
+    ofstream(original_file_path, fstream::out);
+
+    ForceCreateDirectory(original_directory_path);
+
+    string test_data_dir = "/data/test_dir";
+
+    EXPECT_EQ(ForceCreateDirectory(test_data_dir), true);
+
+    // test symlink to directory outside the target directory
+    string linktodir = IncludeTrailingPathDelimiter(test_data_dir) + "symlink_dir";
+
+    EXPECT_EQ(symlink(original_directory_path.c_str(), linktodir.c_str()), 0);
+
+    vector<string> dir_result;
+    GetDirFiles(test_data_dir, dir_result);
+
+    EXPECT_EQ(dir_result.size(), 1);
+    EXPECT_EQ(dir_result[0], linktodir);
+
+    EXPECT_EQ(ForceRemoveDirectory(linktodir), true);
+
+    // test symlink to file outside the target directory
+    string linktofile = IncludeTrailingPathDelimiter(test_data_dir) + "symlink_file";
+    EXPECT_EQ(symlink(original_file_path.c_str(), linktofile.c_str()), 0);
+
+    vector<string> file_result;
+    GetDirFiles(test_data_dir, file_result);
+    EXPECT_EQ(file_result.size(), 1);
+    EXPECT_EQ(file_result[0], linktofile);
+
+    EXPECT_EQ(RemoveFile(linktofile), true);
+
+    // test symlink of files in the same directory
+    string source_file = IncludeTrailingPathDelimiter(test_data_dir) + "source";
+    string symlink_file = IncludeTrailingPathDelimiter(test_data_dir) + "symlink_file";
+
+    ofstream(source_file, fstream::out);
+    EXPECT_EQ(symlink(source_file.c_str(), symlink_file.c_str()), 0);
+
+    vector<string> internal_files;
+    GetDirFiles(test_data_dir, internal_files);
+
+    EXPECT_NE(find(internal_files.begin(), internal_files.end(), source_file), internal_files.end());
+    EXPECT_NE(find(internal_files.begin(), internal_files.end(), symlink_file), internal_files.end());
+
+    EXPECT_EQ(RemoveFile(source_file), true);
+    EXPECT_EQ(RemoveFile(symlink_file), true);
+
+    ForceRemoveDirectory(original_data_path);
+    ForceRemoveDirectory(test_data_dir);
 }
 
 /*
