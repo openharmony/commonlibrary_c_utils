@@ -118,14 +118,9 @@ BENCHMARK_F(BenchmarkObserverTest, test_Observer)(benchmark::State& state)
     BENCHMARK_LOGD("ObserverTest test_Observer end.");
 }
 
-BENCHMARK_F(BenchmarkObserverTest, test_ObserverNotify)(benchmark::State& state)
+void AddObservers(BookList& bookList, shared_ptr<BookObserver>& bookObserver1, shared_ptr<BookObserver>& bookObserver2,
+    shared_ptr<BookObserver>& bookObserver3, benchmark::State& state)
 {
-    BENCHMARK_LOGD("ObserverTest test_ObserverNotify start.");
-    while (state.KeepRunning()) {
-        BookList bookList;
-        shared_ptr<BookObserver> bookObserver1 = make_shared<BookObserver>();
-        shared_ptr<BookObserver> bookObserver2 = make_shared<BookObserver>();
-        shared_ptr<BookObserver> bookObserver3 = make_shared<BookObserver>();
         bookList.AddObserver(bookObserver1);
         bookList.AddObserver(bookObserver2);
         bookList.AddObserver(bookObserver3);
@@ -137,6 +132,17 @@ BENCHMARK_F(BenchmarkObserverTest, test_ObserverNotify)(benchmark::State& state)
             "bookObserver2->GetBooksCount() did not equal EXPECTED_COUNT_ONE as expected.", state);
         AssertEqual(bookObserver3->GetBooksCount(), EXPECTED_COUNT_ONE,
             "bookObserver3->GetBooksCount() did not equal EXPECTED_COUNT_ONE as expected.", state);
+}
+
+BENCHMARK_F(BenchmarkObserverTest, test_ObserverNotify)(benchmark::State& state)
+{
+    BENCHMARK_LOGD("ObserverTest test_ObserverNotify start.");
+    while (state.KeepRunning()) {
+        BookList bookList;
+        shared_ptr<BookObserver> bookObserver1 = make_shared<BookObserver>();
+        shared_ptr<BookObserver> bookObserver2 = make_shared<BookObserver>();
+        shared_ptr<BookObserver> bookObserver3 = make_shared<BookObserver>();
+        AddObservers(bookList, bookObserver1, bookObserver2, bookObserver3, state);
 
         bookList.RemoveObserver(bookObserver1);
         bookList.RemoveBook("book1");
@@ -160,7 +166,6 @@ BENCHMARK_F(BenchmarkObserverTest, test_ObserverNotify)(benchmark::State& state)
     BENCHMARK_LOGD("ObserverTest test_ObserverNotify end.");
 }
 
-
 BENCHMARK_F(BenchmarkObserverTest, test_RemoveAllObserver)(benchmark::State& state)
 {
     BENCHMARK_LOGD("ObserverTest test_RemoveAllObserver start.");
@@ -169,17 +174,7 @@ BENCHMARK_F(BenchmarkObserverTest, test_RemoveAllObserver)(benchmark::State& sta
         shared_ptr<BookObserver> bookObserver1 = make_shared<BookObserver>();
         shared_ptr<BookObserver> bookObserver2 = make_shared<BookObserver>();
         shared_ptr<BookObserver> bookObserver3 = make_shared<BookObserver>();
-        bookList.AddObserver(bookObserver1);
-        bookList.AddObserver(bookObserver2);
-        bookList.AddObserver(bookObserver3);
-        bookList.AddBook("book1");
-
-        AssertEqual(bookObserver1->GetBooksCount(), EXPECTED_COUNT_ONE,
-            "bookObserver1->GetBooksCount() did not equal EXPECTED_COUNT_ONE as expected.", state);
-        AssertEqual(bookObserver2->GetBooksCount(), EXPECTED_COUNT_ONE,
-            "bookObserver2->GetBooksCount() did not equal EXPECTED_COUNT_ONE as expected.", state);
-        AssertEqual(bookObserver3->GetBooksCount(), EXPECTED_COUNT_ONE,
-            "bookObserver3->GetBooksCount() did not equal EXPECTED_COUNT_ONE as expected.", state);
+        AddObservers(bookList, bookObserver1, bookObserver2, bookObserver3, state);
 
         bookList.RemoveAllObservers();
         bookList.RemoveBook("book1");

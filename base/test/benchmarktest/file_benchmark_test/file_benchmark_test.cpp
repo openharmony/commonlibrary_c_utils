@@ -215,15 +215,8 @@ BENCHMARK_F(BenchmarkFileTest, testLoadStringFromFd001)(benchmark::State& state)
     BENCHMARK_LOGD("FileTest testLoadStringFromFd001 end.");
 }
 
-/*
- * @tc.name: testLoadStringFromFd002
- * @tc.desc: Test loading a newly created file without contents by its fd
- */
-BENCHMARK_F(BenchmarkFileTest, testLoadStringFromFd002)(benchmark::State& state)
+void LoadString(string& filename, string& content, benchmark::State& state)
 {
-    BENCHMARK_LOGD("FileTest testLoadStringFromFd002 start.");
-    string filename = FILE_PATH;
-    string content = NULL_STR;
     while (state.KeepRunning()) {
         string result;
         CreateTestFile(filename, content);
@@ -234,6 +227,18 @@ BENCHMARK_F(BenchmarkFileTest, testLoadStringFromFd002)(benchmark::State& state)
         RemoveTestFile(filename);
         AssertEqual(result, content, "result == content did not equal true as expected.", state);
     }
+}
+
+/*
+ * @tc.name: testLoadStringFromFd002
+ * @tc.desc: Test loading a newly created file without contents by its fd
+ */
+BENCHMARK_F(BenchmarkFileTest, testLoadStringFromFd002)(benchmark::State& state)
+{
+    BENCHMARK_LOGD("FileTest testLoadStringFromFd002 start.");
+    string filename = FILE_PATH;
+    string content = NULL_STR;
+    LoadString(filename, content, state);
     BENCHMARK_LOGD("FileTest testLoadStringFromFd002 end.");
 }
 
@@ -246,16 +251,7 @@ BENCHMARK_F(BenchmarkFileTest, testLoadStringFromFd003)(benchmark::State& state)
     BENCHMARK_LOGD("FileTest testLoadStringFromFd003 start.");
     string filename = FILE_PATH;
     string content = CONTENT_STR;
-    while (state.KeepRunning()) {
-        string result;
-        CreateTestFile(filename, content);
-        int fd = open(filename.c_str(), O_RDONLY);
-        AssertTrue((LoadStringFromFd(fd, result)),
-            "LoadStringFromFd(fd, result) did not equal true as expected.", state);
-        close(fd);
-        RemoveTestFile(filename);
-        AssertEqual(result, content, "result == content did not equal true as expected.", state);
-    }
+    LoadString(filename, content, state);
     BENCHMARK_LOGD("FileTest testLoadStringFromFd003 end.");
 }
 
@@ -268,16 +264,7 @@ BENCHMARK_F(BenchmarkFileTest, testLoadStringFromFd004)(benchmark::State& state)
     BENCHMARK_LOGD("FileTest testLoadStringFromFd004 start.");
     string content(MAX_FILE_LENGTH, 't');
     string filename = FILE_PATH;
-    while (state.KeepRunning()) {
-        string result;
-        CreateTestFile(filename, content);
-        int fd = open(filename.c_str(), O_RDONLY);
-        AssertTrue((LoadStringFromFd(fd, result)),
-            "LoadStringFromFd(fd, result) did not equal true as expected.", state);
-        close(fd);
-        RemoveTestFile(filename);
-        AssertEqual(result, content, "result == content did not equal true as expected.", state);
-    }
+    LoadString(filename, content, state);
     BENCHMARK_LOGD("FileTest testLoadStringFromFd004 end.");
 }
 
@@ -476,41 +463,8 @@ BENCHMARK_F(BenchmarkFileTest, testSaveStringToFd001)(benchmark::State& state)
     BENCHMARK_LOGD("FileTest testSaveStringToFd001 end.");
 }
 
-/*
- * @tc.name: testSaveStringToFd002
- * @tc.desc: Test writting an empty string to a file specified by its fd
- */
-BENCHMARK_F(BenchmarkFileTest, testSaveStringToFd002)(benchmark::State& state)
+void SaveString(string& filename, string& content, benchmark::State& state)
 {
-    BENCHMARK_LOGD("FileTest testSaveStringToFd002 start.");
-    string filename = FILE_PATH;
-    while (state.KeepRunning()) {
-        string content;
-        int fd = open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-        bool ret = SaveStringToFd(fd, content);
-        close(fd);
-        AssertEqual(ret, true, "ret did not equal true as expected.", state);
-
-        string loadResult;
-        fd = open(filename.c_str(), O_RDONLY);
-        ret = LoadStringFromFd(fd, loadResult);
-        close(fd);
-        RemoveTestFile(filename);
-        AssertEqual(ret, true, "ret did not equal true as expected.", state);
-        AssertEqual(loadResult, "", "loadResult did not equal "" as expected.", state);
-    }
-    BENCHMARK_LOGD("FileTest testSaveStringToFd002 end.");
-}
-
-/*
- * @tc.name: testSaveStringToFd003
- * @tc.desc: Test loading a non-empty string to a file specified by its fd
- */
-BENCHMARK_F(BenchmarkFileTest, testSaveStringToFd003)(benchmark::State& state)
-{
-    BENCHMARK_LOGD("FileTest testSaveStringToFd003 start.");
-    string content = CONTENT_STR;
-    string filename = FILE_PATH;
     while (state.KeepRunning()) {
         int fd = open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
         bool ret = SaveStringToFd(fd, content);
@@ -525,6 +479,31 @@ BENCHMARK_F(BenchmarkFileTest, testSaveStringToFd003)(benchmark::State& state)
         AssertEqual(ret, true, "ret did not equal true as expected.", state);
         AssertEqual(loadResult, content, "loadResult did not equal content as expected.", state);
     }
+}
+
+/*
+ * @tc.name: testSaveStringToFd002
+ * @tc.desc: Test writting an empty string to a file specified by its fd
+ */
+BENCHMARK_F(BenchmarkFileTest, testSaveStringToFd002)(benchmark::State& state)
+{
+    BENCHMARK_LOGD("FileTest testSaveStringToFd002 start.");
+    string filename = FILE_PATH;
+    string content;
+    SaveString(filename, content, state);
+    BENCHMARK_LOGD("FileTest testSaveStringToFd002 end.");
+}
+
+/*
+ * @tc.name: testSaveStringToFd003
+ * @tc.desc: Test loading a non-empty string to a file specified by its fd
+ */
+BENCHMARK_F(BenchmarkFileTest, testSaveStringToFd003)(benchmark::State& state)
+{
+    BENCHMARK_LOGD("FileTest testSaveStringToFd003 start.");
+    string content = CONTENT_STR;
+    string filename = FILE_PATH;
+    SaveString(filename, content, state);
     BENCHMARK_LOGD("FileTest testSaveStringToFd003 end.");
 }
 
