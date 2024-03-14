@@ -77,6 +77,7 @@ static constexpr int MILLI_TO_NANO = NANO_TO_BASE / MILLI_TO_BASE;
 const int INVALID_FD = -1;
 const int SLEEP_SIXTEEN_MILLISECONDS = 16;
 const int TIMER_INIT_DELAY = 15;
+const int TIMER_INIT_DELAY_TEN = 10;
 constexpr uint32_t TIMEOUT_ONE_MS = 1;
 constexpr uint32_t TIMEOUT_TWO_MS = 2;
 
@@ -98,6 +99,20 @@ void TestCallback()
 {
 }
 
+void SetFdAndCallback(std::shared_ptr<IOEventHandler>& handler, benchmark::State& state)
+{
+    // 1. Set fd
+    int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+    AssertUnequal(fd, INVALID_FD, "fd was not different from INVALID_FD as expected.", state);
+    handler->SetFd(fd);
+    AssertEqual(handler->GetFd(), fd, "handler->GetFd() did not equal fd as expected.", state);
+
+    // 2. Set callback
+    handler->SetCallback(&TestCallback);
+    AssertUnequal(handler->GetCallback(), nullptr,
+        "handler->GetCallback() was not different from nullptr as expected.", state);
+}
+
 /*
  * @tc.name: testIOEventHandler001
  * @tc.desc: test basic interfaces of IOEventHandler.
@@ -110,39 +125,31 @@ BENCHMARK_F(BenchmarkEventTest, testIOEventHandler001)(benchmark::State& state)
         // 1. Create io event handler
         std::shared_ptr<IOEventHandler> handler = std::make_shared<IOEventHandler>(INVALID_FD);
 
-        // 2. Set fd
-        int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-        AssertUnequal(fd, INVALID_FD, "fd was not different from INVALID_FD as expected.", state);
-        handler->SetFd(fd);
-        AssertEqual(handler->GetFd(), fd, "handler->GetFd() did not equal fd as expected.", state);
+        // 2. Set fd and callback
+        SetFdAndCallback(handler, state);
 
-        // 3. Set callback
-        handler->SetCallback(&TestCallback);
-        AssertUnequal(handler->GetCallback(), nullptr,
-            "handler->GetCallback() was not different from nullptr as expected.", state);
-
-        // 4. Set interest events
+        // 3. Set interest events
         handler->SetEvents(Events::EVENT_READ | Events::EVENT_WRITE);
         AssertEqual(handler->GetEvents(), (Events::EVENT_READ | Events::EVENT_WRITE),
             "handler->GetEvents() did not equal (Events::EVENT_READ | Events::EVENT_WRITE) as expected.", state);
 
-        // 5. Check status
+        // 4. Check status
         AssertEqual(handler->Prev(), nullptr, "handler->Prev() did not equal nullptr as expected.", state);
         AssertEqual(handler->Next(), nullptr, "handler->Next() did not equal nullptr as expected.", state);
         AssertEqual(handler->IsActive(), false, "handler->IsActive() did not equal false as expected.", state);
 
-        // 6. disable events
+        // 5. disable events
         handler->DisableAll();
         AssertEqual(handler->GetEvents(), Events::EVENT_NONE,
             "handler->GetEvents() did not equal Events::EVENT_NONE as expected.", state);
 
-        // 7. enable events
+        // 6. enable events
         handler->EnableRead();
         handler->EnableWrite();
         AssertEqual(handler->GetEvents(), (Events::EVENT_READ | Events::EVENT_WRITE),
             "handler->GetEvents() did not equal (Events::EVENT_READ | Events::EVENT_WRITE) as expected.", state);
 
-        // 8. disable one of the events
+        // 7. disable one of the events
         handler->DisableWrite();
         AssertEqual(handler->GetEvents(), Events::EVENT_READ,
             "handler->GetEvents() did not equal Events::EVENT_READ as expected.", state);
@@ -162,43 +169,35 @@ BENCHMARK_F(BenchmarkEventTest, testIOEventHandler002)(benchmark::State& state)
         // 1. Create io event handler
         std::shared_ptr<IOEventHandler> handler = std::make_shared<IOEventHandler>(INVALID_FD);
 
-        // 2. Set fd
-        int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-        AssertUnequal(fd, INVALID_FD, "fd was not different from INVALID_FD as expected.", state);
-        handler->SetFd(fd);
-        AssertEqual(handler->GetFd(), fd, "handler->GetFd() did not equal fd as expected.", state);
+        // 2. Set fd and callback
+        SetFdAndCallback(handler, state);
 
-        // 3. Set callback
-        handler->SetCallback(&TestCallback);
-        AssertUnequal(handler->GetCallback(), nullptr,
-            "handler->GetCallback() was not different from nullptr as expected.", state);
-
-        // 4. Set interest events
+        // 3. Set interest events
         handler->EnableRead();
         AssertEqual(handler->GetEvents(), Events::EVENT_READ,
             "handler->GetEvents() did not equal Events::EVENT_READ as expected.", state);
 
-        // 5. Create a reactor but not run
+        // 4. Create a reactor but not run
         std::shared_ptr<IOEventReactor> reactor = std::make_shared<IOEventReactor>();
         AssertEqual(reactor->SetUp(), EVENT_SYS_ERR_OK,
             "reactor->SetUp() did not equal EVENT_SYS_ERR_OK as expected.", state);
 
-        // 6. Start handler
+        // 5. Start handler
         handler->Start(reactor.get());
         AssertEqual(reactor->FindHandler(handler.get()), EVENT_SYS_ERR_OK,
             "reactor->FindHandler(handler.get()) did not equal EVENT_SYS_ERR_OK as expected.", state);
 
-        // 7. Change setting and update handler to the reactor
+        // 6. Change setting and update handler to the reactor
         handler->EnableWrite();
         AssertTrue((handler->Update(reactor.get())),
             "handler->Update(reactor.get()) did not equal true as expected.", state);
 
-        // 8. Remove the handler
+        // 7. Remove the handler
         handler->Stop(reactor.get());
         AssertEqual(reactor->FindHandler(handler.get()), EVENT_SYS_ERR_NOT_FOUND,
             "reactor->FindHandler(handler.get()) did not equal EVENT_SYS_ERR_NOT_FOUND as expected.", state);
 
-        // 9. Add handler, then delete handler. handler will remove itself from the reactor during deconstruction.
+        // 8. Add handler, then delete handler. handler will remove itself from the reactor during deconstruction.
         AssertTrue((handler->Start(reactor.get())),
             "handler->Start(reactor.get()) did not equal true as expected.", state);
         handler.reset();
@@ -436,6 +435,34 @@ BENCHMARK_F(BenchmarkEventTest, testEvent001)(benchmark::State& state)
     BENCHMARK_LOGD("EventTest testEvent001 end.");
 }
 
+std::unique_ptr<IOEventReactor> EventLoop(std::shared_ptr<TimerFdHandler>& handler, benchmark::State& state,
+    std::thread& loopThread)
+{
+    // 1. Open timer
+    int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+    AssertUnequal(fd, INVALID_FD, "fd was not different from INVALID_FD as expected.", state);
+    // 2. Create timer event handler
+    handler = std::make_shared<TimerFdHandler>(fd, &TimerCallback1);
+
+    // 3. Create reactor for event loop
+    std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
+    AssertEqual(reactor->SetUp(), EVENT_SYS_ERR_OK,
+        "reactor->SetUp() did not equal EVENT_SYS_ERR_OK as expected.", state);
+
+    // 4. Initialize timer handler and add it to reactor
+    AssertTrue((handler->Initialize(TIMER_INIT_DELAY_TEN)),
+        "handler->Initialize(TIMER_INIT_DELAY_TEN) did not equal true as expected.", state);
+    AssertTrue((handler->Start(reactor.get())),
+        "handler->Start(reactor.get()) did not equal true as expected.", state);
+
+    // 5. Run event loop
+    loopThread = std::thread([&reactor] {
+        reactor->Run(INVALID_FD);
+    });
+
+    return reactor;
+}
+
 /*
  * @tc.name: testEvent002
  * @tc.desc: test changing event to EVENT_NONE.
@@ -445,40 +472,24 @@ BENCHMARK_F(BenchmarkEventTest, testEvent002)(benchmark::State& state)
     BENCHMARK_LOGD("EventTest testEvent002 start.");
     while (state.KeepRunning()) {
         g_data = 0;
-        // 1. Open timer
-        int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-        AssertUnequal(fd, INVALID_FD, "fd was not different from INVALID_FD as expected.", state);
-        // 2. Create timer event handler
-        std::shared_ptr<TimerFdHandler> handler = std::make_shared<TimerFdHandler>(fd, &TimerCallback1);
+        std::shared_ptr<TimerFdHandler> handler;
+        std::thread loopThread;
+        // 1. event loop
+        std::unique_ptr<IOEventReactor> reactor = EventLoop(handler, state, loopThread);
 
-        // 3. Create reactor for event loop
-        std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
-        AssertEqual(reactor->SetUp(), EVENT_SYS_ERR_OK,
-            "reactor->SetUp() did not equal EVENT_SYS_ERR_OK as expected.", state);
-
-        // 4. Initialize timer handler and add it to reactor
-        AssertTrue((handler->Initialize(10)), "handler->Initialize(10) did not equal true as expected.", state);
-        AssertTrue((handler->Start(reactor.get())),
-            "handler->Start(reactor.get()) did not equal true as expected.", state);
-
-        // 5. Run event loop
-        std::thread loopThread([&reactor] {
-            reactor->Run(INVALID_FD);
-        });
-
-        // 6. Change settings
+        // 2. Change settings
         reactor->DisableHandling();
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         reactor->EnableHandling();
         handler->SetEvents(Events::EVENT_NONE);
 
-        // 7. Wait for event handling
+        // 3. Wait for event handling
         std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_SIXTEEN_MILLISECONDS));
 
-        // 8. Check result, no execution
+        // 4. Check result, no execution
         AssertEqual(g_data, 0, "g_data did not equal 0 as expected.", state);
 
-        // 9. terminate the event-loop (aka Run())
+        // 5. terminate the event-loop (aka Run())
         reactor->Terminate();
         loopThread.join();
     }
@@ -494,36 +505,20 @@ BENCHMARK_F(BenchmarkEventTest, testEvent003)(benchmark::State& state)
     BENCHMARK_LOGD("EventTest testEvent003 start.");
     while (state.KeepRunning()) {
         g_data = 0;
-        // 1. Open timer
-        int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-        AssertUnequal(fd, INVALID_FD, "fd was not different from INVALID_FD as expected.", state);
-        // 2. Create timer event handler
-        std::shared_ptr<TimerFdHandler> handler = std::make_shared<TimerFdHandler>(fd, &TimerCallback1);
+        std::shared_ptr<TimerFdHandler> handler;
+        std::thread loopThread;
+        // 1. event loop
+        std::unique_ptr<IOEventReactor> reactor = EventLoop(handler, state, loopThread);
 
-        // 3. Create reactor for event loop
-        std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
-        AssertEqual(reactor->SetUp(), EVENT_SYS_ERR_OK,
-            "reactor->SetUp() did not equal EVENT_SYS_ERR_OK as expected.", state);
-
-        // 4. Initialize timer handler and add it to reactor
-        AssertTrue((handler->Initialize(10)), "handler->Initialize(10) did not equal true as expected.", state);
-        AssertTrue((handler->Start(reactor.get())),
-            "handler->Start(reactor.get()) did not equal true as expected.", state);
-
-        // 5. Run event loop
-        std::thread loopThread([&reactor] {
-            reactor->Run(INVALID_FD);
-        });
-
-        // 6. Change settings
+        // 2. Change settings
         reactor->EnableHandling();
         AssertTrue((handler->Stop(reactor.get())),
             "handler->Stop(reactor.get()) did not equal true as expected.", state);
 
-        // 7. Check result, no execution
+        // 3. Check result, no execution
         AssertEqual(g_data, 0, "g_data did not equal 0 as expected.", state);
 
-        // 8. terminate the event-loop (aka Run())
+        // 4. terminate the event-loop (aka Run())
         reactor->Terminate();
         loopThread.join();
     }
@@ -539,38 +534,22 @@ BENCHMARK_F(BenchmarkEventTest, testEvent004)(benchmark::State& state)
     BENCHMARK_LOGD("EventTest testEvent004 start.");
     while (state.KeepRunning()) {
         g_data = 0;
-        // 1. Open timer
-        int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-        AssertUnequal(fd, INVALID_FD, "fd was not different from INVALID_FD as expected.", state);
-        // 2. Create timer event handler
-        std::shared_ptr<TimerFdHandler> handler = std::make_shared<TimerFdHandler>(fd, &TimerCallback1);
+        std::shared_ptr<TimerFdHandler> handler;
+        std::thread loopThread;
+        // 1. event loop
+        std::unique_ptr<IOEventReactor> reactor = EventLoop(handler, state, loopThread);
 
-        // 3. Create reactor for event loop
-        std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
-        AssertEqual(reactor->SetUp(), EVENT_SYS_ERR_OK,
-            "reactor->SetUp() did not equal EVENT_SYS_ERR_OK as expected.", state);
-
-        // 4. Initialize timer handler and add it to reactor
-        AssertTrue((handler->Initialize(10)), "handler->Initialize(10) did not equal true as expected.", state);
-        AssertTrue((handler->Start(reactor.get())),
-            "handler->Start(reactor.get()) did not equal true as expected.", state);
-
-        // 5. Run event loop
-        std::thread loopThread([&reactor] {
-            reactor->Run(INVALID_FD);
-        });
-
-        // 6. Change settings
+        // 2. Change settings
         reactor->EnableHandling();
         handler->SetCallback(nullptr);
 
-        // 7. Wait for event handling
+        // 3. Wait for event handling
         std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_SIXTEEN_MILLISECONDS));
 
-        // 8. Check result, no execution
+        // 4. Check result, no execution
         AssertEqual(g_data, 0, "g_data did not equal 0 as expected.", state);
 
-        // 9. terminate the event-loop (aka Run())
+        // 5. terminate the event-loop (aka Run())
         reactor->Terminate();
         loopThread.join();
     }

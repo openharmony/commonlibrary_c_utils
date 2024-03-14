@@ -129,6 +129,14 @@ void GetHandleThreadDataTime(DemoThreadData& q, int i,
     q.Get();
 }
 
+auto GetTimeOfSleepTwentyMillisecond()
+{
+    using std::chrono::system_clock;
+    auto timeT = std::chrono::high_resolution_clock::now();
+    timeT += std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND);
+    return timeT;
+}
+
 /*
  * @tc.name: testPut001
  * @tc.desc: Single-threaded call put and get to determine that the normal scenario
@@ -170,6 +178,42 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testGet001)(benchmark::State& state)
     BENCHMARK_LOGD("SafeBlockQueue testGet001 end.");
 }
 
+void QueueFullHandler(std::thread (&threads)[THREAD_NUM], std::array<DemoThreadData, THREAD_NUM>& demoDatas,
+    benchmark::State& state)
+{
+    // 1. queue is full and some threads is blocked
+    std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND));
+    AssertTrue((DemoThreadData::shareQueue.IsFull()),
+        "DemoThreadData::shareQueue.IsFull() did not equal true as expected.", state);
+    unsigned int pushedIn = 0;
+    unsigned int unpushedIn = 0;
+    unsigned int getedOut = 0;
+    unsigned int ungetedOut = 0;
+    GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
+    AssertEqual(pushedIn, QUEUE_SLOTS, "pushedIn did not equal QUEUE_SLOTS as expected.", state);
+    AssertEqual(unpushedIn, THREAD_NUM - QUEUE_SLOTS,
+        "unpushedIn did not equal THREAD_NUM - QUEUE_SLOTS as expected.", state);
+    // 2. get one out  and wait some put in
+    for (unsigned int i = 0; i < THREAD_NUM - QUEUE_SLOTS; i++) {
+        demoDatas[0].Get();
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND));
+    // queue is full and some threads is blocked and is not joined
+    AssertTrue((DemoThreadData::shareQueue.IsFull()),
+        "DemoThreadData::shareQueue.IsFull() did not equal true as expected.", state);
+    GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
+    GetThreadDateGetedStatus(demoDatas, getedOut, ungetedOut);
+    AssertEqual(pushedIn, THREAD_NUM, "pushedIn did not equal THREAD_NUM as expected.", state);
+    AssertEqual(getedOut, THREAD_NUM - QUEUE_SLOTS,
+        "getedOut did not equal THREAD_NUM - QUEUE_SLOTS as expected.", state);
+    for (auto& t : threads) {
+        t.join();
+    }
+    while (!DemoThreadData::shareQueue.IsEmpty()) {
+        demoDatas[0].Get();
+    }
+}
+
 /*
  * @tc.name: testMutilthreadPutAndBlock001
  * @tc.desc: Multiple threads put until blocking runs, one thread gets, all threads finish running normally
@@ -184,37 +228,8 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadPutAndBlock001)(benchmark::S
         for (unsigned int i = 0; i < THREAD_NUM; i++) {
             threads[i] = std::thread(PutHandleThreadData, std::ref(demoDatas[i]), i);
         }
-        // 1. queue is full and some threads is blocked
-        std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND));
-        AssertTrue((DemoThreadData::shareQueue.IsFull()),
-            "DemoThreadData::shareQueue.IsFull() did not equal true as expected.", state);
-        unsigned int pushedIn = 0;
-        unsigned int unpushedIn = 0;
-        unsigned int getedOut = 0;
-        unsigned int ungetedOut = 0;
-        GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
-        AssertEqual(pushedIn, QUEUE_SLOTS, "pushedIn did not equal QUEUE_SLOTS as expected.", state);
-        AssertEqual(unpushedIn, THREAD_NUM - QUEUE_SLOTS,
-            "unpushedIn did not equal THREAD_NUM - QUEUE_SLOTS as expected.", state);
-        // 2. get one out  and wait some put in
-        for (unsigned int i = 0; i < THREAD_NUM - QUEUE_SLOTS; i++) {
-            demoDatas[0].Get();
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND));
-        // queue is full and some threads is blocked and is not joined
-        AssertTrue((DemoThreadData::shareQueue.IsFull()),
-            "DemoThreadData::shareQueue.IsFull() did not equal true as expected.", state);
-        GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
-        GetThreadDateGetedStatus(demoDatas, getedOut, ungetedOut);
-        AssertEqual(pushedIn, THREAD_NUM, "pushedIn did not equal THREAD_NUM as expected.", state);
-        AssertEqual(getedOut, THREAD_NUM - QUEUE_SLOTS,
-            "getedOut did not equal THREAD_NUM - QUEUE_SLOTS as expected.", state);
-        for (auto& t : threads) {
-            t.join();
-        }
-        while (!DemoThreadData::shareQueue.IsEmpty()) {
-            demoDatas[0].Get();
-        }
+
+        QueueFullHandler(threads, demoDatas, state);
     }
     BENCHMARK_LOGD("SafeBlockQueue testMutilthreadPutAndBlock001 end.");
 }
@@ -231,43 +246,15 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentPutAndBlockInblank
     std::array<DemoThreadData, THREAD_NUM> demoDatas;
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
-        using std::chrono::system_clock;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND);
+        auto timeT = GetTimeOfSleepTwentyMillisecond();
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
         for (unsigned int i = 0; i < THREAD_NUM; i++) {
             threads[i] = std::thread(PutHandleThreadDataTime,
                                      std::ref(demoDatas[i]), i, timeT);
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND));
-        AssertTrue((DemoThreadData::shareQueue.IsFull()),
-            "DemoThreadData::shareQueue.IsFull() did not equal true as expected.", state);
-        unsigned int pushedIn = 0;
-        unsigned int unpushedIn = 0;
-        unsigned int getedOut = 0;
-        unsigned int ungetedOut = 0;
-        GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
-        AssertEqual(pushedIn, QUEUE_SLOTS, "pushedIn did not equal QUEUE_SLOTS as expected.", state);
-        AssertEqual(unpushedIn, THREAD_NUM - QUEUE_SLOTS,
-            "unpushedIn did not equal THREAD_NUM - QUEUE_SLOTS as expected.", state);
-        for (unsigned int i = 0; i < THREAD_NUM - QUEUE_SLOTS; i++) {
-            demoDatas[0].Get();
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND));
-        AssertTrue((DemoThreadData::shareQueue.IsFull()),
-            "DemoThreadData::shareQueue.IsFull() did not equal true as expected.", state);
-        GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
-        GetThreadDateGetedStatus(demoDatas, getedOut, ungetedOut);
-        AssertEqual(pushedIn, THREAD_NUM, "pushedIn did not equal THREAD_NUM as expected.", state);
-        AssertEqual(getedOut, THREAD_NUM - QUEUE_SLOTS,
-            "getedOut did not equal THREAD_NUM - QUEUE_SLOTS as expected.", state);
-        for (auto& t : threads) {
-            t.join();
-        }
-        while (!DemoThreadData::shareQueue.IsEmpty()) {
-            demoDatas[0].Get();
-        }
+
+        QueueFullHandler(threads, demoDatas, state);
     }
     BENCHMARK_LOGD("SafeBlockQueue testMutilthreadConcurrentPutAndBlockInblankqueue001 end.");
 }
@@ -284,9 +271,7 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentPutAndBlockInfullq
     std::array<DemoThreadData, THREAD_NUM> demoDatas;
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
-        using std::chrono::system_clock;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND);
+        auto timeT = GetTimeOfSleepTwentyMillisecond();
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
         for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
@@ -339,9 +324,7 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentGetAndBlockInblank
     std::array<DemoThreadData, THREAD_NUM> demoDatas;
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
-        using std::chrono::system_clock;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND);
+        auto timeT = GetTimeOfSleepTwentyMillisecond();
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
         for (unsigned int i = 0; i < THREAD_NUM; i++) {
@@ -392,9 +375,7 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentGetAndBlockInfullq
     std::array<DemoThreadData, THREAD_NUM> demoDatas;
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
-        using std::chrono::system_clock;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND);
+        auto timeT = GetTimeOfSleepTwentyMillisecond();
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
         int t = 1;
@@ -447,10 +428,8 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentGetAndBlockInnotfu
     std::array<DemoThreadData, THREAD_NUM> demoDatas;
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
-        using std::chrono::system_clock;
+        auto timeT = GetTimeOfSleepTwentyMillisecond();
         const unsigned int REMAIN_SLOTS = 5;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND);
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
         for (unsigned int i = 0; i < QUEUE_SLOTS - REMAIN_SLOTS; i++) {
@@ -500,10 +479,8 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentPutAndBlockInnotfu
     std::array<DemoThreadData, THREAD_NUM> demoDatas;
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
-        using std::chrono::system_clock;
+        auto timeT = GetTimeOfSleepTwentyMillisecond();
         const unsigned int REMAIN_SLOTS = 5;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND);
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
         for (unsigned int i = 0; i < QUEUE_SLOTS - REMAIN_SLOTS; i++) {
@@ -552,9 +529,7 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentGetAndPopInblankqu
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
         std::thread threadsin[THREAD_NUM];
-        using std::chrono::system_clock;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND);
+        auto timeT = GetTimeOfSleepTwentyMillisecond();
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
         for (unsigned int i = 0; i < THREAD_NUM; i++) {
@@ -603,9 +578,7 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentGetAndPopInfullque
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
         std::thread threadsin[THREAD_NUM];
-        using std::chrono::system_clock;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND);
+        auto timeT = GetTimeOfSleepTwentyMillisecond();
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
         int t = 1;
