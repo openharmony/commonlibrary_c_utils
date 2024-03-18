@@ -1,23 +1,21 @@
-/* Copyright (c) 2023 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright (c) 2023 Huawei Device Co., Ltd.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-/*!
- * Ashmem provides interfaces for operating shared memory.
- */
+//! Ashmem provides interfaces for operating shared memory.
+
+use std::ffi::{c_char, CString};
 
 use cxx::SharedPtr;
-use std::ffi::{c_char, CString};
 
 /// Memory protection corresponding to PROT_NONE in C code.
 pub const PROT_NONE: i32 = 0;
@@ -29,18 +27,17 @@ pub const PROT_WRITE: i32 = 2;
 pub const PROT_EXEC: i32 = 4;
 
 #[cxx::bridge(namespace = "OHOS")]
-/// Module Ashmem::ffi. Includes interfaces which will call c++ counterparts via FFI.
+/// Module Ashmem::ffi. Includes interfaces which will call c++ counterparts via
+/// FFI.
 pub mod ffi {
     #[allow(dead_code)]
     unsafe extern "C++" {
         include!("commonlibrary/c_utils/base/include/ashmem.h");
 
         // global function
-        /**
-         * Create an C++ Ashmem object managed by std::shared_ptr.
-         * # Safety
-         * Requires C-style string as parameter to specify the name of Ashmem.
-         */
+        /// Create an C++ Ashmem object managed by std::shared_ptr.
+        /// # Safety
+        /// Requires C-style string as parameter to specify the name of Ashmem.
         pub unsafe fn CreateAshmemStd(name: *const c_char, size: i32) -> SharedPtr<Ashmem>;
 
         /// Set protection flag of created ashmem specified by FD.
@@ -51,16 +48,12 @@ pub mod ffi {
 
         /// C++ void type.
         pub type c_void;
-        /**
-         * Cast c_char to c_void
-         * # Safety
-         */
+        /// Cast c_char to c_void
+        /// # Safety
         pub unsafe fn AsVoidPtr(inPtr: *const c_char) -> *const c_void;
 
-        /**
-         * Cast c_char to c_void
-         * # Safety
-         */
+        /// Cast c_char to c_void
+        /// # Safety
         pub unsafe fn AsCharPtr(inPtr: *const c_void) -> *const c_char;
 
         /// C++ Ashmem class.
@@ -91,18 +84,21 @@ pub mod ffi {
         /// Get size of inner ashmem.
         pub fn GetAshmemSize(self: &Ashmem) -> i32;
 
-        /**
-         * Write data to inner ashmem.
-         * # Safety
-         * Requires a C++-style void pointer as parameter to indicates data expected to be written.
-         */
-        pub unsafe fn WriteToAshmem(self: &Ashmem, data: *const c_void, size: i32, offset: i32) -> bool;
+        /// Write data to inner ashmem.
+        /// # Safety
+        /// Requires a C++-style void pointer as parameter to indicates data
+        /// expected to be written.
+        pub unsafe fn WriteToAshmem(
+            self: &Ashmem,
+            data: *const c_void,
+            size: i32,
+            offset: i32,
+        ) -> bool;
 
-        /**
-         * Read data from inner ashmem.
-         * # Safety
-         * Returns a C++-style void pointer to indicates data expected to be read.
-         */
+        /// Read data from inner ashmem.
+        /// # Safety
+        /// Returns a C++-style void pointer to indicates data expected to be
+        /// read.
         pub unsafe fn ReadFromAshmem(self: &Ashmem, size: i32, offset: i32) -> *const c_void;
 
         /// Get FD of inner ashmem.
@@ -113,7 +109,7 @@ pub mod ffi {
 /// Ashmem in rust.
 #[allow(dead_code)]
 pub struct Ashmem {
-    c_ashmem: SharedPtr<ffi::Ashmem>
+    c_ashmem: SharedPtr<ffi::Ashmem>,
 }
 
 /// Ashmem implementation.
@@ -121,9 +117,7 @@ pub struct Ashmem {
 impl Ashmem {
     /// Create an ashmem object.
     pub fn new(c_ashmem: SharedPtr<ffi::Ashmem>) -> Ashmem {
-        Ashmem {
-            c_ashmem
-        }
+        Ashmem { c_ashmem }
     }
 
     /// Get corresponding fd.
@@ -171,22 +165,20 @@ impl Ashmem {
         self.c_ashmem.CloseAshmem()
     }
 
-    /**
-     * Write data to ashmem.
-     * # Safety
-     * Requires c-style data(*const c_char)
-     */
+    /// Write data to ashmem.
+    /// # Safety
+    /// Requires c-style data(*const c_char)
+    ///
     /// # Safety
     pub unsafe fn write_to_ashmem(&self, data: *const c_char, size: i32, offset: i32) -> bool {
         let c_void_ptr = ffi::AsVoidPtr(data);
         self.c_ashmem.WriteToAshmem(c_void_ptr, size, offset)
     }
 
-    /**
-     * Read data from ashmem.
-     * # Safety
-     * Returns c-style data(*const c_char)
-     */
+    /// Read data from ashmem.
+    /// # Safety
+    /// Returns c-style data(*const c_char)
+    ///
     /// # Safety
     pub unsafe fn read_from_ashmem(&self, size: i32, offset: i32) -> *const c_char {
         let c_void_ptr = self.c_ashmem.ReadFromAshmem(size, offset);
@@ -194,11 +186,9 @@ impl Ashmem {
     }
 }
 
-/**
- * Create Ashmem struct in Rust, which holds a refrence to c++ Ashmem object.
- * # Safety
- * Transmits c-style string of `name`.
- */
+/// Create Ashmem struct in Rust, which holds a refrence to c++ Ashmem object.
+/// # Safety
+/// Transmits c-style string of `name`.
 #[allow(dead_code)]
 pub unsafe fn create_ashmem_instance(name: &str, size: i32) -> Option<Ashmem> {
     let c_name = CString::new(name).expect("CString::new Failed!");
