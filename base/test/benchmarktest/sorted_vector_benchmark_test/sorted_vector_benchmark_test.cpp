@@ -103,23 +103,28 @@ BENCHMARK_F(BenchmarkSortedVector, testConsFromSortedAllowDup)(benchmark::State&
     BENCHMARK_LOGD("SortedVector testConsFromSortedAllowDup end.");
 }
 
+static void AddElement(SortedVector<int>& svec, std::vector<int>& vec)
+{
+    for (int i = 0; i < VECTOR_SIZE_TWENTY; i++) {
+        vec.push_back(i);
+    }
+
+    for (int i = SVECTOR_END_POS_ASSIGN; i >= SVECTOR_START_POS_ASSIGN; i--) {
+        svec.Add(i);
+    }
+
+    for (int i = 0; i < VECTOR_SIZE_TWENTY; i++) {
+        svec.Add(i);
+    }
+}
+
 BENCHMARK_F(BenchmarkSortedVector, testConsFromSortedNotAllowDuplicate)(benchmark::State& state)
 {
     BENCHMARK_LOGD("SortedVector testConsFromSortedNotAllowDuplicate start.");
     while (state.KeepRunning()) {
         SortedVector<int> svec;
         std::vector<int> vec;
-        for (int i = 0; i < VECTOR_SIZE_TWENTY; i++) {
-            vec.push_back(i);
-        }
-
-        for (int i = SVECTOR_END_POS_ASSIGN; i >= SVECTOR_START_POS_ASSIGN; i--) {
-            svec.Add(i);
-        }
-
-        for (int i = 0; i < VECTOR_SIZE_TWENTY; i++) {
-            svec.Add(i);
-        }
+        AddElement(svec, vec);
 
         AssertEqual(static_cast<size_t>(EXPECTED_SIZE_AFTER_DUPLICATES), svec.Size(),
             "static_cast<size_t>(EXPECTED_SIZE_AFTER_DUPLICATES) did not equal svec.Size() as expected.", state);
@@ -202,17 +207,7 @@ BENCHMARK_F(BenchmarkSortedVector, testOperatorEqAllowToNotAllow)(benchmark::Sta
     while (state.KeepRunning()) {
         SortedVector<int> svec;
         std::vector<int> vec;
-        for (int i = 0; i < VECTOR_SIZE_TWENTY; i++) {
-            vec.push_back(i);
-        }
-
-        for (int i = SVECTOR_END_POS_ASSIGN; i >= SVECTOR_START_POS_ASSIGN; i--) {
-            svec.Add(i);
-        }
-
-        for (int i = 0; i < VECTOR_SIZE_TWENTY; i++) {
-            svec.Add(i);
-        }
+        AddElement(svec, vec);
 
         AssertEqual(static_cast<size_t>(EXPECTED_SIZE_AFTER_DUPLICATES), svec.Size(),
             "static_cast<size_t>(EXPECTED_SIZE_AFTER_DUPLICATES) did not equal svec.Size() as expected.", state);

@@ -1945,28 +1945,33 @@ BENCHMARK_F(BenchmarkParcelTest, test_SetMaxCapacity_002)(benchmark::State& stat
     BENCHMARK_LOGD("ParcelTest test_SetMaxCapacity_002 end.");
 }
 
+static void ParcelWriteData(Parcel& parcel, u16string& str16Write, string& strWrite, benchmark::State& state)
+{
+    parcel.WriteBool(true);
+    bool result = parcel.WriteString(strWrite);
+    AssertEqual(result, true, "result did not equal true as expected.", state);
+
+    RemoteObject obj1;
+    result = parcel.WriteRemoteObject(&obj1);
+    AssertEqual(result, true, "result did not equal true as expected.", state);
+
+    parcel.WriteInt32(WRITE_AND_CMP_INT32_VALUE);
+    RemoteObject obj2;
+    result = parcel.WriteRemoteObject(&obj2);
+    AssertEqual(result, true, "result did not equal true as expected.", state);
+
+    result = parcel.WriteString16(str16Write);
+    AssertEqual(result, true, "result did not equal true as expected.", state);
+}
+
 BENCHMARK_F(BenchmarkParcelTest, test_ValidateReadData_001)(benchmark::State& state)
 {
     BENCHMARK_LOGD("ParcelTest test_ValidateReadData_001 start.");
     while (state.KeepRunning()) {
         Parcel parcel(nullptr);
-        parcel.WriteBool(true);
-        string strWrite = "test";
-        bool result = parcel.WriteString(strWrite);
-        AssertEqual(result, true, "result did not equal true as expected.", state);
-
-        RemoteObject obj1;
-        result = parcel.WriteRemoteObject(&obj1);
-        AssertEqual(result, true, "result did not equal true as expected.", state);
-
-        parcel.WriteInt32(WRITE_AND_CMP_INT32_VALUE);
-        RemoteObject obj2;
-        result = parcel.WriteRemoteObject(&obj2);
-        AssertEqual(result, true, "result did not equal true as expected.", state);
-
         u16string str16Write = u"12345";
-        result = parcel.WriteString16(str16Write);
-        AssertEqual(result, true, "result did not equal true as expected.", state);
+        string strWrite = "test";
+        ParcelWriteData(parcel, str16Write, strWrite, state);
 
         bool readBool = parcel.ReadBool();
         AssertEqual(readBool, true, "readBool did not equal true as expected.", state);
@@ -1998,23 +2003,9 @@ BENCHMARK_F(BenchmarkParcelTest, test_ValidateReadData_002)(benchmark::State& st
     BENCHMARK_LOGD("ParcelTest test_ValidateReadData_002 start.");
     while (state.KeepRunning()) {
         Parcel parcel(nullptr);
-        parcel.WriteBool(true);
         string strWrite = "test";
-        bool result = parcel.WriteString(strWrite);
-        AssertEqual(result, true, "result did not equal true as expected.", state);
-
-        RemoteObject obj1;
-        result = parcel.WriteRemoteObject(&obj1);
-        AssertEqual(result, true, "result did not equal true as expected.", state);
-
-        parcel.WriteInt32(WRITE_AND_CMP_INT32_VALUE);
-        RemoteObject obj2;
-        result = parcel.WriteRemoteObject(&obj2);
-        AssertEqual(result, true, "result did not equal true as expected.", state);
-
         u16string str16Write = u"12345";
-        result = parcel.WriteString16(str16Write);
-        AssertEqual(result, true, "result did not equal true as expected.", state);
+        ParcelWriteData(parcel, str16Write, strWrite, state);
 
         bool readBool = parcel.ReadBool();
         AssertEqual(readBool, true, "readBool did not equal true as expected.", state);

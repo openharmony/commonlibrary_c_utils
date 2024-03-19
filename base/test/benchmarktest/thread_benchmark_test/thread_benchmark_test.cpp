@@ -215,6 +215,30 @@ BENCHMARK_F(BenchmarkThreadTest, testThread002)(benchmark::State& state)
     BENCHMARK_LOGD("ThreadTest testThread002 end.");
 }
 
+static void ThreadTestProcedure(std::unique_ptr<TestThread>& test, const int expectedDataValue, benchmark::State& state)
+{
+    pthread_t thread = test->GetThread();
+
+    // pthread_equal return non-zero if equal
+    AssertEqual((pthread_equal(thread, INVALID_THREAD_ID) != 0), (test->IsRunning() ? false : true),
+        "pthread_equal(thread, INVALID_THREAD_ID) != 0 did not equal \
+        (test->IsRunning() ? false : true) as expected.", state);
+
+    // ReadyToWork return false, RUN will not be called!
+    AssertEqual(test->priority_, DEFAULT_PRIO,
+        "test->priority_ did not equal DEFAULT_PRIO as expected.", state);
+    AssertEqual(test->name_, DEFAULT_THREAD_NAME,
+        "test->name_ did not equal DEFAULT_THREAD_NAME as expected.", state);
+    AssertEqual(test->data_, expectedDataValue, "test->data_ did not equal expectedDataValue as expected.", state);
+    AssertEqual(g_times, INITIAL_TIMES, "g_times did not equal INITIAL_TIMES as expected.", state);
+
+    test->NotifyExitSync();
+    sleep(SLEEP_FOR_ONE_SECOND);
+    AssertEqual((pthread_equal(test->GetThread(), INVALID_THREAD_ID) != 0), (test->IsRunning() ? false : true),
+        "pthread_equal(test->GetThread(), INVALID_THREAD_ID) != 0 did not equal \
+        (test->IsRunning() ? false : true) as expected.", state);
+}
+
 /*
  * @tc.name: testThread003
  * @tc.desc: ThreadTest
@@ -230,26 +254,7 @@ BENCHMARK_F(BenchmarkThreadTest, testThread003)(benchmark::State& state)
         AssertEqual((status == ThreadStatus::OK), true,
             "status == ThreadStatus::OK did not equal true as expected.", state);
 
-        pthread_t thread = test->GetThread();
-
-        // pthread_equal return non-zero if equal
-        AssertEqual((pthread_equal(thread, INVALID_THREAD_ID) != 0), (test->IsRunning() ? false : true),
-            "pthread_equal(thread, INVALID_THREAD_ID) != 0 did not equal \
-            (test->IsRunning() ? false : true) as expected.", state);
-
-        // ReadyToWork return false, RUN will not be called!
-        AssertEqual(test->priority_, DEFAULT_PRIO,
-            "test->priority_ did not equal DEFAULT_PRIO as expected.", state);
-        AssertEqual(test->name_, DEFAULT_THREAD_NAME,
-            "test->name_ did not equal DEFAULT_THREAD_NAME as expected.", state);
-        AssertEqual(test->data_, expectedDataValue, "test->data_ did not equal expectedDataValue as expected.", state);
-        AssertEqual(g_times, INITIAL_TIMES, "g_times did not equal INITIAL_TIMES as expected.", state);
-
-        test->NotifyExitSync();
-        sleep(SLEEP_FOR_ONE_SECOND);
-        AssertEqual((pthread_equal(test->GetThread(), INVALID_THREAD_ID) != 0), (test->IsRunning() ? false : true),
-            "pthread_equal(test->GetThread(), INVALID_THREAD_ID) != 0 did not equal \
-            (test->IsRunning() ? false : true) as expected.", state);
+        ThreadTestProcedure(test, expectedDataValue, state);
     }
     BENCHMARK_LOGD("ThreadTest testThread003 end.");
 }
@@ -309,24 +314,7 @@ BENCHMARK_F(BenchmarkThreadTest, testThread005)(benchmark::State& state)
         AssertEqual((status == ThreadStatus::OK), true,
             "status == ThreadStatus::OK did not equal true as expected.", state);
 
-        pthread_t thread = test->GetThread();
-        // pthread_equal return non-zero if equal
-        AssertEqual((pthread_equal(thread, INVALID_THREAD_ID) != 0), (test->IsRunning() ? false : true),
-            "pthread_equal(thread, INVALID_THREAD_ID) != 0 did not equal \
-            (test->IsRunning() ? false : true) as expected.", state);
-        // ReadyToWork return false, RUN will not be called!
-        AssertEqual(test->priority_, DEFAULT_PRIO,
-            "test->priority_ did not equal DEFAULT_PRIO as expected.", state);
-        AssertEqual(test->name_, DEFAULT_THREAD_NAME,
-            "test->name_ did not equal DEFAULT_THREAD_NAME as expected.", state);
-        AssertEqual(test->data_, expectedDataValue, "test->data_ did not equal expectedDataValue as expected.", state);
-        AssertEqual(g_times, INITIAL_TIMES, "g_times did not equal INITIAL_TIMES as expected.", state);
-
-        test->NotifyExitSync();
-        sleep(SLEEP_FOR_ONE_SECOND);
-        AssertEqual((pthread_equal(test->GetThread(), INVALID_THREAD_ID) != 0), (test->IsRunning() ? false : true),
-            "pthread_equal(test->GetThread(), INVALID_THREAD_ID) != 0 did not equal \
-            (test->IsRunning() ? false : true) as expected.", state);
+        ThreadTestProcedure(test, expectedDataValue, state);
     }
     BENCHMARK_LOGD("ThreadTest testThread005 end.");
 }
@@ -409,6 +397,22 @@ BENCHMARK_F(BenchmarkThreadTest, testThread007)(benchmark::State& state)
     BENCHMARK_LOGD("ThreadTest testThread007 end.");
 }
 
+template <typename T>
+void ThreadTestStart(std::unique_ptr<T>& test, benchmark::State& state)
+{
+    ThreadStatus status = test->Start("", THREAD_PROI_NORMAL, THREAD_STACK_SIZE);
+    AssertEqual((status == ThreadStatus::OK), true,
+        "status == ThreadStatus::OK did not equal true as expected.", state);
+
+    sleep(SLEEP_FOR_ONE_SECOND);
+    test->NotifyExitAsync();
+
+    sleep(SLEEP_FOR_ONE_SECOND); // let the new thread has chance to run
+    AssertEqual((pthread_equal(test->GetThread(), INVALID_THREAD_ID) != 0), (test->IsRunning() ? false : true),
+        "pthread_equal(test->GetThread(), INVALID_THREAD_ID) != 0 did not equal \
+        (test->IsRunning() ? false : true) as expected.", state);
+}
+
 /*
  * @tc.name: testThread008
  * @tc.desc: ThreadTest
@@ -423,17 +427,7 @@ BENCHMARK_F(BenchmarkThreadTest, testThread008)(benchmark::State& state)
         bool res = test->Thread::ReadyToWork();
         AssertEqual(res, true, "res did not equal true as expected.", state);
 
-        ThreadStatus status = test->Start("", THREAD_PROI_NORMAL, THREAD_STACK_SIZE);
-        AssertEqual((status == ThreadStatus::OK), true,
-            "status == ThreadStatus::OK did not equal true as expected.", state);
-
-        sleep(SLEEP_FOR_ONE_SECOND);
-        test->NotifyExitAsync();
-
-        sleep(SLEEP_FOR_ONE_SECOND); // let the new thread has chance to run
-        AssertEqual((pthread_equal(test->GetThread(), INVALID_THREAD_ID) != 0), (test->IsRunning() ? false : true),
-            "pthread_equal(test->GetThread(), INVALID_THREAD_ID) != 0 did not equal \
-            (test->IsRunning() ? false : true) as expected.", state);
+        ThreadTestStart<TestThread>(test, state);
     }
     BENCHMARK_LOGD("ThreadTest testThread008 end.");
 }
@@ -486,17 +480,7 @@ BENCHMARK_F(BenchmarkThreadTest, testThread009)(benchmark::State& state)
         bool res = test->ReadyToWork();
         AssertEqual(res, true, "res did not equal true as expected.", state);
 
-        ThreadStatus status = test->Start("", THREAD_PROI_NORMAL, THREAD_STACK_SIZE);
-        AssertEqual((status == ThreadStatus::OK), true,
-            "status == ThreadStatus::OK did not equal true as expected.", state);
-
-        sleep(SLEEP_FOR_ONE_SECOND);
-        test->NotifyExitAsync();
-
-        sleep(SLEEP_FOR_ONE_SECOND); // let the new thread has chance to run
-        AssertEqual((pthread_equal(test->GetThread(), INVALID_THREAD_ID) != 0), (test->IsRunning() ? false : true),
-            "pthread_equal(test->GetThread(), INVALID_THREAD_ID) != 0 did not equal \
-            (test->IsRunning() ? false : true) as expected.", state);
+        ThreadTestStart<TestThread2>(test, state);
     }
     BENCHMARK_LOGD("ThreadTest testThread009 end.");
 }

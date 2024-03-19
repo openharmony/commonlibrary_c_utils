@@ -36,6 +36,14 @@ const int SLEEP_FOR_FOUR_SECONDS = 4;
 
 class BenchmarkSafeQueue : public benchmark::Fixture {
 public:
+    void SetUp(const ::benchmark::State& state) override
+    {
+    }
+
+    void TearDown(const ::benchmark::State& state) override
+    {
+    }
+
     BenchmarkSafeQueue()
     {
         Iterations(iterations);
@@ -44,13 +52,6 @@ public:
     }
 
     ~BenchmarkSafeQueue() override = default;
-    void SetUp(const ::benchmark::State& state) override
-    {
-    }
-
-    void TearDown(const ::benchmark::State& state) override
-    {
-    }
 
 protected:
     const int32_t repetitions = 3;
