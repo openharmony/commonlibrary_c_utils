@@ -224,7 +224,6 @@ if (host_os == "linux" && !is_arkui_x) {
     include_dirs = [
       "include",
       "${target_gen_dir}",
-      "//third_party/rust/crates/cxx/include",
     ]
     deps = [
       ":cxx_rust_gen",
