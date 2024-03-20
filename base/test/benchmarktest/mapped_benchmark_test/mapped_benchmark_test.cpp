@@ -32,6 +32,7 @@ namespace {
 
 static constexpr char BASE_PATH[] = "/data/test/commonlibrary_c_utils/";
 static constexpr char SUITE_PATH[] = "mapped_file/";
+const int CONSTANT_ZERO = 0;
 
 class BenchmarkMappedFileTest : public benchmark::Fixture {
 public:
@@ -131,6 +132,33 @@ bool SaveStringToFile(const std::string& filePath, const std::string& content, o
     return true;
 }
 
+void CreateFile(std::string& filename, std::string& content, benchmark::State& state)
+{
+    filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
+    RemoveTestFile(filename);
+
+    AssertTrue((CreateTestFile(filename, content)),
+        "CreateTestFile(filename, content) did not equal true as expected.", state);
+}
+
+void ReadFromMappedFile(std::string& content, MappedFile& mf, benchmark::State& state)
+{
+    std::string readout;
+    for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
+        readout.push_back(*cur);
+    }
+    AssertEqual(readout, content, "readout did not equal content as expected.", state);
+}
+
+void WriteToMappedFile(std::string& toWrite, MappedFile& mf)
+{
+    char* newCur = mf.Begin();
+    for (std::string::size_type i = 0; i < toWrite.length(); i++) {
+        (*newCur) = toWrite[i];
+        newCur++;
+    }
+}
+
 /*
  * @tc.name: testDefaultMapping001
  * @tc.desc: Test file mapping with default params.
@@ -142,11 +170,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testDefaultMapping001)(benchmark::State& st
         // 1. Create a new file
         std::string filename = "test_read_write_1.txt";
         std::string content = "Test for normal use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -169,19 +193,11 @@ BENCHMARK_F(BenchmarkMappedFileTest, testDefaultMapping001)(benchmark::State& st
         AssertEqual(mf.StartOffset(), 0u, "mf.StartOffset() did not equal 0u as expected.", state);
 
         // 3. read from mapped file
-        std::string readout;
-        for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
-            readout.push_back(*cur);
-        }
-        AssertEqual(readout, content, "readout did not equal content as expected.", state);
+        ReadFromMappedFile(content, mf, state);
 
         // 4. write to mapped file
         std::string toWrite("Complete.");
-        char* newCur = mf.Begin();
-        for (std::string::size_type i = 0; i < toWrite.length(); i++) {
-            (*newCur) = toWrite[i];
-            newCur++;
-        }
+        WriteToMappedFile(toWrite, mf);
         std::string res;
         LoadStringFromFile(filename, res);
         AssertEqual(res, "Complete.normal use.", "res did not equal \"Complete.normal use.\" as expected.", state);
@@ -242,11 +258,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testNewSharedMappingDefaultSize001)(benchma
 
         // 3. write to mapped file
         std::string toWrite("Write to newly created file.");
-        char* newCur = mf.Begin();
-        for (std::string::size_type i = 0; i < toWrite.length(); i++) {
-            (*newCur) = toWrite[i];
-            newCur++;
-        }
+        WriteToMappedFile(toWrite, mf);
         std::string res;
         LoadStringFromFile(filename, res);
         AssertEqual(strcmp(res.c_str(), toWrite.c_str()), 0,
@@ -313,11 +325,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testNewSharedMapping001)(benchmark::State& 
 
         // 2. write to mapped file
         std::string toWrite("Write to newly created file.");
-        char* newCur = mf.Begin();
-        for (std::string::size_type i = 0; i < toWrite.length(); i++) {
-            (*newCur) = toWrite[i];
-            newCur++;
-        }
+        WriteToMappedFile(toWrite, mf);
         AssertTrue((StringExistsInFile(filename, toWrite)),
             "StringExistsInFile(filename, toWrite) did not equal true as expected.", state);
 
@@ -346,11 +354,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testPrivateMapping001)(benchmark::State& st
         // 1. create a new file
         std::string filename = "test_read_write_4.txt";
         std::string content = "Test for private use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         // 2. map file
         MappedFile mf(filename, MapMode::DEFAULT | MapMode::PRIVATE);
@@ -361,19 +365,11 @@ BENCHMARK_F(BenchmarkMappedFileTest, testPrivateMapping001)(benchmark::State& st
         AssertTrue((mf.IsNormed()), "mf.IsNormed() did not equal true as expected.", state);
 
         // 4. read from mapped file
-        std::string readout;
-        for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
-            readout.push_back(*cur);
-        }
-        AssertEqual(readout, content, "readout did not equal content as expected.", state);
+        ReadFromMappedFile(content, mf, state);
 
         // 5. write to mapped file
         std::string toWrite("Complete.");
-        char* newCur = mf.Begin();
-        for (std::string::size_type i = 0; i < toWrite.length(); i++) {
-            (*newCur) = toWrite[i];
-            newCur++;
-        }
+        WriteToMappedFile(toWrite, mf);
         std::string res;
         LoadStringFromFile(filename, res);
         AssertEqual(res, content, "res did not equal content as expected.", state);
@@ -394,11 +390,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testSharedReadOnlyMapping001)(benchmark::St
         // 1. create a new file
         std::string filename = "test_read_write_5.txt";
         std::string content = "Test for readonly use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         // 2. map file
         MappedFile mf(filename, MapMode::DEFAULT | MapMode::READ_ONLY);
@@ -409,11 +401,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testSharedReadOnlyMapping001)(benchmark::St
         AssertTrue((mf.IsNormed()), "mf.IsNormed() did not equal true as expected.", state);
 
         // 4. read from mapped file
-        std::string readout;
-        for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
-            readout.push_back(*cur);
-        }
-        AssertEqual(readout, content, "readout did not equal content as expected.", state);
+        ReadFromMappedFile(content, mf, state);
         // !Note: write operation is not permitted, which will raise a signal 11.
 
         RemoveTestFile(filename);
@@ -432,11 +420,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap001)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_remap_1.txt";
         std::string content = "Test for remapping use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -482,18 +466,11 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap002)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_remap.txt";
         std::string content = "Test for default use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
         std::string filename1 = "test_remap_1.txt";
         std::string content1 = "Test for remapping use.";
-        filename1.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename1);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
-        AssertTrue((CreateTestFile(filename1, content1)),
-            "CreateTestFile(filename1, content1) did not equal true as expected.", state);
+        CreateFile(filename1, content1, state);
 
         MappedFile mf(filename);
 
@@ -526,11 +503,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap002)(benchmark::State& state)
             "stb.st_size == mf.Size() || mf.PageSize() == mf.Size() did not equal true as expected.", state);
 
         // 5. read from Mapped File
-        std::string readout;
-        for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
-            readout.push_back(*cur);
-        }
-        AssertEqual(readout, content, "readout did not equal content as expected.", state);
+        ReadFromMappedFile(content, mf, state);
 
         // 6. change params
         AssertTrue((mf.ChangePath(filename1)), "mf.ChangePath(filename1) did not equal true as expected.", state);
@@ -556,11 +529,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap002)(benchmark::State& state)
         AssertEqual(stb.st_size, mf.Size(), "stb.st_size == mf.Size() did not equal true as expected.", state);
 
         // 11. read from Mapped File
-        std::string readout1;
-        for (char* cur1 = mf.Begin(); cur1 <= mf.End(); cur1++) {
-            readout1.push_back(*cur1);
-        }
-        AssertEqual(readout1, content1, "readout1 did not equal content1 as expected.", state);
+        ReadFromMappedFile(content1, mf, state);
 
         RemoveTestFile(filename);
         RemoveTestFile(filename1);
@@ -579,18 +548,11 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap003)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_remap.txt";
         std::string content = "Test for default use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
         std::string filename1 = "test_remap_1.txt";
         std::string content1 = "Test for remapping use.";
-        filename1.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename1);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
-        AssertTrue((CreateTestFile(filename1, content1)),
-            "CreateTestFile(filename1, content1) did not equal true as expected.", state);
+        CreateFile(filename1, content1, state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -607,11 +569,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap003)(benchmark::State& state)
             "stb.st_size == mf.Size() || mf.PageSize() == mf.Size() did not equal true as expected.", state);
 
         // 5. read from Mapped File
-        std::string readout;
-        for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
-            readout.push_back(*cur);
-        }
-        AssertEqual(readout, content, "readout did not equal content as expected.", state);
+        ReadFromMappedFile(content, mf, state);
 
         // 6. change params
         mf.ChangePath(filename1);
@@ -633,11 +591,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap003)(benchmark::State& state)
         AssertEqual(stb.st_size, mf.Size(), "stb.st_size == mf.Size() did not equal true as expected.", state);
 
         // 11. read from Mapped File
-        std::string readout1;
-        for (char* cur1 = mf.Begin(); cur1 <= mf.End(); cur1++) {
-            readout1.push_back(*cur1);
-        }
-        AssertEqual(readout1, content1, "readout1 did not equal content1 as expected.", state);
+        ReadFromMappedFile(content1, mf, state);
 
         RemoveTestFile(filename);
         RemoveTestFile(filename1);
@@ -656,11 +610,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap004)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_remap.txt";
         std::string content = "Test for remapping use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -677,8 +627,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap004)(benchmark::State& state)
             "stb.st_size == mf.Size() || mf.PageSize() == mf.Size() did not equal true as expected.", state);
 
         // 5. read from Mapped File
-        std::string readout;
         char* cur = mf.Begin();
+        std::string readout;
         for (; cur <= mf.End(); cur++) {
             readout.push_back(*cur);
         }
@@ -719,21 +669,17 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap005)(benchmark::State& state)
     BENCHMARK_LOGD("MappedFileTest testReMap005 start.");
     while (state.KeepRunning()) {
         // 1. create a new file
-        std::string filename = "test_remap.txt";
         std::string content = "Test for remapping use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        std::string filename = "test_remap.txt";
+        CreateFile(filename, content, state);
 
         // 2. map file
         MappedFile mf(filename);
         AssertEqual(mf.Map(), MAPPED_FILE_ERR_OK, "mf.Map() did not equal MAPPED_FILE_ERR_OK as expected.", state);
 
         // 3. check status after mapping
-        AssertTrue((mf.IsMapped()), "mf.IsMapped() did not equal true as expected.", state);
         AssertTrue((mf.IsNormed()), "mf.IsNormed() did not equal true as expected.", state);
+        AssertTrue((mf.IsMapped()), "mf.IsMapped() did not equal true as expected.", state);
 
         // 4. check size
         struct stat stb = {0};
@@ -785,11 +731,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap006)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_remap.txt";
         std::string content = "Test for remapping use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         // 2. map file
         off_t size = 20;
@@ -822,6 +764,34 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap006)(benchmark::State& state)
     BENCHMARK_LOGD("MappedFileTest testReMap006 end.");
 }
 
+void KeepAPageAndReachBottom(off_t& endOff, const off_t orig, MappedFile& mf, benchmark::State& state)
+{
+    AssertUnequal(orig, CONSTANT_ZERO, "The divisor cannot be 0", state);
+    if (orig != CONSTANT_ZERO) {
+        // keep turnNext within a page
+        for (unsigned int cnt = 2; cnt < (MappedFile::PageSize() / orig); cnt++) {
+            // 2: start from 2 to take the first, TunrNext() calling in consideration.
+            endOff = mf.EndOffset();
+            AssertEqual(mf.TurnNext(), MAPPED_FILE_ERR_OK,
+                "mf.TurnNext() did not equal MAPPED_FILE_ERR_OK as expected.", state);
+            AssertEqual(mf.StartOffset(), endOff + 1, "mf.StartOffset() did not equal endOff + 1 as expected.", state);
+            AssertEqual(mf.Size(), orig, "mf.Size() did not equal orig as expected.", state);
+        }
+        PrintStatus(mf);
+    }
+
+    // this turn will reach the bottom of a page
+    endOff = mf.EndOffset();
+    char* rEnd = mf.RegionEnd();
+    char* end = mf.End();
+    AssertEqual(mf.TurnNext(), MAPPED_FILE_ERR_OK,
+        "mf.TurnNext() did not equal MAPPED_FILE_ERR_OK as expected.", state);
+    AssertEqual(mf.StartOffset(), endOff + 1, "mf.StartOffset() did not equal endOff + 1 as expected.", state);
+    AssertEqual(mf.Size(), static_cast<off_t>(rEnd - end),
+        "mf.Size() did not equal static_cast<off_t>(rEnd - end) as expected.", state);
+    PrintStatus(mf);
+}
+
 /*
  * @tc.name: testTurnNext001
  * @tc.desc: Test TurnNext() when `IsMapped()`.
@@ -833,11 +803,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testTurnNext001)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_remap.txt";
         std::string content = "Test for remapping use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         struct stat stb = {0};
         AssertEqual(stat(filename.c_str(), &stb), 0,
@@ -870,29 +836,10 @@ BENCHMARK_F(BenchmarkMappedFileTest, testTurnNext001)(benchmark::State& state)
             "The two strings, res.c_str() and content.append(\"N\").c_str(), did not have the same content.", state);
 
         off_t endOff;
-        // 6. keep turnNext within a page
-        for (unsigned int cnt = 2; cnt < (MappedFile::PageSize() / orig); cnt++) {
-            // 2: start from 2 to take the first, TunrNext() calling in consideration.
-            endOff = mf.EndOffset();
-            AssertEqual(mf.TurnNext(), MAPPED_FILE_ERR_OK,
-                "mf.TurnNext() did not equal MAPPED_FILE_ERR_OK as expected.", state);
-            AssertEqual(mf.StartOffset(), endOff + 1, "mf.StartOffset() did not equal endOff + 1 as expected.", state);
-            AssertEqual(mf.Size(), orig, "mf.Size() did not equal orig as expected.", state);
-        }
-        PrintStatus(mf);
+        // 6. keep turnNext within a page,and reach the bottom of a page
+        KeepAPageAndReachBottom(endOff, orig, mf, state);
 
-        // 7. this turn will reach the bottom of a page
-        endOff = mf.EndOffset();
-        char* rEnd = mf.RegionEnd();
-        char* end = mf.End();
-        AssertEqual(mf.TurnNext(), MAPPED_FILE_ERR_OK,
-            "mf.TurnNext() did not equal MAPPED_FILE_ERR_OK as expected.", state);
-        AssertEqual(mf.StartOffset(), endOff + 1, "mf.StartOffset() did not equal endOff + 1 as expected.", state);
-        AssertEqual(mf.Size(), static_cast<off_t>(rEnd - end),
-            "mf.Size() did not equal static_cast<off_t>(rEnd - end) as expected.", state);
-        PrintStatus(mf);
-
-        // 8. this turn will trigger a remapping
+        // 7. this turn will trigger a remapping
         endOff = mf.EndOffset();
         off_t curSize = mf.Size();
         AssertEqual(mf.TurnNext(), MAPPED_FILE_ERR_OK,
@@ -905,7 +852,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testTurnNext001)(benchmark::State& state)
             "static_cast<off_t>(mf.RegionEnd() - mf.RegionStart()) + 1LL did not equal mf.PageSize().", state);
         PrintStatus(mf);
 
-        // 9. keep turnNext within a page
+        // 8. keep turnNext within a page
         for (off_t cnt = 1; cnt < (MappedFile::PageSize() / 100LL / curSize); cnt++) {
             endOff = mf.EndOffset();
             AssertEqual(mf.TurnNext(), MAPPED_FILE_ERR_OK,
@@ -914,7 +861,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testTurnNext001)(benchmark::State& state)
             AssertEqual(mf.Size(), curSize, "mf.Size() did not equal curSize as expected.", state);
         }
 
-        // 10. this turn will fail since no place remained.
+        // 9. this turn will fail since no place remained.
         AssertUnequal(mf.TurnNext(), MAPPED_FILE_ERR_OK,
             "mf.TurnNext() was not different from MAPPED_FILE_ERR_OK as expected.", state);
 
@@ -934,11 +881,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testTurnNext002)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_remap.txt";
         std::string content = "Test for remapping use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -978,11 +921,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testTurnNext003)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_remap.txt";
         std::string content = "Test for remapping use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -1029,11 +968,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testTurnNext004)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_remap.txt";
         std::string content = "Test for remapping use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -1063,11 +998,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testTurnNext005)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_remap.txt";
         std::string content = "Test for remapping use.00";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         struct stat stb = {0};
         AssertEqual(stat(filename.c_str(), &stb), 0,
@@ -1094,29 +1025,10 @@ BENCHMARK_F(BenchmarkMappedFileTest, testTurnNext005)(benchmark::State& state)
             "mf.TurnNext() did not equal MAPPED_FILE_ERR_OK as expected.", state);
 
         off_t endOff;
-        // 6. keep turnNext within a page
-        for (unsigned int cnt = 2; cnt < (MappedFile::PageSize() / orig); cnt++) { // 2: start from 2 to take the first
-                                                                                // TunrNext() calling in consideration.
-            endOff = mf.EndOffset();
-            AssertEqual(mf.TurnNext(), MAPPED_FILE_ERR_OK,
-            "mf.TurnNext() did not equal MAPPED_FILE_ERR_OK as expected.", state);
-            AssertEqual(mf.StartOffset(), endOff + 1, "mf.StartOffset() did not equal endOff + 1 as expected.", state);
-            AssertEqual(mf.Size(), orig, "mf.Size() did not equal orig as expected.", state);
-        }
-        PrintStatus(mf);
+        // 6. keep turnNext within a page,and reach the bottom of a page
+        KeepAPageAndReachBottom(endOff, orig, mf, state);
 
-        // 7. this turn will reach the bottom of a page
-        endOff = mf.EndOffset();
-        char* rEnd = mf.RegionEnd();
-        char* end = mf.End();
-        AssertEqual(mf.TurnNext(), MAPPED_FILE_ERR_OK,
-            "mf.TurnNext() did not equal MAPPED_FILE_ERR_OK as expected.", state);
-        AssertEqual(mf.StartOffset(), endOff + 1, "mf.StartOffset() did not equal endOff + 1 as expected.", state);
-        AssertEqual(mf.Size(), static_cast<off_t>(rEnd - end),
-            "mf.Size() did not equal static_cast<off_t>(rEnd - end) as expected.", state);
-        PrintStatus(mf);
-
-        // 8. this turn will trigger a remapping
+        // 7. this turn will trigger a remapping
         endOff = mf.EndOffset();
         AssertEqual(mf.TurnNext(), MAPPED_FILE_ERR_OK,
             "mf.TurnNext() did not equal MAPPED_FILE_ERR_OK as expected.", state);
@@ -1143,11 +1055,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testInvalidMap001)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_invalid_1.txt";
         std::string content = "Test for invalid use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         // 2. map file
         off_t offset = 100; // Specify offset that is not multiple of page-size.
@@ -1181,11 +1089,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testInvalidMap002)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_invalid_2.txt";
         std::string content = "Test for invalid use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         // 2. map file
         off_t offset = 4 * 1024; // Specify offset excessing the substantial size of the file.
@@ -1240,11 +1144,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testInvalidMap004)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_invalid_4.txt";
         std::string content = "Test for invalid use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         // 2. map file
         MappedFile mf(filename, MapMode::DEFAULT, 0, -2); // -2: less than DEFAULT_LENGTH(-1)
@@ -1276,11 +1176,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testInvalidMap005)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_invalid_6.txt";
         std::string content = "Test for invalid use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
+        CreateFile(filename, content, state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -1308,11 +1204,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testInvalidMap006)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_invalid_7.txt";
         std::string content = "Test for invalid use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -1355,11 +1248,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testInvalidMap007)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_invalid_8.txt";
         std::string content = "Test for invalid use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -1389,11 +1279,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testInvalidMap008)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_invalid_9.txt";
         std::string content = "Test for invalid use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -1431,11 +1318,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testInvalidMap009)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_invalid_10.txt";
         std::string content = "Test for invalid use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
 
         // 2. create MappedFile
         MappedFile mf(filename);
@@ -1474,11 +1358,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testAutoAdjustedMode001)(benchmark::State& 
         // 1. create a new file
         std::string filename = "test_adjmod_1.txt";
         std::string content = "Test for auto adj use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
 
         // 2. map file
         const int mapMode1 = 1;
@@ -1512,11 +1393,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testAutoAdjustedSize001)(benchmark::State& 
         // 1. create a new file
         std::string filename = "test_adjsize_1.txt";
         std::string content = "Test for auto adj use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
 
         // 2. map file
         off_t size = 5 * 1024; // Specified size excessing the last page of the file.
@@ -1549,11 +1427,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testAutoAdjustedSize002)(benchmark::State& 
         // 1. create a new file
         std::string filename = "test_adjsize_2.txt";
         std::string content = "Test for auto adj use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
 
         // 2. Extend size manually
         int fd = open(filename.c_str(), O_RDWR | O_CLOEXEC);
@@ -1596,11 +1471,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testMoveMappedFile001)(benchmark::State& st
         // 1. create a new file
         std::string filename = "test_move_1.txt";
         std::string content = "Test for move use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -1616,8 +1488,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testMoveMappedFile001)(benchmark::State& st
         MappedFile mfNew(std::move(mf));
 
         // 4. check status and params after move
-        AssertFalse((mf.IsMapped()), "mf.IsMapped() did not equal false as expected.", state);
         AssertFalse((mf.IsNormed()), "mf.IsNormed() did not equal false as expected.", state);
+        AssertFalse((mf.IsMapped()), "mf.IsMapped() did not equal false as expected.", state);
 
         AssertEqual(mf.Begin(), nullptr, "mf.Begin() did not equal nullptr as expected.", state);
         AssertEqual(mf.Size(), MappedFile::DEFAULT_LENGTH,
@@ -1628,8 +1500,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testMoveMappedFile001)(benchmark::State& st
         AssertEqual(mf.GetHint(), nullptr, "mf.GetHint() did not equal nullptr as expected.", state);
         AssertEqual(mf.GetPath(), "", "mf.GetPath() did not equal "" as expected.", state);
 
-        AssertTrue((mfNew.IsMapped()), "mfNew.IsMapped() did not equal true as expected.", state);
         AssertTrue((mfNew.IsNormed()), "mfNew.IsNormed() did not equal true as expected.", state);
+        AssertTrue((mfNew.IsMapped()), "mfNew.IsMapped() did not equal true as expected.", state);
         AssertEqual(mfNew.Begin(), data, "mfNew.Begin() did not equal data as expected.", state);
         AssertEqual(mfNew.Size(), size, "mfNew.Size() did not equal size as expected.", state);
         AssertEqual(mfNew.StartOffset(), offset, "mfNew.StartOffset() did not equal offset as expected.", state);
@@ -1638,19 +1510,11 @@ BENCHMARK_F(BenchmarkMappedFileTest, testMoveMappedFile001)(benchmark::State& st
         AssertEqual(mfNew.GetPath(), filename, "mfNew.GetPath() did not equal filename as expected.", state);
 
         // 5. read from mapped file
-        std::string readout;
-        for (char* cur = mfNew.Begin(); cur <= mfNew.End(); cur++) {
-            readout.push_back(*cur);
-        }
-        AssertEqual(readout, content, "readout did not equal content as expected.", state);
+        ReadFromMappedFile(content, mfNew, state);
 
         // 6. write to mapped file
         std::string toWrite("Complete.");
-        char* newCur = mfNew.Begin();
-        for (std::string::size_type i = 0; i < toWrite.length(); i++) {
-            (*newCur) = toWrite[i];
-            newCur++;
-        }
+        WriteToMappedFile(toWrite, mfNew);
         std::string res;
         LoadStringFromFile(filename, res);
         AssertEqual(res, "Complete.move use.", "res did not equal \"Complete.move use.\" as expected.", state);
@@ -1671,11 +1535,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testMoveMappedFile002)(benchmark::State& st
         // 1. create a new file
         std::string filename = "test_move_2.txt";
         std::string content = "Test for move use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -1717,19 +1578,11 @@ BENCHMARK_F(BenchmarkMappedFileTest, testMoveMappedFile002)(benchmark::State& st
         AssertEqual(mfNew.Map(), MAPPED_FILE_ERR_OK,
             "mfNew.Map() did not equal MAPPED_FILE_ERR_OK as expected.", state);
         // 6. read from mapped file
-        std::string readout;
-        for (char* cur = mfNew.Begin(); cur <= mfNew.End(); cur++) {
-            readout.push_back(*cur);
-        }
-        AssertEqual(readout, content, "readout did not equal content as expected.", state);
+        ReadFromMappedFile(content, mfNew, state);
 
         // 7. write to mapped file
         std::string toWrite("Complete.");
-        char* newCur = mfNew.Begin();
-        for (std::string::size_type i = 0; i < toWrite.length(); i++) {
-            (*newCur) = toWrite[i];
-            newCur++;
-        }
+        WriteToMappedFile(toWrite, mfNew);
         std::string res;
         LoadStringFromFile(filename, res);
         AssertEqual(res, "Complete.move use.", "res did not equal \"Complete.move use.\" as expected.", state);
@@ -1750,18 +1603,11 @@ BENCHMARK_F(BenchmarkMappedFileTest, testMoveMappedFile003)(benchmark::State& st
         // 1. create a new file
         std::string filename = "test_move_3.txt";
         std::string content = "Test for move use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
         std::string filename1 = "test_move_4.txt";
         std::string content1 = "Test for move use.";
-        filename1.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename1);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
-        AssertTrue((CreateTestFile(filename1, content1)),
-            "CreateTestFile(filename1, content1) did not equal true as expected.", state);
+        CreateFile(filename1, content1, state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -1789,19 +1635,11 @@ BENCHMARK_F(BenchmarkMappedFileTest, testMoveMappedFile003)(benchmark::State& st
         AssertEqual(mf.GetPath(), filename1, "mf.GetPath() did not equal filename1 as expected.", state);
 
         // 5. read from mapped file
-        std::string readout;
-        for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
-            readout.push_back(*cur);
-        }
-        AssertEqual(readout, content1, "readout did not equal content1 as expected.", state);
+        ReadFromMappedFile(content1, mf, state);
 
         // 6. write to mapped file
         std::string toWrite("Complete.");
-        char* newCur = mf.Begin();
-        for (std::string::size_type i = 0; i < toWrite.length(); i++) {
-            (*newCur) = toWrite[i];
-            newCur++;
-        }
+        WriteToMappedFile(toWrite, mf);
         std::string res;
         LoadStringFromFile(filename1, res);
         AssertEqual(res, "Complete.move use.", "res did not equal \"Complete.move use.\" as expected.", state);
@@ -1823,18 +1661,11 @@ BENCHMARK_F(BenchmarkMappedFileTest, testMoveMappedFile004)(benchmark::State& st
         // 1. create a new file
         std::string filename = "test_move_4.txt";
         std::string content = "Test for move use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
         std::string filename1 = "test_move_5.txt";
         std::string content1 = "Test for move use.";
-        filename1.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename1);
-
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
-        AssertTrue((CreateTestFile(filename1, content1)),
-            "CreateTestFile(filename1, content1) did not equal true as expected.", state);
+        CreateFile(filename1, content1, state);
 
         // 2. map file
         MappedFile mf(filename);
@@ -1864,19 +1695,11 @@ BENCHMARK_F(BenchmarkMappedFileTest, testMoveMappedFile004)(benchmark::State& st
 
         AssertEqual(mf.Map(), MAPPED_FILE_ERR_OK, "mf.Map() did not equal MAPPED_FILE_ERR_OK as expected.", state);
         // 6. read from mapped file
-        std::string readout;
-        for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
-            readout.push_back(*cur);
-        }
-        AssertEqual(readout, content1, "readout did not equal content1 as expected.", state);
+        ReadFromMappedFile(content1, mf, state);
 
         // 7. write to mapped file
         std::string toWrite("Complete.");
-        char* newCur = mf.Begin();
-        for (std::string::size_type i = 0; i < toWrite.length(); i++) {
-            (*newCur) = toWrite[i];
-            newCur++;
-        }
+        WriteToMappedFile(toWrite, mf);
         std::string res;
         LoadStringFromFile(filename1, res);
         AssertEqual(res, "Complete.move use.", "res did not equal \"Complete.move use.\" as expected.", state);
@@ -1911,11 +1734,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testNormalize001)(benchmark::State& state)
 
         filename = "test_normalize1.txt";
         content = "Test for normalize1 use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
 
         off_t size = 20;
         MappedFile mf1(filename, MapMode::DEFAULT, 0, size);
@@ -1938,11 +1758,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testClear001)(benchmark::State& state)
         // 1. create a new file
         std::string filename = "test_clear.txt";
         std::string content = "Test for clear use.";
-        filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
-        RemoveTestFile(filename);
+        CreateFile(filename, content, state);
 
-        AssertTrue((CreateTestFile(filename, content)),
-            "CreateTestFile(filename, content) did not equal true as expected.", state);
 
         MappedFile mf1(filename);
         // 2. map file
