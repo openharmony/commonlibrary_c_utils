@@ -1,29 +1,28 @@
-/*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright (c) 2023 Huawei Device Co., Ltd.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-/*!
- * Directory_ex provides an enhanced interface for some file and path related operations.
- */
+//! Directory_ex provides an enhanced interface for some file and path related
+//! operations.
 
-/// File permissions for the owner of the file (user) - Read, write, and execute.
+/// File permissions for the owner of the file (user) - Read, write, and
+/// execute.
 pub const S_IRWXU: u32 = 0o700;
 
 /// File permissions for the group - Read, write, and execute.
 pub const S_IRWXG: u32 = 0o070;
 
-/// File permissions for others (non-owner/non-group members) - Read, write, and execute.
+/// File permissions for others (non-owner/non-group members) - Read, write, and
+/// execute.
 pub const S_IRWXO: u32 = 0o007;
 
 /// File permission for the owner to read.
@@ -39,7 +38,8 @@ pub const S_IROTH: u32 = 0o004;
 pub const PATH_MAX: usize = 4096;
 
 #[cxx::bridge(namespace = "OHOS")]
-/// Module directory_ex::ffi. Includes interfaces which will call c++ counterparts via FFI.
+/// Module directory_ex::ffi. Includes interfaces which will call c++
+/// counterparts via FFI.
 pub mod ffi {
     #[allow(dead_code)]
     unsafe extern "C++" {
@@ -56,7 +56,8 @@ pub mod ffi {
         /// Obtain the name to the corresponding file by the full path.
         pub fn RustExtractFileName(fileFullName: &String) -> String;
 
-        /// Obtain the filename extension to the corresponding file by the full path.
+        /// Obtain the filename extension to the corresponding file by the full
+        /// path.
         pub fn RustExtractFileExt(fileName: &String) -> String;
 
         /// Determine whether the path has ended with '/', and returns the path
@@ -73,7 +74,8 @@ pub mod ffi {
         /// Judge if the path is empty.
         pub fn IsEmptyFolder(path: &CxxString) -> bool;
 
-        /// If there are problems such as 'Permission Denied', the creation may also fail.
+        /// If there are problems such as 'Permission Denied', the creation may
+        /// also fail.
         pub fn ForceCreateDirectory(path: &CxxString) -> bool;
 
         /// Delete the specified dir.
@@ -88,7 +90,8 @@ pub mod ffi {
         /// Change the file authority.
         pub fn ChangeModeFile(fileName: &CxxString, mode: &u32) -> bool;
 
-        /// Change authority of the directory specified by path and all of its subdirectories.
+        /// Change authority of the directory specified by path and all of its
+        /// subdirectories.
         pub fn ChangeModeDirectory(path: &CxxString, mode: &u32) -> bool;
 
         /// Get real path from relative path.
