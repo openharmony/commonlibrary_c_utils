@@ -531,6 +531,9 @@ bool Parcel::WriteCString(const char *value)
         return false;
     }
     int32_t dataLength = strlen(value);
+    if (dataLength < 0 || dataLength >= INT32_MAX) {
+        return false;
+    }
     int32_t desireCapacity = (dataLength + 1) * sizeof(char);
     return WriteBuffer(value, desireCapacity);
 }
@@ -542,6 +545,9 @@ bool Parcel::WriteString(const std::string &value)
     }
 
     int32_t dataLength = value.length();
+    if (dataLength < 0 || dataLength >= INT32_MAX) {
+        return false;
+    }
     int32_t typeSize = sizeof(char);
     int32_t desireCapacity = dataLength + typeSize;
 
@@ -560,6 +566,9 @@ bool Parcel::WriteString16(const std::u16string &value)
 
     int32_t dataLength = value.length();
     int32_t typeSize = sizeof(char16_t);
+    if (dataLength < 0 || dataLength > ((static_cast<int32_t>(INT32_MAX)) / typeSize - 1)) {
+        return false;
+    }
     int32_t desireCapacity = (dataLength + 1) * typeSize;
 
     if (!Write<int32_t>(dataLength)) {
@@ -577,6 +586,9 @@ bool Parcel::WriteString16WithLength(const char16_t *value, size_t len)
 
     int32_t dataLength = len;
     int32_t typeSize = sizeof(char16_t);
+    if (dataLength < 0 || dataLength > ((static_cast<int32_t>(INT32_MAX)) / typeSize - 1)) {
+        return false;
+    }
     int32_t desireCapacity = (dataLength + 1) * typeSize;
     std::u16string u16str(reinterpret_cast<const char16_t *>(value), len);
 
@@ -594,6 +606,9 @@ bool Parcel::WriteString8WithLength(const char *value, size_t len)
     }
 
     int32_t dataLength = len;
+    if (dataLength < 0 || dataLength >= INT32_MAX) {
+        return false;
+    }
     int32_t typeSize = sizeof(char);
     int32_t desireCapacity = (dataLength + 1) * typeSize;
 
@@ -1276,6 +1291,9 @@ bool Parcel::WriteVector(const std::vector<T1> &val, bool (Parcel::*Write)(T2))
     }
 
     size_t padSize = this->GetPadSize(val.size() * sizeof(T1));
+    if (!EnsureWritableCapacity(padSize)) {
+        return false;
+    }
     this->WritePadBytes(padSize);
     return true;
 }
@@ -1299,13 +1317,16 @@ bool Parcel::WriteFixedAlignVector(const std::vector<T1> &originVal, bool (Parce
     // The write length of these interfaces is different from the original type.
     // They need to use the specified write length and calculate the padSize based on this.
     size_t padSize = this->GetPadSize(originVal.size() * sizeof(Type));
+    if (!EnsureWritableCapacity(padSize)) {
+        return false;
+    }
     this->WritePadBytes(padSize);
     return true;
 }
 
 bool Parcel::WriteBoolVector(const std::vector<bool> &val)
 {
-    return WriteVector(val, &Parcel::WriteBool);
+    return WriteFixedAlignVector<int32_t>(val, &Parcel::WriteBool);
 }
 
 bool Parcel::WriteInt8Vector(const std::vector<int8_t> &val)
@@ -1315,7 +1336,7 @@ bool Parcel::WriteInt8Vector(const std::vector<int8_t> &val)
 
 bool Parcel::WriteInt16Vector(const std::vector<int16_t> &val)
 {
-    return WriteVector(val, &Parcel::WriteInt16);
+    return WriteFixedAlignVector<int32_t>(val, &Parcel::WriteInt16);
 }
 
 bool Parcel::WriteInt32Vector(const std::vector<int32_t> &val)
@@ -1402,7 +1423,8 @@ bool Parcel::ReadVector(std::vector<T> *val, bool (Parcel::*Read)(T &))
     return true;
 }
 
-bool Parcel::ReadBoolVector(std::vector<bool> *val)
+template <typename Type, typename T1, typename T2>
+bool Parcel::ReadFixedAlignVector(std::vector<T1> *val, bool (Parcel::*SpecialRead)(T2 &))
 {
     if (val == nullptr) {
         return false;
@@ -1413,10 +1435,11 @@ bool Parcel::ReadBoolVector(std::vector<bool> *val)
         return false;
     }
 
-    size_t readAbleSize = this->GetReadableBytes();
+    size_t readAbleSize = this->GetReadableBytes() / sizeof(Type);
     size_t size = static_cast<size_t>(len);
-    if ((size > readAbleSize) || (val->max_size() < size)) {
-        UTILS_LOGE("Failed to read bool vector, size = %{public}zu, readAbleSize = %{public}zu", size, readAbleSize);
+    if ((size > readAbleSize) || (size > val->max_size())) {
+        UTILS_LOGE("Failed to fixed aligned read vector, size = %{public}zu, readAbleSize = %{public}zu",
+            size, readAbleSize);
         return false;
     }
     val->resize(size);
@@ -1425,12 +1448,21 @@ bool Parcel::ReadBoolVector(std::vector<bool> *val)
     }
 
     for (size_t i = 0; i < size; ++i) {
-        (*val)[i] = ReadBool();
+        T2 parcelVal;
+        if (!(this->*SpecialRead)(parcelVal)) {
+            return false;
+        }
+        (*val)[i] = parcelVal;
     }
 
-    size_t padSize = this->GetPadSize(size * sizeof(bool));
+    size_t padSize = this->GetPadSize(size * sizeof(Type));
     this->SkipBytes(padSize);
     return true;
+}
+
+bool Parcel::ReadBoolVector(std::vector<bool> *val)
+{
+    return ReadFixedAlignVector<int32_t>(val, &Parcel::ReadBool);
 }
 
 bool Parcel::ReadInt8Vector(std::vector<int8_t> *val)
@@ -1440,7 +1472,7 @@ bool Parcel::ReadInt8Vector(std::vector<int8_t> *val)
 
 bool Parcel::ReadInt16Vector(std::vector<int16_t> *val)
 {
-    return ReadVector(val, &Parcel::ReadInt16);
+    return ReadFixedAlignVector<int32_t>(val, &Parcel::ReadInt16);
 }
 
 bool Parcel::ReadInt32Vector(std::vector<int32_t> *val)
