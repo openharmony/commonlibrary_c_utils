@@ -356,8 +356,7 @@ bool TimerFdHandler::Initialize(uint32_t interval)
     newValue.it_interval.tv_nsec = (interval % MILLI_TO_BASE) * MILLI_TO_NANO;
 
     if (timerfd_settime(GetFd(), TFD_TIMER_ABSTIME, &newValue, nullptr) == INVALID_FD) {
-        BENCHMARK_LOGD("Set timerFd failed-%{public}s timer_fd:%{public}d, next_time:%{public}lld, "\
-            "interval:%{public}lld", strerror(errno), GetFd(), newValue.it_value.tv_sec, newValue.it_interval.tv_sec);
+        BENCHMARK_LOGD("Set timerFd failed-%{public}s timer_fd:%{public}d", strerror(errno), GetFd());
         return false;
     }
 
@@ -1028,7 +1027,7 @@ void TimerEventHandler::TimeOut()
     const size_t expirationSize = sizeof(expirations);
     ssize_t n = ::read(handler_->GetFd(), &expirations, expirationSize);
     if (n != expirationSize) {
-        BENCHMARK_LOGD("||%{public}d||Reads %{public}d bytes instead of %{public}d from timer fd.",
+        BENCHMARK_LOGD("||%{public}d||Reads %{public}d bytes instead of %{public}zu from timer fd.",
             gettid(), static_cast<int>(n), expirationSize);
     }
 
@@ -1086,8 +1085,8 @@ BENCHMARK_F(BenchmarkEventTest, testNewTimer002)(benchmark::State& state)
 {
     BENCHMARK_LOGD("EventTest testNewTimer002 start.");
     constexpr uint32_t sleepDurationMs = 200;
-    constexpr uint32_t expectedData1 = 8;
-    constexpr uint32_t expectedData2 = 2;
+    constexpr int expectedData1 = 8;
+    constexpr int expectedData2 = 2;
     while (state.KeepRunning()) {
         g_data1 = 0;
         g_data2 = 0;
@@ -1114,7 +1113,7 @@ BENCHMARK_F(BenchmarkEventTest, testNewTimer003)(benchmark::State& state)
 {
     BENCHMARK_LOGD("EventTest testNewTimer003 start.");
     constexpr uint32_t sleepDurationMs = 30;
-    constexpr uint32_t expectedData = 5;
+    constexpr int expectedData = 5;
     while (state.KeepRunning()) {
         g_data1 = 0;
         Timer timer("test_timer", 100);
@@ -1199,7 +1198,7 @@ BENCHMARK_F(BenchmarkEventTest, testNewTimer005)(benchmark::State& state)
     constexpr uint32_t loopCount = 10;
     constexpr uint32_t timeoutSeconds = 7;
     constexpr uint32_t sleepDurationMs = 10;
-    constexpr uint32_t expectedData = 5;
+    constexpr int expectedData = 5;
     while (state.KeepRunning()) {
         g_data1 = 0;
         Timer timer("test_timer", INVALID_FD);
