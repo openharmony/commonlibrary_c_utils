@@ -26,6 +26,14 @@ namespace {
 
 class BenchmarkRWLockTest : public benchmark::Fixture {
 public:
+    void SetUp(const ::benchmark::State& state) override
+    {
+    }
+
+    void TearDown(const ::benchmark::State& state) override
+    {
+    }
+
     BenchmarkRWLockTest()
     {
         Iterations(iterations);
@@ -34,13 +42,6 @@ public:
     }
 
     ~BenchmarkRWLockTest() override = default;
-    void SetUp(const ::benchmark::State& state) override
-    {
-    }
-
-    void TearDown(const ::benchmark::State& state) override
-    {
-    }
 
 protected:
     const int32_t repetitions = 3;

@@ -27,6 +27,14 @@ namespace {
 
 class BenchmarkObserverTest : public benchmark::Fixture {
 public:
+    void SetUp(const ::benchmark::State& state) override
+    {
+    }
+
+    void TearDown(const ::benchmark::State& state) override
+    {
+    }
+
     BenchmarkObserverTest()
     {
         Iterations(iterations);
@@ -35,13 +43,6 @@ public:
     }
 
     ~BenchmarkObserverTest() override = default;
-    void SetUp(const ::benchmark::State& state) override
-    {
-    }
-
-    void TearDown(const ::benchmark::State& state) override
-    {
-    }
 
 protected:
     const int32_t repetitions = 3;

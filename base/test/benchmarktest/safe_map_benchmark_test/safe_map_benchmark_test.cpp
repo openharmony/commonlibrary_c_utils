@@ -517,8 +517,8 @@ BENCHMARK_F(BenchmarkSafeMap, testUtilsConcurrentWriteAndFind001)(benchmark::Sta
     std::thread threads[THREAD_NUM];
     std::vector<std::future<int>> vcfi;
     while (state.KeepRunning()) {
-        auto lamfuncInsert = [](SafeMap<string, int>& data, const string& key,
-            const int& value, std::chrono::time_point<std::chrono::high_resolution_clock> absTime) {
+        auto lamfuncInsert = [](SafeMap<string, int>& data, const string& key, const int& value,
+            std::chrono::time_point<std::chrono::high_resolution_clock> absTime) {
             std::this_thread::sleep_until(absTime);
             data.EnsureInsert(key, value);
         };
@@ -535,8 +535,7 @@ BENCHMARK_F(BenchmarkSafeMap, testUtilsConcurrentWriteAndFind001)(benchmark::Sta
         timeT += std::chrono::milliseconds(SLEEP_FOR_FIFTY_MILLISECOND);
         string key("A");
         for (int i = 0; i < THREAD_NUM; ++i) {
-            threads[i] = std::thread(lamfuncInsert, std::ref(demoData),
-                key + std::to_string(i), i, timeT);
+            threads[i] = std::thread(lamfuncInsert, std::ref(demoData), key + std::to_string(i), i, timeT);
             vcfi.push_back(std::async(std::launch::async, lamfuncCheckLoop,
                 std::ref(demoData), key + std::to_string(i), timeT));
         }

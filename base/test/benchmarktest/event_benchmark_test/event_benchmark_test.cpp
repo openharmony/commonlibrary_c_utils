@@ -1048,7 +1048,7 @@ int64_t CurMs()
 std::atomic<int> g_data1(0);
 void TimeOutCallback1()
 {
-    g_data1 += 1;
+    g_data1 = g_data1 + 1;
 }
 
 std::atomic<int> g_data2(0);
@@ -1141,7 +1141,7 @@ public:
 private:
     void TimeOutProc()
     {
-        data_ -= 1;
+        data_ = data_ - 1;
     };
     int data_;
     Timer timer_;

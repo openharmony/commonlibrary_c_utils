@@ -1297,7 +1297,7 @@ BENCHMARK_F(BenchmarkRefbaseTest, testWptrefbase001)(benchmark::State& state)
         // test wptr<T>::wptr(const sptr<T>&)
         sptr<WptrTest> testOrigSptrObject(new WptrTest());
         AssertEqual(testOrigSptrObject->GetSptrRefCount(), EXPECTED_REF_COUNT_ONE,
-            "testOrigSptrObject->GetSptrRefCount() did not equal EXPECTED_REF_COUNT_ONE", state);
+            "testOrigSptrObject->GetSptrRefCount() did not equal EXPECTED_REF_COUNT_ONE as expected.", state);
 
         wptr<WptrTest> testTargetWptrObject3(testOrigSptrObject);
         CompOrigSptrAndTarWptr002(testOrigSptrObject, testTargetWptrObject3, EXPECTED_REF_COUNT_TWO, state);
@@ -1305,7 +1305,7 @@ BENCHMARK_F(BenchmarkRefbaseTest, testWptrefbase001)(benchmark::State& state)
         // test wptr<T>::operator=(const sptr<T>&)
         wptr<WptrTest> testTargetWptrObject4(new WptrTest());
         AssertEqual(testTargetWptrObject4->GetWptrRefCount(), EXPECTED_REF_COUNT_ONE,
-            "testTargetWptrObject4->GetWptrRefCount() did not equal EXPECTED_REF_COUNT_ONE", state);
+            "testTargetWptrObject4->GetWptrRefCount() did not equal EXPECTED_REF_COUNT_ONE as expected.", state);
 
         testTargetWptrObject4 = testOrigSptrObject;
         CompOrigSptrAndTarWptr002(testOrigSptrObject, testTargetWptrObject4, EXPECTED_REF_COUNT_THREE, state);
