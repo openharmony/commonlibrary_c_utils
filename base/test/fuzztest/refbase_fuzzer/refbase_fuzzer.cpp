@@ -93,7 +93,7 @@ const std::vector<std::function<void(SingleThreadRefCounts*, WeakRefCounter*&)>>
             if (shouldLock) {
                 g_strongLock.LockWrite();
             }
-            FUZZ_LOGI("thread = %{public}u, DecStrongRef, refState->strongCount = %{public}d", GetThreadId(),
+            FUZZ_LOGI("thread = %{public}u, DecStrongRef, refState->strongCount = %{public}zu", GetThreadId(),
                 refState->strongCount);
             g_ref->DecStrongRef(nullptr);
             if (shouldLock) {
@@ -111,7 +111,7 @@ const std::vector<std::function<void(SingleThreadRefCounts*, WeakRefCounter*&)>>
             if (shouldLock) {
                 g_strongLock.LockWrite();
             }
-            FUZZ_LOGI("thread = %{public}u, weakRef->DecWeakRefCount, refState->weakRefCount = %{public}d",
+            FUZZ_LOGI("thread = %{public}u, weakRef->DecWeakRefCount, refState->weakRefCount = %{public}zu",
                 GetThreadId(), refState->weakRefCount);
             weakRef->DecWeakRefCount(nullptr);
             if (shouldLock) {
@@ -128,7 +128,7 @@ const std::vector<std::function<void(SingleThreadRefCounts*, WeakRefCounter*&)>>
             if (shouldLock) {
                 g_strongLock.LockWrite();
             }
-            FUZZ_LOGI("thread = %{public}u, DecWeakRef, refState->weakCount = %{public}d", GetThreadId(),
+            FUZZ_LOGI("thread = %{public}u, DecWeakRef, refState->weakCount = %{public}zu", GetThreadId(),
                 refState->weakCount);
             g_ref->DecWeakRef(nullptr);
             if (shouldLock) {
@@ -262,7 +262,7 @@ void CleanUpWeakRefCounter(SingleThreadRefCounts& state, WeakRefCounter* newWeak
             if (shouldLock) {
                 g_strongLock.LockWrite();
             }
-            FUZZ_LOGI("thread = %{public}u, clean up DecWeakRefCount, refState->weakRefCount = %{public}d",
+            FUZZ_LOGI("thread = %{public}u, clean up DecWeakRefCount, refState->weakRefCount = %{public}zu",
                 GetThreadId(), state.weakRefCount);
             newWeakRef->DecWeakRefCount(nullptr);
             if (shouldLock) {
@@ -280,7 +280,7 @@ void CleanUpWeakCounter(SingleThreadRefCounts& state)
         if (shouldLock) {
             g_strongLock.LockWrite();
         }
-        FUZZ_LOGI("thread = %{public}u, clean up DecWeakRef, refState->weakCount = %{public}d", GetThreadId(),
+        FUZZ_LOGI("thread = %{public}u, clean up DecWeakRef, refState->weakCount = %{public}zu", GetThreadId(),
             state.weakCount - 1);
         g_ref->DecWeakRef(nullptr);
         if (shouldLock) {
@@ -297,7 +297,7 @@ void CleanUpStrongCounter(SingleThreadRefCounts& state)
         if (shouldLock) {
             g_strongLock.LockWrite();
         }
-        FUZZ_LOGI("thread = %{public}u, clean up DecStrongRef, refState->strongCount = %{public}d", GetThreadId(),
+        FUZZ_LOGI("thread = %{public}u, clean up DecStrongRef, refState->strongCount = %{public}zu", GetThreadId(),
             state.strongCount - 1);
         g_ref->DecStrongRef(nullptr);
         if (shouldLock) {
