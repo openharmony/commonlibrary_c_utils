@@ -29,6 +29,14 @@ namespace {
 
 class BenchmarkSafeBlockQueueTracking : public benchmark::Fixture {
 public:
+    void SetUp(const ::benchmark::State& state) override
+    {
+    }
+
+    void TearDown(const ::benchmark::State& state) override
+    {
+    }
+
     BenchmarkSafeBlockQueueTracking()
     {
         Iterations(iterations);
@@ -37,13 +45,6 @@ public:
     }
 
     ~BenchmarkSafeBlockQueueTracking() override = default;
-    void SetUp(const ::benchmark::State& state) override
-    {
-    }
-
-    void TearDown(const ::benchmark::State& state) override
-    {
-    }
 
 protected:
     const int32_t repetitions = 3;
@@ -172,6 +173,14 @@ void processSharedQueueTasks(DemoThreadData& data)
     }
 }
 
+static auto GetTimeOfSleepHundredMillisecond()
+{
+    using std::chrono::system_clock;
+    auto timeT = std::chrono::high_resolution_clock::now();
+    timeT += std::chrono::milliseconds(SLEEP_FOR_HUNDRED_MILLISECOND);
+    return timeT;
+}
+
 /*
  * @tc.name: testPut001
  * @tc.desc: Single-threaded call put and get to determine that the normal scenario is working properly
@@ -279,9 +288,7 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, PutAndBlockInblankqueue001)(benchma
     std::array<DemoThreadData, THREAD_NUM> demoDatas;
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
-        using std::chrono::system_clock;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_HUNDRED_MILLISECOND);
+        auto timeT = GetTimeOfSleepHundredMillisecond();
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
         StartThreads(threads, PutHandleThreadDataTime, demoDatas, timeT);
@@ -333,9 +340,7 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, testPutAndBlockInFullQueue001)(benc
     std::array<DemoThreadData, THREAD_NUM> demoDatas;
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
-        using std::chrono::system_clock;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_HUNDRED_MILLISECOND);
+        auto timeT = GetTimeOfSleepHundredMillisecond();
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
         for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
@@ -386,9 +391,7 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, GetAndBlockInblankqueue001)(benchma
     std::array<DemoThreadData, THREAD_NUM> demoDatas;
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
-        using std::chrono::system_clock;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_HUNDRED_MILLISECOND);
+        auto timeT = GetTimeOfSleepHundredMillisecond();
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
         StartThreads(threads, GetAndOneTaskDoneHandleThreadDataTime, demoDatas, timeT);
@@ -424,6 +427,22 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, GetAndBlockInblankqueue001)(benchma
     BENCHMARK_LOGD("SafeBlockQueueTracking GetAndBlockInblankqueue001 end.");
 }
 
+static void QueuePushFullEquivalent(const int Equivalent, benchmark::State& state)
+{
+    for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
+        DemoThreadData::shareQueue.Push(Equivalent);
+    }
+    AssertTrue((DemoThreadData::shareQueue.IsFull()), "shareQueue.IsFull() did not equal true.", state);
+}
+
+static void QueuePushFullNotEquivalent(const unsigned int remain)
+{
+    for (unsigned int i = 0; i < QUEUE_SLOTS - remain; i++) {
+        int t = i;
+        DemoThreadData::shareQueue.Push(t);
+    }
+}
+
 /*
  * @tc.name: GetAndBlockInfullqueue001
  * @tc.desc: Multi-threaded get() on the full queue. When n threads are waiting to reach a certain
@@ -436,15 +455,10 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, GetAndBlockInfullqueue001)(benchmar
     std::array<DemoThreadData, THREAD_NUM> demoDatas;
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
-        using std::chrono::system_clock;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_HUNDRED_MILLISECOND);
+        auto timeT = GetTimeOfSleepHundredMillisecond();
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()), "shareQueue.IsEmpty() did not equal true.", state);
         int t = 1;
-        for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
-            DemoThreadData::shareQueue.Push(t);
-        }
-        AssertTrue((DemoThreadData::shareQueue.IsFull()), "shareQueue.IsFull() did not equal true.", state);
+        QueuePushFullEquivalent(t, state);
         demoDatas[0].joinStatus = false;
         DemoThreadData tmp = DemoThreadData();
         std::thread joinThread = std::thread(&DemoThreadData::Join, tmp);
@@ -492,16 +506,11 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, GetAndBlockInnotfullqueue001)(bench
     std::array<DemoThreadData, THREAD_NUM> demoDatas;
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
-        using std::chrono::system_clock;
-        const unsigned int REMAIN_SLOTS = 3;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_HUNDRED_MILLISECOND);
+        auto timeT = GetTimeOfSleepHundredMillisecond();
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
-        for (unsigned int i = 0; i < QUEUE_SLOTS - REMAIN_SLOTS; i++) {
-            int t = i;
-            DemoThreadData::shareQueue.Push(t);
-        }
+        const unsigned int REMAIN_SLOTS = 3;
+        QueuePushFullNotEquivalent(REMAIN_SLOTS);
         demoDatas[0].joinStatus = false;
         DemoThreadData tmp = DemoThreadData();
         std::thread joinThread = std::thread(&DemoThreadData::Join, tmp);
@@ -548,16 +557,11 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, PutAndBlockInnotfullqueue001)(bench
     std::array<DemoThreadData, THREAD_NUM> demoDatas;
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
-        using std::chrono::system_clock;
+        auto timeT = GetTimeOfSleepHundredMillisecond();
         const unsigned int REMAIN_SLOTS = 3;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_HUNDRED_MILLISECOND);
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
-        for (unsigned int i = 0; i < QUEUE_SLOTS - REMAIN_SLOTS; i++) {
-            int t = i;
-            DemoThreadData::shareQueue.Push(t);
-        }
+        QueuePushFullNotEquivalent(REMAIN_SLOTS);
         demoDatas[0].joinStatus = false;
         DemoThreadData tmp = DemoThreadData();
         std::thread joinThread = std::thread(&DemoThreadData::Join, tmp);
@@ -605,15 +609,10 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, testMutilthreadConcurrentGetAndPopI
     while (state.KeepRunning()) {
         demoDatas.fill(DemoThreadData());
         std::thread threadsin[THREAD_NUM];
-        using std::chrono::system_clock;
-        auto timeT = std::chrono::high_resolution_clock::now();
-        timeT += std::chrono::milliseconds(SLEEP_FOR_HUNDRED_MILLISECOND);
+        auto timeT = GetTimeOfSleepHundredMillisecond();
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()), "shareQueue.IsEmpty() did not equal true.", state);
         int t = 1;
-        for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
-            DemoThreadData::shareQueue.Push(t);
-        }
-        AssertTrue((DemoThreadData::shareQueue.IsFull()), "shareQueue.IsFull() did not equal true.", state);
+        QueuePushFullEquivalent(t, state);
         demoDatas[0].joinStatus = false;
         DemoThreadData tmp = DemoThreadData();
         std::thread joinThread = std::thread(&DemoThreadData::Join, tmp);

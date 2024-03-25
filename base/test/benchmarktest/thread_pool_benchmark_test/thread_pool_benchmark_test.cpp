@@ -154,6 +154,14 @@ void TestFuncSubOneTime(int& i)
     BENCHMARK_LOGD("ThreadPoolTest TestFuncSubOneTime g_times:%{public}d", g_times);
 }
 
+static void AddPoolTaskByForLoop(ThreadPool& pool, const int loopIterations, void(*p)(int&))
+{
+    for (int i = 0; i < loopIterations; ++i) {
+        auto task = std::bind(p, i);
+        pool.AddTask(task);
+    }
+}
+
 // simple task, total task num less than the MaxTaskNum
 BENCHMARK_F(BenchmarkThreadPoolTest, test_05)(benchmark::State& state)
 {
@@ -174,15 +182,8 @@ BENCHMARK_F(BenchmarkThreadPoolTest, test_05)(benchmark::State& state)
         AssertEqual((int)pool.GetCurTaskNum(), curTaskNum,
             "(int)pool.GetCurTaskNum() did not equal curTaskNum as expected.", state);
 
-        for (int i = 0; i < loopIterations1; ++i) {
-            auto task = std::bind(TestFuncAddOneTime, i);
-            pool.AddTask(task);
-        }
-
-        for (int i = 0; i < loopIterations2; ++i) {
-            auto task = std::bind(TestFuncSubOneTime, i);
-            pool.AddTask(task);
-        }
+        AddPoolTaskByForLoop(pool, loopIterations1, TestFuncAddOneTime);
+        AddPoolTaskByForLoop(pool, loopIterations2, TestFuncSubOneTime);
 
         sleep(SLEEP_FOR_ONE_SECOND);
         AssertEqual((int)pool.GetCurTaskNum(), curTaskNum,
@@ -212,22 +213,15 @@ BENCHMARK_F(BenchmarkThreadPoolTest, test_06)(benchmark::State& state)
         ThreadPool pool;
         pool.Start(startThreads);
         AssertEqual(pool.GetName(), "", "pool.GetName() did not equal \"\" as expected.", state);
-        AssertEqual((int)pool.GetThreadsNum(), threadsNum,
-            "(int)pool.GetThreadsNum() did not equal threadsNum as expected.", state);
         AssertEqual((int)pool.GetCurTaskNum(), curTaskNum,
             "(int)pool.GetCurTaskNum() did not equal curTaskNum as expected.", state);
+        AssertEqual((int)pool.GetThreadsNum(), threadsNum,
+            "(int)pool.GetThreadsNum() did not equal threadsNum as expected.", state);
 
         pool.SetMaxTaskNum(maxTaskNum);
 
-        for (int i = 0; i < loopIterations1; ++i) {
-            auto task = std::bind(TestFuncAddOneTime, i);
-            pool.AddTask(task);
-        }
-
-        for (int i = 0; i < loopIterations2; ++i) {
-            auto task = std::bind(TestFuncSubOneTime, i);
-            pool.AddTask(task);
-        }
+        AddPoolTaskByForLoop(pool, loopIterations1, TestFuncAddOneTime);
+        AddPoolTaskByForLoop(pool, loopIterations2, TestFuncSubOneTime);
 
         sleep(SLEEP_FOR_ONE_SECOND);
         // 1 second should be enough to complete these tasks. if not, this case would be fail
@@ -280,15 +274,8 @@ BENCHMARK_F(BenchmarkThreadPoolTest, test_07)(benchmark::State& state)
         AssertEqual((int)pool.GetCurTaskNum(), curTaskNum,
             "(int)pool.GetCurTaskNum() did not equal curTaskNum as expected.", state);
 
-        for (int i = 0; i < loopIterations1; ++i) {
-            auto task = std::bind(TestFuncAddWait, i);
-            pool.AddTask(task);
-        }
-
-        for (int i = 0; i < loopIterations2; ++i) {
-            auto task = std::bind(TestFuncSubWait, i);
-            pool.AddTask(task);
-        }
+        AddPoolTaskByForLoop(pool, loopIterations1, TestFuncAddWait);
+        AddPoolTaskByForLoop(pool, loopIterations2, TestFuncSubWait);
 
         // release cpu proactively, let the task threads go into wait
         std::this_thread::sleep_for(std::chrono::seconds(SLEEP_FOR_ONE_SECOND));
@@ -336,15 +323,8 @@ BENCHMARK_F(BenchmarkThreadPoolTest, test_08)(benchmark::State& state)
         pool.SetMaxTaskNum(maxTaskNum);
 
         // ADD 15 tasks
-        for (int i = 0; i < loopIterations1; ++i) {
-            auto task = std::bind(TestFuncAddWait, i);
-            pool.AddTask(task);
-        }
-
-        for (int i = 0; i < loopIterations2; ++i) {
-            auto task = std::bind(TestFuncSubWait, i);
-            pool.AddTask(task);
-        }
+        AddPoolTaskByForLoop(pool, loopIterations1, TestFuncAddWait);
+        AddPoolTaskByForLoop(pool, loopIterations2, TestFuncSubWait);
 
         sleep(SLEEP_FOR_ONE_SECOND);
         // at this time, the first 5 tasks execute and wait for notify, the rest 10 tasks stay in the task queue.
