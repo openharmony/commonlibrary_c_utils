@@ -30,7 +30,6 @@ pub const PROT_EXEC: i32 = 4;
 /// Module Ashmem::ffi. Includes interfaces which will call c++ counterparts via
 /// FFI.
 pub mod ffi {
-    #[allow(dead_code)]
     unsafe extern "C++" {
         include!("commonlibrary/c_utils/base/include/ashmem.h");
 
@@ -107,13 +106,11 @@ pub mod ffi {
 }
 
 /// Ashmem in rust.
-#[allow(dead_code)]
 pub struct Ashmem {
     c_ashmem: SharedPtr<ffi::Ashmem>,
 }
 
 /// Ashmem implementation.
-#[allow(dead_code)]
 impl Ashmem {
     /// Create an ashmem object.
     pub fn new(c_ashmem: SharedPtr<ffi::Ashmem>) -> Ashmem {
@@ -168,18 +165,22 @@ impl Ashmem {
     /// Write data to ashmem.
     /// # Safety
     /// Requires c-style data(*const c_char)
-    ///
-    /// # Safety
     pub unsafe fn write_to_ashmem(&self, data: *const c_char, size: i32, offset: i32) -> bool {
         let c_void_ptr = ffi::AsVoidPtr(data);
         self.c_ashmem.WriteToAshmem(c_void_ptr, size, offset)
     }
 
+    /// Gets inner c_ashemem.
+    ///
+    /// # Safety
+    /// Returns c++ opaque shared ptr.
+    pub unsafe fn c_ashmem(&self) -> &SharedPtr<ffi::Ashmem> {
+        &self.c_ashmem
+    }
+
     /// Read data from ashmem.
     /// # Safety
     /// Returns c-style data(*const c_char)
-    ///
-    /// # Safety
     pub unsafe fn read_from_ashmem(&self, size: i32, offset: i32) -> *const c_char {
         let c_void_ptr = self.c_ashmem.ReadFromAshmem(size, offset);
         ffi::AsCharPtr(c_void_ptr)
@@ -189,7 +190,6 @@ impl Ashmem {
 /// Create Ashmem struct in Rust, which holds a refrence to c++ Ashmem object.
 /// # Safety
 /// Transmits c-style string of `name`.
-#[allow(dead_code)]
 pub unsafe fn create_ashmem_instance(name: &str, size: i32) -> Option<Ashmem> {
     let c_name = CString::new(name).expect("CString::new Failed!");
     let name_ptr = c_name.as_ptr();
