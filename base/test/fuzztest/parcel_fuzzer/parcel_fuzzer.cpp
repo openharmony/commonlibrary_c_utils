@@ -452,6 +452,20 @@ const std::vector<std::function<void(FuzzedDataProvider*, Parcel&)>> unaligned_o
         size_t bufferSize = dataProvider->ConsumeIntegralInRange<size_t>(1, MAX_BUFFER_SIZE);
         parcel.RewindWrite(bufferSize);
     },
+    [](FuzzedDataProvider* dataProvider, Parcel& parcel) {
+        FUZZ_LOGI("WriteBoolVector");
+        size_t vectorSize = dataProvider->ConsumeIntegralInRange<size_t>(1, MAX_VECTOR_SIZE);
+        std::vector<uint8_t> data = dataProvider->ConsumeBytes<uint8_t>(vectorSize);
+        if (data.size() > 0) {
+            std::vector<bool> testdata(data.size());
+            for (size_t i = 0; i < testdata.size(); i++) {
+                testdata[i] = 1 & data[i];
+            }
+            parcel.WriteBoolVector(testdata);
+        }
+    },
+
+    PARCEL_WRITE_VECTOR_WITH_BOOL_RETURN(int16_t, WriteInt16Vector),
 
     [](FuzzedDataProvider* dataProvider, Parcel& parcel) {
         FUZZ_LOGI("WriteBoolUnaligned");

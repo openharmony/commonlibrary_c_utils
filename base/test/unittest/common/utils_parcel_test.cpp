@@ -2011,5 +2011,194 @@ HWTEST_F(UtilsParcelTest, test_RewindWrite_003, TestSize.Level0)
     EXPECT_EQ(int32Read[3], 4);
     EXPECT_EQ(int32Read[4], 0);
 }
+
+HWTEST_F(UtilsParcelTest, test_VectorDataPadding_001, TestSize.Level0)
+{
+    Parcel parcel1(nullptr);
+    std::vector<bool> val1(121, true);
+    bool result = parcel1.WriteBoolVector(val1);
+    EXPECT_EQ(result, true);
+
+    int32_t targetVal = 123;
+    parcel1.WriteInt32(targetVal);
+
+    std::vector<bool> val2;
+    result = parcel1.ReadBoolVector(&val2);
+    int32_t target = parcel1.ReadInt32();
+    EXPECT_EQ(target, targetVal);
+}
+
+HWTEST_F(UtilsParcelTest, test_VectorDataPadding_002, TestSize.Level0)
+{
+    Parcel parcel1(nullptr);
+    std::vector<bool> val1(15, true);
+    bool result = parcel1.WriteBoolVector(val1);
+    EXPECT_EQ(result, true);
+
+    std::vector<bool> val2(16, true);
+    result = parcel1.WriteBoolVector(val2);
+    EXPECT_EQ(result, true);
+
+    std::vector<bool> val3;
+    result = parcel1.ReadBoolVector(&val3);
+    for (int i = 0; i < val1.size(); i++) {
+        EXPECT_EQ(val1[i], val3[i]);
+    }
+
+    std::vector<bool> val4;
+    result = parcel1.ReadBoolVector(&val4);
+    for (int i = 0; i < val2.size(); i++) {
+        EXPECT_EQ(val2[i], val4[i]);
+    }
+    parcel1.FlushBuffer();
+
+    result = parcel1.WriteBoolVector(val2);
+    EXPECT_EQ(result, true);
+    result = parcel1.WriteBoolVector(val1);
+    EXPECT_EQ(result, true);
+
+    std::vector<bool> val5;
+    result = parcel1.ReadBoolVector(&val5);
+    for (int i = 0; i < val2.size(); i++) {
+        EXPECT_EQ(val2[i], val5[i]);
+    }
+
+    std::vector<bool> val6;
+    result = parcel1.ReadBoolVector(&val6);
+    for (int i = 0; i < val1.size(); i++) {
+        EXPECT_EQ(val1[i], val6[i]);
+    }
+}
+
+HWTEST_F(UtilsParcelTest, test_VectorDataPadding_003, TestSize.Level0)
+{
+    Parcel parcel1(nullptr);
+    std::vector<bool> val1(17, true);
+    bool result = parcel1.WriteBoolVector(val1);
+    EXPECT_EQ(result, true);
+
+    std::vector<int16_t> val2(18, 1);
+    result = parcel1.WriteInt16Vector(val2);
+    EXPECT_EQ(result, true);
+
+    std::vector<bool> val3;
+    result = parcel1.ReadBoolVector(&val3);
+    for (int i = 0; i < val1.size(); i++) {
+        EXPECT_EQ(val1[i], val3[i]);
+    }
+
+    std::vector<int16_t> val4;
+    result = parcel1.ReadInt16Vector(&val4);
+    for (int i = 0; i < val2.size(); i++) {
+        EXPECT_EQ(val2[i], val4[i]);
+    }
+    parcel1.FlushBuffer();
+
+    result = parcel1.WriteInt16Vector(val2);
+    EXPECT_EQ(result, true);
+    result = parcel1.WriteBoolVector(val1);
+    EXPECT_EQ(result, true);
+
+    std::vector<int16_t> val5;
+    result = parcel1.ReadInt16Vector(&val5);
+    for (int i = 0; i < val2.size(); i++) {
+        EXPECT_EQ(val2[i], val5[i]);
+    }
+
+    std::vector<bool> val6;
+    result = parcel1.ReadBoolVector(&val6);
+    for (int i = 0; i < val1.size(); i++) {
+        EXPECT_EQ(val1[i], val6[i]);
+    }
+}
+
+HWTEST_F(UtilsParcelTest, test_VectorDataPadding_004, TestSize.Level0)
+{
+    Parcel parcel1(nullptr);
+    std::vector<int16_t> val1(19, 1);
+    bool result = parcel1.WriteInt16Vector(val1);
+    EXPECT_EQ(result, true);
+
+    std::vector<int16_t> val2(20, 1);
+    result = parcel1.WriteInt16Vector(val2);
+    EXPECT_EQ(result, true);
+
+    std::vector<int16_t> val3;
+    result = parcel1.ReadInt16Vector(&val3);
+    for (int i = 0; i < val1.size(); i++) {
+        EXPECT_EQ(val1[i], val3[i]);
+    }
+
+    std::vector<int16_t> val4;
+    result = parcel1.ReadInt16Vector(&val4);
+    for (int i = 0; i < val2.size(); i++) {
+        EXPECT_EQ(val2[i], val4[i]);
+    }
+    parcel1.FlushBuffer();
+
+    result = parcel1.WriteInt16Vector(val2);
+    EXPECT_EQ(result, true);
+    result = parcel1.WriteInt16Vector(val1);
+    EXPECT_EQ(result, true);
+
+    std::vector<int16_t> val5;
+    result = parcel1.ReadInt16Vector(&val5);
+    for (int i = 0; i < val2.size(); i++) {
+        EXPECT_EQ(val2[i], val5[i]);
+    }
+
+    std::vector<int16_t> val6;
+    result = parcel1.ReadInt16Vector(&val6);
+    for (int i = 0; i < val1.size(); i++) {
+        EXPECT_EQ(val1[i], val6[i]);
+    }
+}
+
+HWTEST_F(UtilsParcelTest, test_WriteStringDataLength_001, TestSize.Level0)
+{
+    Parcel parcel1(nullptr);
+
+    std::string veryLongString(static_cast<size_t>(INT32_MAX) + 1, '#');
+    bool result = parcel1.WriteCString(veryLongString.c_str());
+    EXPECT_EQ(result, false);
+    parcel1.FlushBuffer();
+
+    result = parcel1.WriteString(veryLongString);
+    EXPECT_EQ(result, false);
+    parcel1.FlushBuffer();
+
+    std::u16string veryLongStringU16(static_cast<size_t>(INT32_MAX) / 2, '#');
+    result = parcel1.WriteString16(veryLongStringU16);
+    EXPECT_EQ(result, false);
+    parcel1.FlushBuffer();
+
+    result = parcel1.WriteString16WithLength(veryLongStringU16.c_str(), static_cast<size_t>(INT32_MAX) / 2);
+    EXPECT_EQ(result, false);
+    parcel1.FlushBuffer();
+
+    result = parcel1.WriteString8WithLength(veryLongString.c_str(), static_cast<size_t>(INT32_MAX) + 1);
+    EXPECT_EQ(result, false);
+    parcel1.FlushBuffer();
+
+    result = parcel1.WriteCString(veryLongString.substr(0, DEFAULT_CPACITY - 1).c_str());
+    EXPECT_EQ(result, true);
+    parcel1.FlushBuffer();
+
+    result = parcel1.WriteString(veryLongString.substr(0, DEFAULT_CPACITY - 5));
+    EXPECT_EQ(result, true);
+    parcel1.FlushBuffer();
+
+    result = parcel1.WriteString16(veryLongStringU16.substr(0, (DEFAULT_CPACITY - 4) / 2 - 1));
+    EXPECT_EQ(result, true);
+    parcel1.FlushBuffer();
+
+    result = parcel1.WriteString16WithLength(veryLongStringU16.c_str(), (DEFAULT_CPACITY - 4) / 2 - 1);
+    EXPECT_EQ(result, true);
+    parcel1.FlushBuffer();
+
+    result = parcel1.WriteString8WithLength(veryLongString.c_str(), DEFAULT_CPACITY - 5);
+    EXPECT_EQ(result, true);
+    parcel1.FlushBuffer();
+}
 }  // namespace
 }  // namespace OHOS

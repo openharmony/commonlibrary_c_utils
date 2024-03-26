@@ -743,6 +743,8 @@ public:
      */
     template <typename T>
     bool ReadVector(std::vector<T> *val, bool (Parcel::*Read)(T &));
+    template <typename Type, typename T1, typename T2>
+    bool ReadFixedAlignVector(std::vector<T1> *val, bool (Parcel::*SpecialRead)(T2 &));
     bool ReadBoolVector(std::vector<bool> *val);
     bool ReadInt8Vector(std::vector<int8_t> *val);
     bool ReadInt16Vector(std::vector<int16_t> *val);
