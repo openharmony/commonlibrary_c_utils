@@ -64,9 +64,9 @@ public:
     using TimerEventCallback = std::function<void()>;
     TimerFdHandler(int fd, const TimerEventCallback& cb);
     ~TimerFdHandler() {}
+    void TimeOut();
     bool Initialize(uint32_t interval);
     void Uninitialize();
-    void TimeOut();
 
 private:
     TimerEventCallback timerCallback_;
@@ -267,7 +267,7 @@ bool TimerFdHandler::Initialize(uint32_t interval)
     newValue.it_value.tv_sec = now.tv_sec + interval / MILLI_TO_BASE;
     newValue.it_value.tv_nsec = now.tv_nsec + (interval % MILLI_TO_BASE) * MILLI_TO_NANO;
     if (newValue.it_value.tv_nsec >= NANO_TO_BASE) {
-        newValue.it_value.tv_sec += 1;
+        newValue.it_value.tv_sec = newValue.it_value.tv_sec + 1;
         newValue.it_value.tv_nsec = newValue.it_value.tv_nsec % NANO_TO_BASE;
     }
 
@@ -309,6 +309,20 @@ void TimerFdHandler::TimeOut()
     }
 }
 
+static void InitAndRun(std::shared_ptr<TimerFdHandler>& handler, const uint32_t interval,
+                       std::unique_ptr<IOEventReactor>& reactor, std::thread& loopThread)
+{
+    // Initialize timer handler and add it to reactor
+    ASSERT_TRUE(handler->Initialize(interval));
+    ASSERT_TRUE(handler->Start(reactor.get()));
+
+    // Run event loop
+    loopThread = std::thread([&reactor] {
+        reactor->Run(-1);
+    }
+    );
+}
+
 /*
  * @tc.name: testEvent001
  * @tc.desc: test handling event of timerfd.
@@ -327,22 +341,18 @@ HWTEST_F(UtilsEventTest, testEvent001, TestSize.Level0)
     ASSERT_EQ(reactor->SetUp(), EVENT_SYS_ERR_OK);
     reactor->EnableHandling();
 
-    // 4. Initialize timer handler and add it to reactor
-    ASSERT_TRUE(handler->Initialize(10));
-    ASSERT_TRUE(handler->Start(reactor.get()));
+    // 4. Initialize timer handler and add it to reactor. Run event loop
+    uint32_t interval = 10;
+    std::thread loopThread;
+    InitAndRun(handler, interval, reactor, loopThread);
 
-    // 5. Run event loop
-    std::thread loopThread([&reactor]{
-        reactor->Run(-1);
-    });
-
-    // 6. Wait for event handling
+    // 5. Wait for event handling
     std::this_thread::sleep_for(std::chrono::milliseconds(16));
 
-    // 7. Check result, execute once at least
+    // 6. Check result, execute once at least
     EXPECT_GE(g_data, 1);
 
-    // 8. terminate the event-loop (aka Run())
+    // 7. terminate the event-loop (aka Run())
     reactor->Terminate();
     loopThread.join();
 }
@@ -364,28 +374,24 @@ HWTEST_F(UtilsEventTest, testEvent002, TestSize.Level0)
     std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
     ASSERT_EQ(reactor->SetUp(), EVENT_SYS_ERR_OK);
 
-    // 4. Initialize timer handler and add it to reactor
-    ASSERT_TRUE(handler->Initialize(10));
-    ASSERT_TRUE(handler->Start(reactor.get()));
+    // 4. Initialize timer handler and add it to reactor. Run event loop
+    uint32_t interval = 10;
+    std::thread loopThread;
+    InitAndRun(handler, interval, reactor, loopThread);
 
-    // 5. Run event loop
-    std::thread loopThread([&reactor]{
-        reactor->Run(-1);
-    });
-
-    // 6. Change settings
+    // 5. Change settings
     reactor->DisableHandling();
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
     reactor->EnableHandling();
     handler->SetEvents(Events::EVENT_NONE);
 
-    // 7. Wait for event handling
+    // 6. Wait for event handling
     std::this_thread::sleep_for(std::chrono::milliseconds(16));
 
-    // 8. Check result, no execution
+    // 7. Check result, no execution
     EXPECT_EQ(g_data, 0);
 
-    // 9. terminate the event-loop (aka Run())
+    // 8. terminate the event-loop (aka Run())
     reactor->Terminate();
     loopThread.join();
 }
@@ -407,23 +413,19 @@ HWTEST_F(UtilsEventTest, testEvent003, TestSize.Level0)
     std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
     ASSERT_EQ(reactor->SetUp(), EVENT_SYS_ERR_OK);
 
-    // 4. Initialize timer handler and add it to reactor
-    ASSERT_TRUE(handler->Initialize(10));
-    ASSERT_TRUE(handler->Start(reactor.get()));
+    // 4. Initialize timer handler and add it to reactor. Run event loop
+    uint32_t interval = 10;
+    std::thread loopThread;
+    InitAndRun(handler, interval, reactor, loopThread);
 
-    // 5. Run event loop
-    std::thread loopThread([&reactor]{
-        reactor->Run(-1);
-    });
-
-    // 6. Change settings
+    // 5. Change settings
     reactor->EnableHandling();
     ASSERT_TRUE(handler->Stop(reactor.get())); // block to get lock, so no need to wait.
 
-    // 7. Check result, no execution
+    // 6. Check result, no execution
     EXPECT_EQ(g_data, 0);
 
-    // 8. terminate the event-loop (aka Run())
+    // 7. terminate the event-loop (aka Run())
     reactor->Terminate();
     loopThread.join();
 }
@@ -445,26 +447,22 @@ HWTEST_F(UtilsEventTest, testEvent004, TestSize.Level0)
     std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
     ASSERT_EQ(reactor->SetUp(), EVENT_SYS_ERR_OK);
 
-    // 4. Initialize timer handler and add it to reactor
-    ASSERT_TRUE(handler->Initialize(10));
-    ASSERT_TRUE(handler->Start(reactor.get()));
+    // 4. Initialize timer handler and add it to reactor. Run event loop
+    uint32_t interval = 10;
+    std::thread loopThread;
+    InitAndRun(handler, interval, reactor, loopThread);
 
-    // 5. Run event loop
-    std::thread loopThread([&reactor]{
-        reactor->Run(-1);
-    });
-
-    // 6. Change settings
+    // 5. Change settings
     reactor->EnableHandling();
     handler->SetCallback(nullptr);
 
-    // 7. Wait for event handling
+    // 6. Wait for event handling
     std::this_thread::sleep_for(std::chrono::milliseconds(16));
 
-    // 8. Check result, no execution
+    // 7. Check result, no execution
     EXPECT_EQ(g_data, 0);
 
-    // 9. terminate the event-loop (aka Run())
+    // 8. terminate the event-loop (aka Run())
     reactor->Terminate();
     loopThread.join();
 }
@@ -486,26 +484,22 @@ HWTEST_F(UtilsEventTest, testEvent005, TestSize.Level0)
     std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
     ASSERT_EQ(reactor->SetUp(), EVENT_SYS_ERR_OK);
 
-    // 4. Initialize timer handler and add it to reactor
-    ASSERT_TRUE(handler->Initialize(15));
-    ASSERT_TRUE(handler->Start(reactor.get()));
+    // 4. Initialize timer handler and add it to reactor. Run event loop
+    uint32_t interval = 15;
+    std::thread loopThread;
+    InitAndRun(handler, interval, reactor, loopThread);
 
-    // 5. Run event loop
-    std::thread loopThread([&reactor]{
-        reactor->Run(-1);
-    });
-
-    // 6. Change settings but not update
+    // 5. Change settings but not update
     handler->SetEvents(Events::EVENT_WRITE);
     reactor->EnableHandling();
 
-    // 7. Wait for event handling
+    // 6. Wait for event handling
     std::this_thread::sleep_for(std::chrono::milliseconds(16));
 
-    // 8. Check result, no execution
+    // 7. Check result, no execution
     EXPECT_EQ(g_data, 0);
 
-    // 9. terminate the event-loop (aka Run())
+    // 8. terminate the event-loop (aka Run())
     reactor->Terminate();
     loopThread.join();
 }
@@ -527,26 +521,22 @@ HWTEST_F(UtilsEventTest, testEvent006, TestSize.Level0)
     std::unique_ptr<IOEventReactor> reactor = std::make_unique<IOEventReactor>();
     ASSERT_EQ(reactor->SetUp(), EVENT_SYS_ERR_OK);
 
-    // 4. Initialize timer handler and add it to reactor
-    ASSERT_TRUE(handler->Initialize(15));
-    ASSERT_TRUE(handler->Start(reactor.get()));
+    // 4. Initialize timer handler and add it to reactor. Run event loop
+    uint32_t interval = 15;
+    std::thread loopThread;
+    InitAndRun(handler, interval, reactor, loopThread);
 
-    // 5. Run event loop
-    std::thread loopThread([&reactor]{
-        reactor->Run(-1);
-    });
-
-    // 6. release eventhandler
+    // 5. release eventhandler
     handler.reset();
     reactor->EnableHandling();
 
-    // 7. Wait for event handling
+    // 6. Wait for event handling
     std::this_thread::sleep_for(std::chrono::milliseconds(16));
 
-    // 8. Check result, no execution
+    // 7. Check result, no execution
     EXPECT_EQ(g_data, 0);
 
-    // 9. terminate the event-loop (aka Run())
+    // 8. terminate the event-loop (aka Run())
     reactor->Terminate();
     loopThread.join();
 }
@@ -559,10 +549,10 @@ public:
     TimerEventHandler(uint32_t timeout /* ms */, bool once);
     ~TimerEventHandler();
 
-    TimerEventHandler(const TimerEventHandler&) = delete;
-    TimerEventHandler& operator=(const TimerEventHandler&) = delete;
     TimerEventHandler(const TimerEventHandler&&) = delete;
     TimerEventHandler& operator=(const TimerEventHandler&&) = delete;
+    TimerEventHandler(const TimerEventHandler&) = delete;
+    TimerEventHandler& operator=(const TimerEventHandler&) = delete;
 
     ErrCode Initialize();
     void Uninitialize();
@@ -570,13 +560,13 @@ public:
     bool Start(IOEventReactor* reactor);
     bool Stop(IOEventReactor* reactor);
 
-    inline void SetTimerEventCallback(const TimerEventCallback& callback) { timerEventCallback_ = callback; }
-
     inline void SetTimerId(const uint32_t& id) { timerId_ = id; }
 
+    inline void SetTimerEventCallback(const TimerEventCallback& callback) { timerEventCallback_ = callback; }
+
     inline uint32_t GetInterval() const { return interval_; }
-    inline uint32_t GetTimerId() const { return timerId_; }
     inline int GetTimerFd() const { return handler_->GetFd(); }
+    inline uint32_t GetTimerId() const { return timerId_; }
 
 private:
     void TimeOut();
@@ -585,9 +575,8 @@ private:
     bool           once_;
     uint32_t       timerId_;
     uint32_t       interval_;
-    TimerEventCallback  timerEventCallback_;
-
     std::unique_ptr<IOEventHandler> handler_;
+    TimerEventCallback  timerEventCallback_;
 
     friend class Timer;
 };
@@ -599,7 +588,9 @@ public:
     using TimerEventCallback = TimerEventHandler::TimerEventCallback;
 
     explicit Timer(const std::string& name, int timeoutMs = 1000);
-    virtual ~Timer() {}
+    virtual ~Timer()
+    {
+    }
     virtual uint32_t Setup();
     virtual void Shutdown(bool useJoin = true);
     uint32_t Register(const TimerCallback& callback, uint32_t interval /* ms */, bool once = false);
@@ -608,8 +599,8 @@ public:
 private:
     void MainLoop();
     void OnTimer(TimerEventHandler* handler, const TimerCallback& callback);
-    uint32_t GetValidId() const;
     int GetTimerFd(uint32_t interval /* ms */);
+    uint32_t GetValidId() const;
     void EraseUnusedTimerId(uint32_t interval, const std::vector<uint32_t>& unusedIds);
 
 private:
@@ -618,10 +609,11 @@ private:
 
     ErrCode ScheduleTimer(const TimerEventCallback& callback, uint32_t interval, uint32_t timerId, int& timerFd,
                           bool once);
+    void EraseExistNode(TimerHandlerPtr target);
     ErrCode CancelTimer(TimerHandlerPtr target);
 
-    std::map<uint32_t, TimerHandlerPtr> timerHandlers_;
     std::map<uint32_t, TimerHandlerList> intervalToTimers_;
+    std::map<uint32_t, TimerHandlerPtr> timerHandlers_;
 
     std::string name_;
     int timeoutMs_;
@@ -682,8 +674,8 @@ void Timer::Shutdown(bool useJoin)
     thread_.join();
 }
 
-ErrCode Timer::ScheduleTimer(const TimerEventCallback& callback, uint32_t interval,
-                             uint32_t timerId, int& timerFd, bool once)
+ErrCode Timer::ScheduleTimer(const TimerEventCallback& callback, uint32_t interval, uint32_t timerId,
+                             int& timerFd, bool once)
 {
     std::shared_ptr<TimerEventHandler> handler = std::make_shared<TimerEventHandler>(timerFd, interval, once);
 
@@ -725,17 +717,8 @@ uint32_t Timer::Register(const TimerCallback& callback, uint32_t interval /* ms 
     return timerId;
 }
 
-ErrCode Timer::CancelTimer(TimerHandlerPtr target)
+void Timer::EraseExistNode(TimerHandlerPtr target)
 {
-    std::cout << "||" << gettid() << "||" << "Cancle timer handler with fd:" <<  target->GetTimerFd() << std::endl;
-    target->Uninitialize();
-    if (!target->Stop(reactor_.get())) {
-        std::cout << "||" << gettid() << "||" << "Stop timer handler failed." << std::endl;
-        return TIMER_ERR_DEAL_FAILED;
-    }
-
-    timerHandlers_.erase(target->timerId_);
-
     auto handlerList = intervalToTimers_[target->interval_];
     auto itor = std::find(handlerList.begin(), handlerList.end(), target);
     if (itor != handlerList.end()) {
@@ -745,7 +728,18 @@ ErrCode Timer::CancelTimer(TimerHandlerPtr target)
     if (handlerList.empty()) {
         intervalToTimers_.erase(target->interval_);
     }
+}
 
+ErrCode Timer::CancelTimer(TimerHandlerPtr target)
+{
+    std::cout << "||" << gettid() << "||" << "Cancle timer handler with fd:" <<  target->GetTimerFd() << std::endl;
+    target->Uninitialize();
+    if (!target->Stop(reactor_.get())) {
+        std::cout << "||" << gettid() << "||" << "Stop timer handler failed." << std::endl;
+        return TIMER_ERR_DEAL_FAILED;
+    }
+    timerHandlers_.erase(target->timerId_);
+    EraseExistNode(target);
     return TIMER_ERR_OK;
 }
 
@@ -782,13 +776,13 @@ uint32_t Timer::GetValidId() const
     static std::atomic_uint32_t timerId = 1;
 
     while (timerHandlers_.find(timerId) != timerHandlers_.end()) {
-        timerId++;
+        timerId = timerId + 1;
         if (timerId == UINT32_MAX) {
             timerId = 1;
         }
 
         if (timerId == TIMER_ERR_DEAL_FAILED) {
-            timerId++;
+            timerId = timerId + 1;
         }
     }
 
@@ -847,7 +841,7 @@ ErrCode TimerEventHandler::Initialize()
     newValue.it_value.tv_sec = now.tv_sec + interval_ / MILLI_TO_BASE;
     newValue.it_value.tv_nsec = now.tv_nsec + (interval_ % MILLI_TO_BASE) * MILLI_TO_NANO;
     if (newValue.it_value.tv_nsec >= NANO_TO_BASE) {
-        newValue.it_value.tv_sec += 1;
+        newValue.it_value.tv_sec = newValue.it_value.tv_sec + 1;
         newValue.it_value.tv_nsec = newValue.it_value.tv_nsec % NANO_TO_BASE;
     }
 
@@ -915,13 +909,6 @@ void TimerEventHandler::TimeOut()
     }
 }
 
-int64_t CurMs()
-{
-    struct timeval tpend;
-    gettimeofday(&tpend, nullptr);
-    return (tpend.tv_sec * 1000000 + tpend.tv_usec) / 1000; // 1000000: s to us, 1000: us to ms
-}
-
 std::atomic<int> g_data1(0);
 void TimeOutCallback1()
 {
@@ -931,7 +918,14 @@ void TimeOutCallback1()
 std::atomic<int> g_data2(0);
 void TimeOutCallback2()
 {
-    g_data2 += 1;
+    g_data2 = g_data2 + 1;
+}
+
+int64_t CurMs()
+{
+    struct timeval tpend;
+    gettimeofday(&tpend, nullptr);
+    return (tpend.tv_sec * 1000000 + tpend.tv_usec) / 1000; // 1000000: s to us, 1000: us to ms
 }
 
 /*
@@ -969,6 +963,17 @@ HWTEST_F(UtilsEventTest, testNewTimer002, TestSize.Level0)
     EXPECT_GE(g_data2, 2);
 }
 
+static void TestTimerEvent(Timer& timer)
+{
+    uint32_t interval = 1;
+    timer.Register(TimeOutCallback1, interval);
+    uint32_t interval2 = 2;
+    timer.Register(TimeOutCallback1, interval2);
+    int sleepTime = 30;
+    std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
+    timer.Shutdown();
+}
+
 /*
  * @tc.name: testNewTimer003
  * @tc.desc: test basic function of timer implemented by new event-system.
@@ -979,10 +984,7 @@ HWTEST_F(UtilsEventTest, testNewTimer003, TestSize.Level0)
     Timer timer("test_timer");
     uint32_t ret = timer.Setup();
     EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
-    timer.Register(TimeOutCallback1, 1);
-    timer.Register(TimeOutCallback1, 2);
-    std::this_thread::sleep_for(std::chrono::milliseconds(30));
-    timer.Shutdown();
+    TestTimerEvent(timer);
     EXPECT_GE(g_data1, 5);
 }
 
@@ -991,9 +993,9 @@ public:
     explicit A(int data) : data_(data), timer_("ATimer") {}
     ~A() = default;
     bool Init();
+    int GetData() const {return data_;}
     bool StartTimer(int milliseconds, bool once);
     void StopTimer();
-    int GetData() const {return data_;}
 private:
     void TimeOutProc()
     {
@@ -1008,15 +1010,15 @@ bool A::Init()
     return timer_.Setup() == Utils::TIMER_ERR_OK;
 }
 
+void A::StopTimer()
+{
+    timer_.Shutdown();
+}
+
 bool A::StartTimer(int milliseconds, bool once)
 {
     uint32_t timerId = timer_.Register(std::bind(&A::TimeOutProc, this), milliseconds, once);
     return timerId != Utils::TIMER_ERR_DEAL_FAILED;
-}
-
-void A::StopTimer()
-{
-    timer_.Shutdown();
 }
 
 /*
@@ -1033,6 +1035,33 @@ HWTEST_F(UtilsEventTest, testNewTimer004, TestSize.Level0)
     EXPECT_EQ(9, a.GetData());
 }
 
+static void SleepLoop()
+{
+    int loops = 11;
+    int64_t desiredVal = 10;
+    int sleepTime = 10;
+    for (int i = 0; i < loops; i++) {
+        int64_t pre = CurMs();
+        std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
+        int64_t cur = CurMs();
+        EXPECT_GE(cur - pre, desiredVal);
+    }
+}
+
+static void TimerEvent(Timer& timer)
+{
+    uint32_t timerId = 0;
+    uint32_t loops = 10;
+    uint32_t interval = 7;
+    int sleepTime = 10;
+    for (uint32_t i = 0; i < loops; i++) {
+        timerId = timer.Register(TimeOutCallback1, interval, true);
+        std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
+    }
+    timer.Unregister(timerId);
+    timer.Unregister(timerId);
+}
+
 /*
  * @tc.name: testNewTimer005
  * @tc.desc: test abnormal case of timer implemented by new event-system.
@@ -1043,15 +1072,7 @@ HWTEST_F(UtilsEventTest, testNewTimer005, TestSize.Level0)
     Timer timer("test_timer", -1);
     uint32_t ret = timer.Setup();
     EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
-
-    uint32_t timerId = 0;
-    for (uint32_t i = 0; i < 10; i++) {
-        timerId = timer.Register(TimeOutCallback1, 7, true);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-    timer.Unregister(timerId);
-    timer.Unregister(timerId);
-
+    TimerEvent(timer);
     timer.Shutdown();
     timer.Shutdown(false);
     EXPECT_GE(g_data1, 5);
@@ -1068,13 +1089,8 @@ HWTEST_F(UtilsEventTest, testNewTimer006, TestSize.Level0)
     uint32_t ret = timer.Setup();
     EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
     timer.Register(TimeOutCallback1, 10);
-
-    for (int i = 0; i < 11; i++) {
-        int64_t pre = CurMs();
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        int64_t cur = CurMs();
-        EXPECT_GE(cur - pre, 10);
-    }
+    
+    SleepLoop();
     timer.Shutdown();
     EXPECT_GE(g_data1, 10);
 }
@@ -1087,7 +1103,7 @@ void DoFunc(Timer &timer, int &count)
 {
     (void)timer.Register(
         [&timer, &count]() {
-            count += 1;
+            count = count + 1;
             if (count > 9) { // 9: recursion depth
                 return;
             }
@@ -1101,7 +1117,7 @@ void DoFunc2(Timer &timer, int &count)
 {
     (void)timer.Register(
         [&timer, &count]() {
-            count += 1;
+            count = count + 1;
             if (count > 9) { // 9: recursion depth
                 return;
             }
@@ -1118,7 +1134,8 @@ HWTEST_F(UtilsEventTest, testNewTimer007, TestSize.Level0)
     uint32_t ret = timer.Setup();
     EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
 
-    int cnt = 0, cnt1 = 0;
+    int cnt = 0;
+    int cnt1 = 0;
     DoFunc(timer, cnt);
     DoFunc2(timer, cnt1);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -1127,6 +1144,15 @@ HWTEST_F(UtilsEventTest, testNewTimer007, TestSize.Level0)
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     timer.Shutdown();
     EXPECT_GE(g_data1, 10); /* 18 for max */
+}
+
+static void TimerRegisterMechanism(Timer& timer)
+{
+    uint32_t interval = 10;
+    timer.Register(TimeOutCallback1, interval, true);
+    timer.Register(TimeOutCallback1, interval);
+    timer.Register(TimeOutCallback1, interval, true);
+    timer.Register(TimeOutCallback1, interval);
 }
 
 /*
@@ -1139,10 +1165,7 @@ HWTEST_F(UtilsEventTest, testNewTimer008, TestSize.Level0)
     Timer timer("test_timer");
     uint32_t ret = timer.Setup();
     EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
-    timer.Register(TimeOutCallback1, 10, true);
-    timer.Register(TimeOutCallback1, 10);
-    timer.Register(TimeOutCallback1, 10, true);
-    timer.Register(TimeOutCallback1, 10);
+    TimerRegisterMechanism(timer);
     std::this_thread::sleep_for(std::chrono::milliseconds(52));
     timer.Shutdown();
     EXPECT_GE(g_data1, 8); /* 12 for max */
