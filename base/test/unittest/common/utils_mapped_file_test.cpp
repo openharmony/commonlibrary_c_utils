@@ -224,6 +224,7 @@ void CheckOffset(MappedFile& mf, const off_t& orig)
 {
     off_t endOff;
     // 6. keep turnNext within a page
+    ASSERT_NE(orig, 0);
     if (orig != 0) {
         for (unsigned int cnt = 2; cnt < (MappedFile::PageSize() / orig); cnt++) { // 2: start from 2 to take the first
                                                                                 // TunrNext() calling in consideration.
