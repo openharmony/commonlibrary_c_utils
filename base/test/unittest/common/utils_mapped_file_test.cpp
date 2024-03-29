@@ -133,8 +133,10 @@ void CheckStatusAndSize(MappedFile& mf, const std::string& filename)
     ASSERT_TRUE(stb.st_size == mf.Size() || mf.PageSize() == mf.Size());
 }
 
-void CheckStatusAndSizeAndRead(MappedFile& mf, const std::string& filename,
-                                    const std::string& content, struct stat* stb)
+void CheckStatusAndSizeAndRead(MappedFile& mf,
+                               const std::string& filename,
+                               const std::string& content,
+                               struct stat* stb)
 {
     ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
@@ -177,8 +179,10 @@ void CheckReadAndWriteMappedFile(const MappedFile& mf, const std::string& conten
     }
 }
 
-void CheckSizeAndRead(MappedFile& mf, const std::string& filename,
-                            const std::string& content, struct stat* stb)
+void CheckSizeAndRead(MappedFile& mf,
+                      const std::string& filename,
+                      const std::string& content,
+                      struct stat* stb)
 {
     ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
@@ -198,8 +202,11 @@ void CheckSizeAndRead(MappedFile& mf, const std::string& filename,
     EXPECT_EQ(readout, content);
 }
 
-void CheckFileEquals(const MappedFile& mf, const std::string& filename,
-                            std::string& filename1, std::string& content1, struct stat* stb)
+void CheckFileEquals(const MappedFile& mf,
+                     const std::string& filename,
+                     std::string& filename1,
+                     std::string& content1,
+                     struct stat* stb)
 {
     // 9. check status after remapping
     EXPECT_TRUE(mf.IsMapped());
@@ -271,8 +278,10 @@ void CheckReadComplete(const MappedFile& mfNew, const std::string& filename, con
     RemoveTestFile(filename);
 }
 
-void CheckReadCompleteMove(const MappedFile& mf, const std::string& filename,
-                                    const std::string& filename1, const std::string& content1)
+void CheckReadCompleteMove(const MappedFile& mf,
+                           const std::string& filename,
+                           const std::string& filename1,
+                           const std::string& content1)
 {
     std::string readout;
     for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
