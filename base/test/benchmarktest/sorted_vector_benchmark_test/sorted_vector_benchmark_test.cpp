@@ -35,6 +35,14 @@ const size_t EXPECTED_SIZE_AFTER_DUPLICATES = 30;
 
 class BenchmarkSortedVector : public benchmark::Fixture {
 public:
+    void SetUp(const ::benchmark::State& state) override
+    {
+    }
+
+    void TearDown(const ::benchmark::State& state) override
+    {
+    }
+
     BenchmarkSortedVector()
     {
         Iterations(iterations);
@@ -43,13 +51,6 @@ public:
     }
 
     ~BenchmarkSortedVector() override = default;
-    void SetUp(const ::benchmark::State& state) override
-    {
-    }
-
-    void TearDown(const ::benchmark::State& state) override
-    {
-    }
 
 protected:
     const int32_t repetitions = 3;

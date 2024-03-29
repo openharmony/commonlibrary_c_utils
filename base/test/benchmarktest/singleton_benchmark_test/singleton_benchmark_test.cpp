@@ -30,6 +30,14 @@ static constexpr long DELAYEDSINGLETON_SP2_USE_COUNT = 3;
 
 class BenchmarkSingletonTest : public benchmark::Fixture {
 public:
+    void SetUp(const ::benchmark::State& state) override
+    {
+    }
+
+    void TearDown(const ::benchmark::State& state) override
+    {
+    }
+
     BenchmarkSingletonTest()
     {
         Iterations(iterations);
@@ -38,13 +46,6 @@ public:
     }
 
     ~BenchmarkSingletonTest() override = default;
-    void SetUp(const ::benchmark::State& state) override
-    {
-    }
-
-    void TearDown(const ::benchmark::State& state) override
-    {
-    }
 
 protected:
     const int32_t repetitions = 3;

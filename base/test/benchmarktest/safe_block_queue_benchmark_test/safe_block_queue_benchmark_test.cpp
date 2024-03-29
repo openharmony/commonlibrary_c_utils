@@ -30,6 +30,14 @@ namespace {
 
 class BenchmarkSafeBlockQueue : public benchmark::Fixture {
 public:
+    void SetUp(const ::benchmark::State& state) override
+    {
+    }
+
+    void TearDown(const ::benchmark::State& state) override
+    {
+    }
+
     BenchmarkSafeBlockQueue()
     {
         Iterations(iterations);
@@ -38,13 +46,6 @@ public:
     }
 
     ~BenchmarkSafeBlockQueue() override = default;
-    void SetUp(const ::benchmark::State& state) override
-    {
-    }
-
-    void TearDown(const ::benchmark::State& state) override
-    {
-    }
 
 protected:
     const int32_t repetitions = 3;
@@ -66,17 +67,16 @@ public:
     static SafeBlockQueue<int> shareQueue;
     bool putStatus;
     bool getStatus;
+    void Get()
+    {
+        shareQueue.Pop();
+        getStatus = true;
+    }
 
     void Put(int i)
     {
         shareQueue.Push(i);
         putStatus = true;
-    }
-
-    void Get()
-    {
-        shareQueue.Pop();
-        getStatus = true;
     }
 };
 
@@ -87,30 +87,30 @@ void PutHandleThreadData(DemoThreadData& q, int i)
     q.Put(i);
 }
 
-void GetThreadDatePushedStatus(std::array<DemoThreadData, THREAD_NUM>& demoDatas, unsigned int& pushedIn,
-    unsigned int& unpushedIn)
-{
-    pushedIn = 0;
-    unpushedIn = 0;
-    for (auto& t : demoDatas) {
-        if (t.putStatus) {
-            pushedIn++;
-        } else {
-            unpushedIn++;
-        }
-    }
-}
-
 void GetThreadDateGetedStatus(std::array<DemoThreadData, THREAD_NUM>& demoDatas, unsigned int& getedOut,
     unsigned int& ungetedOut)
 {
-    getedOut = 0;
     ungetedOut = 0;
+    getedOut = 0;
     for (auto& t : demoDatas) {
         if (t.getStatus) {
             getedOut++;
         } else {
             ungetedOut++;
+        }
+    }
+}
+
+void GetThreadDatePushedStatus(std::array<DemoThreadData, THREAD_NUM>& demoDatas, unsigned int& pushedIn,
+    unsigned int& unpushedIn)
+{
+    unpushedIn = 0;
+    pushedIn = 0;
+    for (auto& t : demoDatas) {
+        if (t.putStatus) {
+            pushedIn++;
+        } else {
+            unpushedIn++;
         }
     }
 }
@@ -135,6 +135,22 @@ auto GetTimeOfSleepTwentyMillisecond()
     auto timeT = std::chrono::high_resolution_clock::now();
     timeT += std::chrono::milliseconds(SLEEP_FOR_TWENTY_MILLISECOND);
     return timeT;
+}
+
+static void QueuePushFullEquivalent(const int Equivalent, benchmark::State& state)
+{
+    for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
+        DemoThreadData::shareQueue.Push(Equivalent);
+    }
+    AssertTrue((DemoThreadData::shareQueue.IsFull()), "shareQueue.IsFull() did not equal true.", state);
+}
+
+static void QueuePushInnotfullNotEquivalent(const unsigned int remain)
+{
+    for (unsigned int i = 0; i < QUEUE_SLOTS - remain; i++) {
+        int t = i;
+        DemoThreadData::shareQueue.Push(t);
+    }
 }
 
 /*
@@ -290,7 +306,7 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentPutAndBlockInfullq
         GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
         AssertEqual(pushedIn, static_cast<unsigned int>(0),
             "pushedIn did not equal static_cast<unsigned int>(0) as expected.", state);
-        AssertEqual(unpushedIn, THREAD_NUM, "unpushedIn did not equal THREAD_NUM as expected.", state);
+        AssertEqual(unpushedIn, THREAD_NUM, "unpushedIn did not equal THREAD_NUM.", state);
         AssertTrue((DemoThreadData::shareQueue.IsFull()),
             "DemoThreadData::shareQueue.IsFull() did not equal true as expected.", state);
         for (unsigned int i = 0; i < THREAD_NUM; i++) {
@@ -379,11 +395,7 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentGetAndBlockInfullq
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
         int t = 1;
-        for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
-            DemoThreadData::shareQueue.Push(t);
-        }
-        AssertTrue((DemoThreadData::shareQueue.IsFull()),
-            "DemoThreadData::shareQueue.IsFull() did not equal true as expected.", state);
+        QueuePushFullEquivalent(t, state);
         for (unsigned int i = 0; i < THREAD_NUM; i++) {
             threads[i] = std::thread(GetHandleThreadDataTime,
                                      std::ref(demoDatas[i]), i, timeT);
@@ -430,12 +442,8 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentGetAndBlockInnotfu
         demoDatas.fill(DemoThreadData());
         auto timeT = GetTimeOfSleepTwentyMillisecond();
         const unsigned int REMAIN_SLOTS = 5;
-        AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
-            "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
-        for (unsigned int i = 0; i < QUEUE_SLOTS - REMAIN_SLOTS; i++) {
-            int t = i;
-            DemoThreadData::shareQueue.Push(t);
-        }
+        AssertTrue((DemoThreadData::shareQueue.IsEmpty()), "shareQueue.IsEmpty() did not equal true.", state);
+        QueuePushInnotfullNotEquivalent(REMAIN_SLOTS);
         for (unsigned int i = 0; i < THREAD_NUM; i++) {
             threads[i] = std::thread(GetHandleThreadDataTime,
                 std::ref(demoDatas[i]), i, timeT);
@@ -481,12 +489,8 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentPutAndBlockInnotfu
         demoDatas.fill(DemoThreadData());
         auto timeT = GetTimeOfSleepTwentyMillisecond();
         const unsigned int REMAIN_SLOTS = 5;
-        AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
-            "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
-        for (unsigned int i = 0; i < QUEUE_SLOTS - REMAIN_SLOTS; i++) {
-            int t = i;
-            DemoThreadData::shareQueue.Push(t);
-        }
+        AssertTrue((DemoThreadData::shareQueue.IsEmpty()), "shareQueue.IsEmpty() did not equal true.", state);
+        QueuePushInnotfullNotEquivalent(REMAIN_SLOTS);
         for (unsigned int i = 0; i < THREAD_NUM; i++) {
             threads[i] = std::thread(PutHandleThreadDataTime,
                 std::ref(demoDatas[i]), i, timeT);
@@ -582,11 +586,7 @@ BENCHMARK_F(BenchmarkSafeBlockQueue, testMutilthreadConcurrentGetAndPopInfullque
         AssertTrue((DemoThreadData::shareQueue.IsEmpty()),
             "DemoThreadData::shareQueue.IsEmpty() did not equal true as expected.", state);
         int t = 1;
-        for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
-            DemoThreadData::shareQueue.Push(t);
-        }
-        AssertTrue((DemoThreadData::shareQueue.IsFull()),
-            "DemoThreadData::shareQueue.IsFull() did not equal true as expected.", state);
+        QueuePushFullEquivalent(t, state);
         for (unsigned int i = 0; i < THREAD_NUM; i++) {
             threadsin[i] = std::thread(PutHandleThreadDataTime,
                 std::ref(demoDatas[i]), i, timeT);

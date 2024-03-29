@@ -104,20 +104,6 @@ void PutHandleThreadData(DemoThreadData& q, int i)
     q.Put(i);
 }
 
-void GetThreadDatePushedStatus(std::array<DemoThreadData, THREAD_NUM>& demoDatas, unsigned int& pushedIn,
-    unsigned int& unpushedIn)
-{
-    pushedIn = 0;
-    unpushedIn = 0;
-    for (auto& t : demoDatas) {
-        if (t.putStatus) {
-            pushedIn++;
-        } else {
-            unpushedIn++;
-        }
-    }
-}
-
 void GetThreadDateGetedStatus(std::array<DemoThreadData, THREAD_NUM>& demoDatas, unsigned int& getedOut,
     unsigned int& ungetedOut)
 {
@@ -125,9 +111,23 @@ void GetThreadDateGetedStatus(std::array<DemoThreadData, THREAD_NUM>& demoDatas,
     ungetedOut = 0;
     for (auto& t : demoDatas) {
         if (t.getStatus) {
-            getedOut++;
+            getedOut += 1;
         } else {
-            ungetedOut++;
+            ungetedOut += 1;
+        }
+    }
+}
+
+void GetThreadDatePushedStatus(std::array<DemoThreadData, THREAD_NUM>& demoDatas, unsigned int& pushedIn,
+    unsigned int& unpushedIn)
+{
+    pushedIn = 0;
+    unpushedIn = 0;
+    for (auto& t : demoDatas) {
+        if (t.putStatus) {
+            pushedIn += 1;
+        } else {
+            unpushedIn += 1;
         }
     }
 }

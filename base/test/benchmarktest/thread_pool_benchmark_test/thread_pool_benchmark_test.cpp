@@ -34,6 +34,14 @@ static bool g_flagTestFuncGetName = true;
 
 class BenchmarkThreadPoolTest : public benchmark::Fixture {
 public:
+    void SetUp(const ::benchmark::State& state) override
+    {
+    }
+
+    void TearDown(const ::benchmark::State& state) override
+    {
+    }
+
     BenchmarkThreadPoolTest()
     {
         Iterations(iterations);
@@ -42,13 +50,6 @@ public:
     }
 
     ~BenchmarkThreadPoolTest() override = default;
-    void SetUp(const ::benchmark::State& state) override
-    {
-    }
-
-    void TearDown(const ::benchmark::State& state) override
-    {
-    }
 
 protected:
     const int32_t repetitions = 3;

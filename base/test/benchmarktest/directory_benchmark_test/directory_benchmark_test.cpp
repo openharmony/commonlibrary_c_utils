@@ -29,6 +29,14 @@ namespace {
 
 class BenchmarkDirectoryTest : public benchmark::Fixture {
 public:
+    void SetUp(const ::benchmark::State& state) override
+    {
+    }
+
+    void TearDown(const ::benchmark::State& state) override
+    {
+    }
+
     BenchmarkDirectoryTest()
     {
         Iterations(iterations);
@@ -37,13 +45,6 @@ public:
     }
 
     ~BenchmarkDirectoryTest() override = default;
-    void SetUp(const ::benchmark::State& state) override
-    {
-    }
-
-    void TearDown(const ::benchmark::State& state) override
-    {
-    }
 
 protected:
     const int32_t repetitions = 3;

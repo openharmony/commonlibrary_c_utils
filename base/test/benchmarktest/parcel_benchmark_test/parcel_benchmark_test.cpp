@@ -45,6 +45,14 @@ static constexpr int32_t WRITE_AND_CMP_INT32_VALUE = 5;
 
 class BenchmarkParcelTest : public benchmark::Fixture {
 public:
+    void SetUp(const ::benchmark::State& state) override
+    {
+    }
+
+    void TearDown(const ::benchmark::State& state) override
+    {
+    }
+
     BenchmarkParcelTest()
     {
         Iterations(iterations);
@@ -53,13 +61,6 @@ public:
     }
 
     ~BenchmarkParcelTest() override = default;
-    void SetUp(const ::benchmark::State& state) override
-    {
-    }
-
-    void TearDown(const ::benchmark::State& state) override
-    {
-    }
 
 protected:
     const int32_t repetitions = 3;

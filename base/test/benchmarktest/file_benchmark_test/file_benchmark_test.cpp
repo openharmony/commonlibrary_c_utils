@@ -37,6 +37,14 @@ static constexpr int EXCEEDS_MAXIMUM_LENGTH = 32 * 1024 * 1024 + 1;
 
 class BenchmarkFileTest : public benchmark::Fixture {
 public:
+    void SetUp(const ::benchmark::State& state) override
+    {
+    }
+
+    void TearDown(const ::benchmark::State& state) override
+    {
+    }
+
     BenchmarkFileTest()
     {
         Iterations(iterations);
@@ -45,13 +53,6 @@ public:
     }
 
     ~BenchmarkFileTest() override = default;
-    void SetUp(const ::benchmark::State& state) override
-    {
-    }
-
-    void TearDown(const ::benchmark::State& state) override
-    {
-    }
 
 protected:
     const int32_t repetitions = 3;

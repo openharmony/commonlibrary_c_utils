@@ -39,6 +39,14 @@ static constexpr int GETSUBSTR04_STRING_SIZE = 0;
 
 class BenchmarkStringTest : public benchmark::Fixture {
 public:
+    void SetUp(const ::benchmark::State& state) override
+    {
+    }
+
+    void TearDown(const ::benchmark::State& state) override
+    {
+    }
+
     BenchmarkStringTest()
     {
         Iterations(iterations);
@@ -47,13 +55,6 @@ public:
     }
 
     ~BenchmarkStringTest() override = default;
-    void SetUp(const ::benchmark::State& state) override
-    {
-    }
-
-    void TearDown(const ::benchmark::State& state) override
-    {
-    }
 
 protected:
     const int32_t repetitions = 3;
