@@ -1487,7 +1487,7 @@ HWTEST_F(UtilsMappedFileTest, testMoveMappedFile003, TestSize.Level0)
     EXPECT_EQ(mf.GetMode(), mode);
     EXPECT_EQ(mf.GetHint(), hint);
     EXPECT_EQ(mf.GetPath(), filename1);
-    
+
     // 5. read from mapped file
     // 6. write to mapped file
     // extract 5-6 step into a common method
