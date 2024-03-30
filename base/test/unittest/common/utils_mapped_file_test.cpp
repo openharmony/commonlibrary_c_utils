@@ -111,7 +111,6 @@ bool SaveStringToFile(const std::string& filePath, const std::string& content, o
     return true;
 }
 
-
 void ReCreateFile(std::string& filename, const std::string& content)
 {
     filename.insert(0, UtilsMappedFileTest::SUITE_PATH).insert(0, UtilsMappedFileTest::BASE_PATH);
@@ -119,7 +118,6 @@ void ReCreateFile(std::string& filename, const std::string& content)
 
     ASSERT_TRUE(CreateTestFile(filename, content));
 }
-
 
 void TestFileStatusAndRead(MappedFile& mf,
                            const std::string& filename,
@@ -198,6 +196,7 @@ void TestFileContentEqual(const MappedFile& mf,
                           std::string& content1,
                           struct stat* stb)
 {
+    // check pointer not null
     ASSERT_NE(stb, nullptr);
     // check status after remapping
     EXPECT_TRUE(mf.IsMapped());

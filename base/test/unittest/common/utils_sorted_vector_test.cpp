@@ -68,8 +68,11 @@ HWTEST_F(UtilsSortedVector, testConsFromSortedAllowDup, TestSize.Level0)
     }
 }
 
-template<bool value = true>
-void PushItem(SortedVector<int, value>& svec, std::vector<int>& vec) {
+HWTEST_F(UtilsSortedVector, testConsFromSortedNotAllowDuplicate, TestSize.Level0)
+{
+    SortedVector<int> svec;
+    std::vector<int> vec;
+
     for (int i = 0; i < 20; i++) {
         vec.push_back(i);
     }
@@ -81,14 +84,6 @@ void PushItem(SortedVector<int, value>& svec, std::vector<int>& vec) {
     for (int i = 0; i < 20; i++) {
         svec.Add(i);
     }
-}
-
-HWTEST_F(UtilsSortedVector, testConsFromSortedNotAllowDuplicate, TestSize.Level0)
-{
-    SortedVector<int> svec;
-    std::vector<int> vec;
-
-    PushItem(svec, vec);
 
     ASSERT_EQ(static_cast<size_t>(30), svec.Size());
 
@@ -106,7 +101,17 @@ HWTEST_F(UtilsSortedVector, testConsFromSortedNotAllowToAlloworNotAllow, TestSiz
     SortedVector<int, false> svec;
     std::vector<int> vec;
 
-    PushItem(svec, vec);
+    for (int i = 0; i < 20; i++) {
+        vec.push_back(i);
+    }
+
+    for (int i = 9; i >= 0; i--) {
+        svec.Add(i);
+    }
+
+    for (int i = 0; i < 20; i++) {
+        svec.Add(i);
+    }
 
     ASSERT_EQ(static_cast<size_t>(20), svec.Size());
 
@@ -154,7 +159,17 @@ HWTEST_F(UtilsSortedVector, testOperatorEqAllowToNotAllow, TestSize.Level0)
     SortedVector<int> svec;
     std::vector<int> vec;
 
-    PushItem(svec, vec);
+    for (int i = 0; i < 20; i++) {
+        vec.push_back(i);
+    }
+
+    for (int i = 9; i >= 0; i--) {
+        svec.Add(i);
+    }
+
+    for (int i = 0; i < 20; i++) {
+        svec.Add(i);
+    }
 
     ASSERT_EQ(static_cast<size_t>(30), svec.Size());
     SortedVector<int, false> newSvec = svec;
@@ -171,7 +186,17 @@ HWTEST_F(UtilsSortedVector, testOperatorEqNotAllowToAllowOrNotAllow, TestSize.Le
     SortedVector<int, false> svec;
     std::vector<int> vec;
 
-    PushItem(svec, vec);
+    for (int i = 0; i < 20; i++) {
+        vec.push_back(i);
+    }
+
+    for (int i = 9; i >= 0; i--) {
+        svec.Add(i);
+    }
+
+    for (int i = 0; i < 20; i++) {
+        svec.Add(i);
+    }
 
     ASSERT_EQ(static_cast<size_t>(20), svec.Size());
     SortedVector<int, false> newSvecFalse = svec;

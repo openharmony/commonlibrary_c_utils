@@ -311,26 +311,6 @@ HWTEST_F(UtilsSafeMap, testUtilsConcurrentWriteAndRead001, TestSize.Level0)
     });
 }
 
-void TestThreadRunResult(std::thread (&threads)[THREAD_NUM],
-                         vector<int> &result,
-                         std::vector<std::future<int>> &vcfi)
-{
-    std::this_thread::sleep_for(std::chrono::seconds(4));
-    for (auto& t : threads) {
-        t.join();
-    }
-
-    for (auto& t : vcfi) {
-        result.push_back(t.get());
-    }
-
-    std::sort(result.begin(), result.end());
-
-    for (int i = 0; i < THREAD_NUM; ++i) {
-        ASSERT_EQ(i, result[i]);
-    }
-}
-
 /*
  * @tc.name: testUtilsConcurrentWriteAndFind001
  * @tc.desc: 100 threads test in writein to the corresponding key of the map,
@@ -343,6 +323,12 @@ HWTEST_F(UtilsSafeMap, testUtilsConcurrentWriteAndFind001, TestSize.Level0)
     std::vector<std::future<int>> vcfi;
 
     ASSERT_NO_THROW({
+        auto lamfuncInsert = [](SafeMap<string, int>& data, const string& key,
+            const int& value, const std::chrono::system_clock::time_point& absTime) {
+            std::this_thread::sleep_until(absTime);
+            data.EnsureInsert(key, value);
+        };
+
         auto lamfuncCheckLoop = [](SafeMap<string, int>& data, const string& key,
             std::chrono::system_clock::time_point absTime) {
             std::this_thread::sleep_until(absTime);
@@ -351,12 +337,6 @@ HWTEST_F(UtilsSafeMap, testUtilsConcurrentWriteAndFind001, TestSize.Level0)
                 std::this_thread::sleep_for(std::chrono::microseconds(10));
             }
             return i;
-        };
-
-        auto lamfuncInsert = [](SafeMap<string, int>& data, const string& key,
-            const int& value, const std::chrono::system_clock::time_point& absTime) {
-            std::this_thread::sleep_until(absTime);
-            data.EnsureInsert(key, value);
         };
 
         using std::chrono::system_clock;
@@ -372,9 +352,22 @@ HWTEST_F(UtilsSafeMap, testUtilsConcurrentWriteAndFind001, TestSize.Level0)
                 std::ref(demoData), key + std::to_string(i), system_clock::from_time_t(timeT)));
         }
 
+        std::this_thread::sleep_for(std::chrono::seconds(4));
+        for (auto& t : threads) {
+            t.join();
+        }
+
         vector<int> result;
 
-        TestThreadRunResult(threads, result, vcfi);
+        for (auto& t : vcfi) {
+            result.push_back(t.get());
+        }
+
+        std::sort(result.begin(), result.end());
+
+        for (int i = 0; i < THREAD_NUM; ++i) {
+            ASSERT_EQ(i, result[i]);
+        }
     });
 }
 
@@ -419,9 +412,21 @@ HWTEST_F(UtilsSafeMap, testUtilsConcurrentWriteAndFindAndSet001, TestSize.Level0
                 std::ref(demoData), key + std::to_string(i), i + 1, system_clock::from_time_t(timeT)));
         }
 
-        vector<int> result;
+        std::this_thread::sleep_for(std::chrono::seconds(4));
+        for (auto& t : threads) {
+            t.join();
+        }
 
-        TestThreadRunResult(threads, result, vcfi);
+        vector<int> result;
+        for (auto& t : vcfi) {
+            result.push_back(t.get());
+        }
+
+        std::sort(result.begin(), result.end());
+
+        for (int i = 0; i < THREAD_NUM; ++i) {
+            ASSERT_EQ(i, result[i]);
+        }
 
         int t = 0;
         result.clear();

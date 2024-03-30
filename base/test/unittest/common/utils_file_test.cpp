@@ -382,22 +382,6 @@ HWTEST_F(UtilsFileTest, testSaveStringToFd001, TestSize.Level0)
     EXPECT_EQ(ret, false);
 }
 
-
-void OpenAndLoadFileContent(string& content, string& loadResult)
-{
-    string filename = UtilsFileTest::FILE_PATH;
-    int fd = open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-    bool ret = SaveStringToFd(fd, content);
-    close(fd);
-    EXPECT_EQ(ret, true);
-
-    fd = open(filename.c_str(), O_RDONLY);
-    ret = LoadStringFromFd(fd, loadResult);
-    close(fd);
-    RemoveTestFile(filename);
-    EXPECT_EQ(ret, true);
-}
-
 /*
  * @tc.name: testSaveStringToFd002
  * @tc.desc: Test writting an empty string to a file specified by its fd
@@ -405,8 +389,18 @@ void OpenAndLoadFileContent(string& content, string& loadResult)
 HWTEST_F(UtilsFileTest, testSaveStringToFd002, TestSize.Level0)
 {
     string content;
+    string filename = FILE_PATH;
+    int fd = open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    bool ret = SaveStringToFd(fd, content);
+    close(fd);
+    EXPECT_EQ(ret, true);
+
     string loadResult;
-    OpenAndLoadFileContent(content, loadResult);
+    fd = open(filename.c_str(), O_RDONLY);
+    ret = LoadStringFromFd(fd, loadResult);
+    close(fd);
+    RemoveTestFile(filename);
+    EXPECT_EQ(ret, true);
     EXPECT_EQ(loadResult, "");
 }
 
@@ -417,8 +411,18 @@ HWTEST_F(UtilsFileTest, testSaveStringToFd002, TestSize.Level0)
 HWTEST_F(UtilsFileTest, testSaveStringToFd003, TestSize.Level0)
 {
     string content = CONTENT_STR;
+    string filename = FILE_PATH;
+    int fd = open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    bool ret = SaveStringToFd(fd, content);
+    close(fd);
+    EXPECT_EQ(ret, true);
+
     string loadResult;
-    OpenAndLoadFileContent(content, loadResult);
+    fd = open(filename.c_str(), O_RDONLY);
+    ret = LoadStringFromFd(fd, loadResult);
+    close(fd);
+    RemoveTestFile(filename);
+    EXPECT_EQ(ret, true);
     EXPECT_EQ(loadResult, content);
 }
 
