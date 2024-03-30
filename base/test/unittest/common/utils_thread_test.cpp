@@ -115,11 +115,24 @@ bool TestThread::Run()
     prctl(PR_GET_NAME, threadName, 0, 0);
     name_ = threadName;
 
-    if (runFunc_ != nullptr) {
-        return (*runFunc_)(data_);
-    }
+    return (runFunc_ != nullptr) ? (*runFunc_)(data_) : false;
+}
 
-    return false;
+void TestThreadRun(std::unique_ptr<TestThread> &test, int times) {
+    pthread_t thread = test->GetThread();
+
+    // pthread_equal return non-zero if equal
+    EXPECT_EQ(pthread_equal(thread , -1) != 0, (test->IsRunning() ? false : true));
+
+    // ReadyToWork return false, RUN will not be called!
+    EXPECT_EQ(test->priority_, DEFAULT_PRIO);
+    EXPECT_EQ(test->name_, DEFAULT_THREAD_NAME);
+
+    EXPECT_EQ(test->data_, 0);
+    EXPECT_EQ(times, 0);
+    test->NotifyExitSync();
+    sleep(1);
+    EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
 }
 
 /*
@@ -189,20 +202,7 @@ HWTEST_F(UtilsThreadTest, testThread003, TestSize.Level0)
     ThreadStatus status = test->Start("test_thread_03", THREAD_PROI_LOW, 1024);
     EXPECT_EQ(status == ThreadStatus::OK, true);
 
-    pthread_t thread = test->GetThread();
-
-    // pthread_equal return non-zero if equal
-    EXPECT_EQ(pthread_equal(thread , -1) != 0, (test->IsRunning() ? false : true));
-
-    // ReadyToWork return false, RUN will not be called!
-    EXPECT_EQ(test->priority_, DEFAULT_PRIO);
-    EXPECT_EQ(test->name_, DEFAULT_THREAD_NAME);
-
-    EXPECT_EQ(test->data_, 0);
-    EXPECT_EQ(times, 0);
-    test->NotifyExitSync();
-    sleep(1);
-    EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
+    TestThreadRun(test, times);
 }
 
 /*
@@ -244,20 +244,7 @@ HWTEST_F(UtilsThreadTest, testThread005, TestSize.Level0)
     ThreadStatus status = test->Start("test_thread_05", THREAD_PROI_LOW, 1024);
     EXPECT_EQ(status == ThreadStatus::OK, true);
 
-    pthread_t thread = test->GetThread();
-
-    // pthread_equal return non-zero if equal
-    EXPECT_EQ(pthread_equal(thread , -1) != 0, (test->IsRunning() ? false : true));
-
-    // ReadyToWork return false, RUN will not be called!
-    EXPECT_EQ(test->priority_, DEFAULT_PRIO);
-    EXPECT_EQ(test->name_, DEFAULT_THREAD_NAME);
-
-    EXPECT_EQ(test->data_, 0);
-    EXPECT_EQ(times, 0);
-    test->NotifyExitSync();
-    sleep(1);
-    EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
+    TestThreadRun(test, times);
 }
 
 /*
@@ -365,11 +352,7 @@ bool TestThread2::Run()
     prctl(PR_GET_NAME, threadName, 0, 0);
     name_ = threadName;
 
-    if (runFunc_ != nullptr) {
-        return (*runFunc_)(data_);
-    }
-
-    return false;
+    return (runFunc_ != nullptr) ? (*runFunc_)(data_) : false;
 }
 
 /*
