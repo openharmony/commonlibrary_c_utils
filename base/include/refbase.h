@@ -185,6 +185,11 @@ public:
     void SetAttemptAcquire();
 
     /**
+     * @brief Get the current times of attempts.
+     */
+    int GetAttemptAcquire();
+
+    /**
      * @brief Check if the number of attempts is greater than 0.
      *
      * @return `true` if the number of attempts is greater than 0;
@@ -491,6 +496,15 @@ public:
      * after a successful increment.
      */
     bool AttemptAcquire(const void *objectId);
+
+    // Only for IPC use.
+    /**
+     * @brief Check attempt acquire is setted
+     *
+     * @note This fuction is extracted from `IncStrongRef()`
+     * It is only for IPC use.
+     */
+    void CheckIsAttemptAcquireSet(const void *objectId);
 
     /**
      * @brief Attempts to increment the count of strong references.
