@@ -40,16 +40,10 @@ public:
         joinStatus = false;
     }
 
-    static SafeBlockQueueTracking<int> shareQueue;
-    static bool joinStatus;
     bool putStatus;
     bool getStatus;
-
-    void Put(int i)
-    {
-        shareQueue.Push(i);
-        putStatus = true;
-    }
+    static SafeBlockQueueTracking<int> shareQueue;
+    static bool joinStatus;
 
     void Get()
     {
@@ -57,17 +51,23 @@ public:
         getStatus = true;
     }
 
-    void GetAndOneTaskDone()
+    void Put(int j)
     {
-        shareQueue.Pop();
-        getStatus = true;
-        shareQueue.OneTaskDone();
+        shareQueue.Push(j);
+        putStatus = true;
     }
 
     void Join()
     {
         shareQueue.Join();
         joinStatus = true;
+    }
+
+    void GetAndOneTaskDone()
+    {
+        shareQueue.Pop();
+        getStatus = true;
+        shareQueue.OneTaskDone();
     }
 };
 
@@ -200,6 +200,25 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadPutAndBlock001, TestSize.Le
     demoDatas[0].joinStatus = false;
 }
 
+static void CheckFullQueueStatus(std::array<DemoThreadData, THREAD_NUM>& demoDatas, unsigned int& pushedIn,
+                                 unsigned int& unpushedIn, unsigned int& getedOut, unsigned int& ungetedOut)
+{
+    ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
+    GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
+    GetThreadDateGetedStatus(demoDatas, getedOut, ungetedOut);
+    ASSERT_EQ(pushedIn, THREAD_NUM);
+    ASSERT_EQ(getedOut, THREAD_NUM - QUEUE_SLOTS);
+}
+
+static std::time_t GetTimeAddTwoSeconds()
+{
+    using std::chrono::system_clock;
+    std::time_t timeT = system_clock::to_time_t(system_clock::now());
+    const int twoSec = 2;
+    timeT += twoSec;
+    return timeT;
+}
+
 /*
  * @tc.name: testMutilthreadConcurrentPutAndBlockInblankqueue001
  * @tc.desc: Multi-threaded put() on the empty queue. When n threads are waiting to reach a certain
@@ -214,8 +233,7 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentPutAndBlockInblan
 
     using std::chrono::system_clock;
 
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
 
     // 2. start thread
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
@@ -249,11 +267,7 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentPutAndBlockInblan
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
     // queue is full and some threads is blocked and is not joined
-    ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
-    GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
-    GetThreadDateGetedStatus(demoDatas, getedOut, ungetedOut);
-    ASSERT_EQ(pushedIn, THREAD_NUM);
-    ASSERT_EQ(getedOut, THREAD_NUM - QUEUE_SLOTS);
+    CheckFullQueueStatus(demoDatas, pushedIn, unpushedIn, getedOut, ungetedOut);
 
     for (auto& t : threads) {
         t.join();
@@ -267,6 +281,22 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentPutAndBlockInblan
     ASSERT_TRUE(demoDatas[0].joinStatus);
     demoDatas[0].joinStatus = false;
     joinThread.join();
+}
+
+static void QueuePushInfull()
+{
+    for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
+        int t = i;
+        DemoThreadData::shareQueue.Push(t);
+    }
+}
+
+static void QueuePushInnotfull(const unsigned int remain)
+{
+    for (unsigned int i = 0; i < QUEUE_SLOTS - remain; i++) {
+        int t = i;
+        DemoThreadData::shareQueue.Push(t);
+    }
 }
 
 /*
@@ -283,13 +313,9 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentPutAndBlockInfull
 
     using std::chrono::system_clock;
 
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
-    for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
-        int t = i;
-        DemoThreadData::shareQueue.Push(t);
-    }
+    QueuePushInfull();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
 
     // 2. start thread put in full queue
@@ -346,8 +372,7 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndBlockInblan
 
     using std::chrono::system_clock;
 
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
 
     // 2. start thread put in empty queue
@@ -407,8 +432,7 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndBlockInfull
 
     using std::chrono::system_clock;
 
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
     int t = 1;
     for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
@@ -488,13 +512,9 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndBlockInnotf
     using std::chrono::system_clock;
 
     const unsigned int REMAIN_SLOTS = 5;
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
-    for (unsigned int i = 0; i < QUEUE_SLOTS - REMAIN_SLOTS; i++) {
-        int t = i;
-        DemoThreadData::shareQueue.Push(t);
-    }
+    QueuePushInnotfull(REMAIN_SLOTS);
 
     // start thread to join
     demoDatas[0].joinStatus = false;
@@ -548,20 +568,16 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndBlockInnotf
 HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentPutAndBlockInnotfullqueue001, TestSize.Level0)
 {
     // 1. prepare
-    std::thread threads[THREAD_NUM];
     std::array<DemoThreadData, THREAD_NUM> demoDatas;
+    std::thread threads[THREAD_NUM];
     demoDatas.fill(DemoThreadData());
 
     using std::chrono::system_clock;
 
     const unsigned int REMAIN_SLOTS = 5;
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
-    for (unsigned int i = 0; i < QUEUE_SLOTS - REMAIN_SLOTS; i++) {
-        int t = i;
-        DemoThreadData::shareQueue.Push(t);
-    }
+    QueuePushInnotfull(REMAIN_SLOTS);
 
     // start thread to join
     demoDatas[0].joinStatus = false;
@@ -625,8 +641,7 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndPopInfullqu
 
     using std::chrono::system_clock;
 
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
     int t = 1;
     for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
