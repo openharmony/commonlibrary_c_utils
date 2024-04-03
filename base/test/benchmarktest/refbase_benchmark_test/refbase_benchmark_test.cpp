@@ -349,6 +349,7 @@ int RegisterEventThread()
     int handle = 10;
     for (int i = 0; i < CYCLE_NUM2; i++) {
         sptr<IRemoteObject> remote = ipc.FindOrNewObject(handle);
+        remote->CheckIsAttemptAcquireSet(remote);
         if (remote) {
             remote->IsProxyObject();
         }
@@ -543,10 +544,12 @@ BENCHMARK_F(BenchmarkRefbaseTest, testRefbaseOperate001)(benchmark::State& state
         remoteObject->AttemptAcquire(this);
         remoteObject->IncWeakRef(this);
         remoteObject->IncStrongRef(this);
+        remoteObject->CheckIsAttemptAcquireSet(this);
         remoteObject->DecStrongRef(this);
         remoteObject->AttemptAcquire(this);
 
         remoteObject->IncStrongRef(this);
+        remoteObject->CheckIsAttemptAcquireSet(this);
         remoteObject->DecStrongRef(this);
 
         remoteObject->DecWeakRef(this);
@@ -637,6 +640,7 @@ BENCHMARK_F(BenchmarkRefbaseTest, testRefbaseAcquire001)(benchmark::State& state
         {
             AssertTrue(testobject->IsAttemptAcquireSet(),
                 "testobject->IsAttemptAcquireSet() did not equal true", state);
+            testobject->CheckIsAttemptAcquireSet(this);
             sptr<RefBaseTest> sptrRef = testobject;
             AssertEqual(sptrRef->GetSptrRefCount(), EXPECTED_REF_COUNT_ONE,
                 "sptrRef->GetSptrRefCount() did not equal EXPECTED_REF_COUNT_ONE", state);
