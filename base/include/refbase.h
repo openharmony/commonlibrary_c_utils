@@ -185,7 +185,7 @@ public:
     void SetAttemptAcquire();
 
     /**
-     * @brief Get the current times of attempts.
+     * @brief Get the current times of attempts,this interface is only for IPC use.
      */
     int GetAttemptAcquire();
 
@@ -497,9 +497,10 @@ public:
      */
     bool AttemptAcquire(const void *objectId);
 
-    // Only for IPC use.
     /**
-     * @brief Check attempt acquire is setted
+     * @brief Check attempt acquire is setted,this interface is only for IPC use.
+     * This interface must come after the RefBase::AttemptIncStrong or RefBase::AttemptAcquire function,
+     * And ensuring thread safety in multi-threaded scenarios.
      *
      * @note This fuction is extracted from `IncStrongRef()`
      * It is only for IPC use.
