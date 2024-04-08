@@ -100,7 +100,6 @@ ohos_static_library("utilsbase") {
     sources = sources_utils_ios
     configs = [ ":utils_coverage_config" ]
     public_configs = [ ":utils_config" ]
-    all_dependent_configs = [ ":utils_config" ]
 
     public_external_deps = [ "bounds_checking_function:libsec_static" ]
     defines = [ "IOS_PLATFORM" ]
@@ -110,7 +109,6 @@ ohos_static_library("utilsbase") {
   } else {
     sources = sources_utils
     configs = [ ":utils_coverage_config" ]
-    all_dependent_configs = [ ":utils_config" ]
     public_configs = [ ":utils_config" ]
     if (current_os != "android" && current_os != "ios") {
       defines = [ "CONFIG_HILOG" ]
@@ -129,7 +127,6 @@ ohos_static_library("utilsbase") {
 ohos_static_library("utilsbase_rtti") {
   visibility = [ "//foundation/multimedia/media_foundation/engine/plugin/plugins/source/video_capture:std_video_capture" ]
   sources = sources_utils
-  all_dependent_configs = [ ":utils_config" ]
   public_configs = [ ":utils_config" ]
   if (current_os != "android" && current_os != "ios") {
     defines = [ "CONFIG_HILOG" ]
@@ -153,6 +150,7 @@ ohos_shared_library("utils") {
     sources = sources_utils_ios
     configs = [ ":utils_coverage_config" ]
     all_dependent_configs = [ ":utils_config" ]
+    public_configs = [ ":utils_config" ]
     public_external_deps = [ "bounds_checking_function:libsec_shared" ]
     defines = [ "IOS_PLATFORM" ]
 
@@ -183,6 +181,7 @@ ohos_shared_library("utils") {
       configs += [ ":parcel_object_check" ]
     }
     all_dependent_configs = [ ":utils_config" ]
+    public_configs = [ ":utils_config" ]
     if (current_os != "android" && current_os != "ios") {
       defines = [ "CONFIG_HILOG" ]
     }
