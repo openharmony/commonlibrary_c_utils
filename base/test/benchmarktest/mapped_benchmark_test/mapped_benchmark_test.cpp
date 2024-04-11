@@ -446,6 +446,24 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap001)(benchmark::State& state)
     BENCHMARK_LOGD("MappedFileTest testReMap001 end.");
 }
 
+static void ChangeParamsWhenUnmapped(MappedFile& mf, const int sizeIncrement, std::string& filename,
+                                     std::string& filename1, benchmark::State& state)
+{
+    AssertTrue((mf.ChangeSize(mf.Size() + sizeIncrement)),
+        "mf.ChangeSize(mf.Size() + sizeIncrement) did not equal true as expected.", state);
+    AssertTrue((mf.ChangeSize(MappedFile::DEFAULT_LENGTH)),
+        "mf.ChangeSize(MappedFile::DEFAULT_LENGTH) did not equal true as expected.", state);
+    AssertTrue((mf.ChangeOffset(mf.PageSize())),
+        "mf.ChangeOffset(mf.PageSize()) did not equal true as expected.", state);
+    AssertTrue((mf.ChangeOffset(0)), "mf.ChangeOffset(0) did not equal true as expected.", state);
+    AssertTrue((mf.ChangePath(filename1)), "mf.ChangePath(filename1) did not equal true as expected.", state);
+    AssertTrue((mf.ChangePath(filename)), "mf.ChangePath(filename) did not equal true as expected.", state);
+    AssertTrue((mf.ChangeHint(reinterpret_cast<char*>(0x89000))),
+        "mf.ChangeHint(reinterpret_cast<char*>(0x89000)) did not equal true as expected.", state);
+    AssertTrue((mf.ChangeMode(MapMode::READ_ONLY)),
+        "mf.ChangeMode(MapMode::READ_ONLY) did not equal true as expected.", state);
+}
+
 /*
  * @tc.name: testReMap002
  * @tc.desc: Test remapping via changing params.
@@ -467,19 +485,7 @@ BENCHMARK_F(BenchmarkMappedFileTest, testReMap002)(benchmark::State& state)
         MappedFile mf(filename);
 
         // Change params when unmapped.
-        AssertTrue((mf.ChangeSize(mf.Size() + sizeIncrement)),
-            "mf.ChangeSize(mf.Size() + sizeIncrement) did not equal true as expected.", state);
-        AssertTrue((mf.ChangeSize(MappedFile::DEFAULT_LENGTH)),
-            "mf.ChangeSize(MappedFile::DEFAULT_LENGTH) did not equal true as expected.", state);
-        AssertTrue((mf.ChangeOffset(mf.PageSize())),
-            "mf.ChangeOffset(mf.PageSize()) did not equal true as expected.", state);
-        AssertTrue((mf.ChangeOffset(0)), "mf.ChangeOffset(0) did not equal true as expected.", state);
-        AssertTrue((mf.ChangePath(filename1)), "mf.ChangePath(filename1) did not equal true as expected.", state);
-        AssertTrue((mf.ChangePath(filename)), "mf.ChangePath(filename) did not equal true as expected.", state);
-        AssertTrue((mf.ChangeHint(reinterpret_cast<char*>(0x89000))),
-            "mf.ChangeHint(reinterpret_cast<char*>(0x89000)) did not equal true as expected.", state);
-        AssertTrue((mf.ChangeMode(MapMode::READ_ONLY)),
-            "mf.ChangeMode(MapMode::READ_ONLY) did not equal true as expected.", state);
+        ChangeParamsWhenUnmapped(mf, sizeIncrement, filename, filename1, state);
 
         // 2. map file
         AssertEqual(mf.Map(), MAPPED_FILE_ERR_OK, "mf.Map() did not equal MAPPED_FILE_ERR_OK as expected.", state);
@@ -784,6 +790,21 @@ void KeepAPageAndReachBottom(off_t& endOff, const off_t orig, MappedFile& mf, be
     PrintStatus(mf);
 }
 
+static void Remapping(MappedFile& mf, off_t& endOff, off_t& curSize, benchmark::State& state)
+{
+    // 7. this turn will trigger a remapping
+    endOff = mf.EndOffset();
+    AssertEqual(mf.TurnNext(), MAPPED_FILE_ERR_OK,
+        "mf.TurnNext() did not equal MAPPED_FILE_ERR_OK as expected.", state);
+    AssertTrue((mf.IsMapped()), "mf.IsMapped() did not equal true as expected.", state);
+    AssertEqual(mf.StartOffset(), endOff + 1, "mf.StartOffset() did not equal endOff + 1 as expected.", state);
+    AssertEqual(mf.Size(), curSize, "mf.Size() did not equal curSize as expected.", state);
+    AssertEqual(mf.RegionStart(), mf.Begin(), "mf.RegionStart() did not equal mf.Begin() as expected.", state);
+    AssertEqual(static_cast<off_t>(mf.RegionEnd() - mf.RegionStart()) + 1LL, mf.PageSize(),
+        "static_cast<off_t>(mf.RegionEnd() - mf.RegionStart()) + 1LL did not equal mf.PageSize().", state);
+    PrintStatus(mf);
+}
+
 /*
  * @tc.name: testTurnNext001
  * @tc.desc: Test TurnNext() when `IsMapped()`.
@@ -832,17 +853,8 @@ BENCHMARK_F(BenchmarkMappedFileTest, testTurnNext001)(benchmark::State& state)
         KeepAPageAndReachBottom(endOff, orig, mf, state);
 
         // 7. this turn will trigger a remapping
-        endOff = mf.EndOffset();
         off_t curSize = mf.Size();
-        AssertEqual(mf.TurnNext(), MAPPED_FILE_ERR_OK,
-            "mf.TurnNext() did not equal MAPPED_FILE_ERR_OK as expected.", state);
-        AssertTrue((mf.IsMapped()), "mf.IsMapped() did not equal true as expected.", state);
-        AssertEqual(mf.StartOffset(), endOff + 1, "mf.StartOffset() did not equal endOff + 1 as expected.", state);
-        AssertEqual(mf.Size(), curSize, "mf.Size() did not equal curSize as expected.", state);
-        AssertEqual(mf.RegionStart(), mf.Begin(), "mf.RegionStart() did not equal mf.Begin() as expected.", state);
-        AssertEqual(static_cast<off_t>(mf.RegionEnd() - mf.RegionStart()) + 1LL, mf.PageSize(),
-            "static_cast<off_t>(mf.RegionEnd() - mf.RegionStart()) + 1LL did not equal mf.PageSize().", state);
-        PrintStatus(mf);
+        Remapping(mf, endOff, curSize, state);
 
         // 8. keep turnNext within a page
         for (off_t cnt = 1; cnt < (MappedFile::PageSize() / 100LL / curSize); cnt++) {
@@ -1465,7 +1477,6 @@ BENCHMARK_F(BenchmarkMappedFileTest, testMoveMappedFile001)(benchmark::State& st
         std::string content = "Test for move use.";
         CreateFile(filename, content, state);
 
-
         // 2. map file
         MappedFile mf(filename);
         AssertEqual(mf.Map(), MAPPED_FILE_ERR_OK, "mf.Map() did not equal MAPPED_FILE_ERR_OK as expected.", state);
@@ -1528,7 +1539,6 @@ BENCHMARK_F(BenchmarkMappedFileTest, testMoveMappedFile002)(benchmark::State& st
         std::string filename = "test_move_2.txt";
         std::string content = "Test for move use.";
         CreateFile(filename, content, state);
-
 
         // 2. map file
         MappedFile mf(filename);
