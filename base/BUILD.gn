@@ -232,36 +232,39 @@ if (host_os == "linux" && !is_arkui_x) {
     subsystem_name = "commonlibrary"
     part_name = "c_utils"
   }
-
-  ohos_rust_shared_library("utils_rs") {
-    sources = [
-      "src/rust/ashmem.rs",
-      "src/rust/directory_ex.rs",
-      "src/rust/file_ex.rs",
-      "src/rust/lib.rs",
-    ]
-    deps = [
-      ":utils_static_cxx_rust",
-      "//third_party/rust/crates/cxx:lib",
-    ]
-
-    crate_root = "src/rust/lib.rs"
-    crate_name = "utils_rust"
-    crate_type = "dylib"
-    output_extension = "dylib.so"
-    subsystem_name = "commonlibrary"
-    part_name = "c_utils"
-    install_images = [
-      "system",
-      "updater",
-    ]
-  }
 }
 
-group("utils_rust") {
-  public_deps = []
-  if (host_os == "linux" && !is_arkui_x) {
-    public_deps += [ ":utils_rs" ]
+if (!is_arkui_x) {
+  ohos_rust_shared_library("utils_rust") {
+    if (host_os == "linux") {
+      sources = [
+        "src/rust/ashmem.rs",
+        "src/rust/directory_ex.rs",
+        "src/rust/file_ex.rs",
+        "src/rust/lib.rs",
+      ]
+      deps = [
+        ":utils_static_cxx_rust",
+        "//third_party/rust/crates/cxx:lib",
+      ]
+      crate_root = "src/rust/lib.rs"
+      crate_name = "utils_rust"
+      crate_type = "dylib"
+      output_extension = "dylib.so"
+      subsystem_name = "commonlibrary"
+      part_name = "c_utils"
+      install_images = [
+        "system",
+        "updater",
+      ]
+    } else {
+      sources = [
+        "src/rust/ashmem.rs",
+        "src/rust/directory_ex.rs",
+        "src/rust/file_ex.rs",
+        "src/rust/lib.rs",
+      ]
+    }
   }
 }
 ###############################################################################
