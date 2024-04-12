@@ -421,13 +421,13 @@ bool PathToRealPath(const string& path, string& realPath)
 
     char tmpPath[PATH_MAX] = {0};
     if (realpath(path.c_str(), tmpPath) == nullptr) {
-        UTILS_LOGD("path to realpath error");
+        UTILS_LOGE("path to realpath error: %{public}s", strerror(errno));
         return false;
     }
 
     realPath = tmpPath;
     if (access(realPath.c_str(), F_OK) != 0) {
-        UTILS_LOGD("check realpath (%{private}s) error", realPath.c_str());
+        UTILS_LOGE("check realpath (%{private}s) error: %{public}s", realPath.c_str(), strerror(errno));
         return false;
     }
     return true;
