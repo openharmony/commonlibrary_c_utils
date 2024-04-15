@@ -371,6 +371,34 @@ HWTEST_F(UtilsSafeMap, testUtilsConcurrentWriteAndFind001, TestSize.Level0)
     });
 }
 
+static void ResultCompare(std::vector<std::future<int>>& vcfi, SafeMap<string, int>& demoData)
+{
+    vector<int> result;
+    for (auto& t : vcfi) {
+        result.push_back(t.get());
+    }
+
+    std::sort(result.begin(), result.end());
+
+    for (int i = 0; i < THREAD_NUM; ++i) {
+        ASSERT_EQ(i, result[i]);
+    }
+
+    int t = 0;
+    result.clear();
+    for (int i = 0; i < THREAD_NUM; ++i) {
+        t = -1;
+        ASSERT_TRUE(demoData.Find("A" + std::to_string(i), t));
+        result.push_back(t);
+    }
+
+    std::sort(result.begin(), result.end());
+
+    for (int i = 0; i < THREAD_NUM; ++i) {
+        ASSERT_EQ(i + 1, result[i]);
+    }
+}
+
 /*
  * @tc.name: testUtilsConcurrentWriteAndFindAndSet001
  * @tc.desc: 100 threads test in writein to the corresponding key of the map,
@@ -417,30 +445,7 @@ HWTEST_F(UtilsSafeMap, testUtilsConcurrentWriteAndFindAndSet001, TestSize.Level0
             t.join();
         }
 
-        vector<int> result;
-        for (auto& t : vcfi) {
-            result.push_back(t.get());
-        }
-
-        std::sort(result.begin(), result.end());
-
-        for (int i = 0; i < THREAD_NUM; ++i) {
-            ASSERT_EQ(i, result[i]);
-        }
-
-        int t = 0;
-        result.clear();
-        for (int i = 0; i < THREAD_NUM; ++i) {
-            t = -1;
-            ASSERT_TRUE(demoData.Find("A" + std::to_string(i), t));
-            result.push_back(t);
-        }
-
-        std::sort(result.begin(), result.end());
-
-        for (int i = 0; i < THREAD_NUM; ++i) {
-            ASSERT_EQ(i + 1, result[i]);
-        }
+        ResultCompare(vcfi, demoData);
     });
 }
 }  // namespace
