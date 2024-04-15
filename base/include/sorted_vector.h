@@ -210,7 +210,6 @@ public:
         return vec_[index];
     }
 
-
     /**
      * @brief Merges a vector into this vector.
      *

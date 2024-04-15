@@ -233,7 +233,7 @@ bool IsSameTextStr(const string& first, const string& second)
 }
 
 /*
- * utf8 rule:
+ * utf8 rule
  * 0000 ~ 007F        : 0xxxxxxx
  * 0080 ~ 07FF        : 110xxxxx 10xxxxxx
  * 0800 ~ FFFF        : 1110xxxx 10xxxxxx 10xxxxxx

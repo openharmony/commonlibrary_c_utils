@@ -66,7 +66,6 @@ const char* AsCharPtr(const c_void* inPtr)
 static int AshmemOpenLocked()
 {
     int fd = TEMP_FAILURE_RETRY(open("/dev/ashmem", O_RDWR | O_CLOEXEC));
-
     if (fd < 0) {
         UTILS_LOGE("%{public}s: fd is invalid, fd = %{public}d", __func__, fd);
         return fd;

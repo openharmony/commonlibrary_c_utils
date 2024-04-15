@@ -54,26 +54,44 @@ constexpr char32_t UTF8_FIRST_BYTE_MARK[] = {
 };
 }
 
+#define UTF8_LENGTH_INVALID 0
+#define UTF8_LENGTH_1 1
+#define UTF8_LENGTH_2 2
+#define UTF8_LENGTH_3 3
+#define UTF8_LENGTH_4 4
+#define UTF8_LEN_MASK 3
+#define UTF8_FIRST_BYTE_INDEX 0
+#define UTF8_SECOND_BYTE_INDEX 1
+#define UTF8_THIRD_BYTE_INDEX 2
+#define UTF8_FORTH_BYTE_INDEX 3
+#define UTF8_SHIFT_WIDTH 6
+#define STR16_TO_STR8_SHIFT_WIDTH 10
+#define UTF16_SHIFT_WIDTH 10
+#define UTF32_BYTE_SIZE_1 1
+#define UTF32_BYTE_SIZE_2 2
+#define UTF32_BYTE_SIZE_3 3
+#define UTF32_BYTE_SIZE_4 4
+
 // inner func and dstP is not nullptr
 void Utf32CodePointToUtf8(uint8_t* dstP, char32_t srcChar, size_t bytes)
 {
     dstP += bytes;
-    if (bytes >= 4) {
+    if (bytes >= UTF32_BYTE_SIZE_4) {
         *--dstP = static_cast<uint8_t>((srcChar | UTF8_BYTE_MARK) & UTF8_BYTE_MASK);
         srcChar >>= UTF8_OFFSET;
     }
 
-    if (bytes >= 3) {
+    if (bytes >= UTF32_BYTE_SIZE_3) {
         *--dstP = static_cast<uint8_t>((srcChar | UTF8_BYTE_MARK) & UTF8_BYTE_MASK);
         srcChar >>= UTF8_OFFSET;
     }
 
-    if (bytes >= 2) {
+    if (bytes >= UTF32_BYTE_SIZE_2) {
         *--dstP = static_cast<uint8_t>((srcChar | UTF8_BYTE_MARK) & UTF8_BYTE_MASK);
         srcChar >>= UTF8_OFFSET;
     }
 
-    if (bytes >= 1) {
+    if (bytes >= UTF32_BYTE_SIZE_1) {
         *--dstP = static_cast<uint8_t>(srcChar | UTF8_FIRST_BYTE_MARK[bytes]);
     }
 }
@@ -81,22 +99,22 @@ void Utf32CodePointToUtf8(uint8_t* dstP, char32_t srcChar, size_t bytes)
 size_t Utf32CodePointUtf8Length(char32_t srcChar)
 {
     if (srcChar < ONE_BYTE_UTF8) {
-        return 1;
+        return UTF8_LENGTH_1;
     } else if (srcChar < TWO_BYTES_UTF8) {
-        return 2;
+        return UTF8_LENGTH_2;
     } else if (srcChar < THREE_BYTES_UTF8) {
         if ((srcChar < UNICODE_RESERVED_START) || (srcChar > UNICODE_RESERVED_END)) {
-            return 3;
+            return UTF8_LENGTH_3;
         } else {
             // Surrogates are invalid UTF-32 characters.
-            return 0;
+            return UTF8_LENGTH_INVALID;
         }
     } else if (srcChar <= UNICODE_MAX_NUM) {
         // Max code point for Unicode is 0x0010FFFF.
-        return 4;
+        return UTF8_LENGTH_4;
     } else {
         // Invalid UTF-32 character.
-        return 0;
+        return UTF8_LENGTH_INVALID;
     }
 }
 
@@ -115,6 +133,7 @@ int Utf16ToUtf8Length(const char16_t* str16, size_t str16Len)
             && ((*(str16 + 1) & 0xFC00) == 0xDC00)) {
             // surrogate pairs are always 4 bytes.
             charLen = 4;
+            // str16 advance 2 bytes
             str16 += 2;
         } else {
             charLen = Utf32CodePointUtf8Length(static_cast<char32_t>(*str16++));
@@ -139,7 +158,7 @@ void StrncpyStr16ToStr8(const char16_t* utf16Str, size_t str16Len, char* utf8Str
         // surrogate pairs
         if (((*curUtf16 & 0xFC00) == 0xD800) && ((curUtf16 + 1) < endUtf16)
             && (((*(curUtf16 + 1) & 0xFC00)) == 0xDC00)) {
-            utf32 = (*curUtf16++ - 0xD800) << 10;
+            utf32 = (*curUtf16++ - 0xD800) << STR16_TO_STR8_SHIFT_WIDTH;
             utf32 |= *curUtf16++ - 0xDC00;
             utf32 += 0x10000;
         } else {
@@ -206,12 +225,12 @@ bool String16ToString8(const u16string& str16, string& str8)
 */
 static inline size_t Utf8CodePointLen(uint8_t ch)
 {
-    return ((0xe5000000 >> ((ch >> 3) & 0x1e)) & 3) + 1;
+    return ((0xe5000000 >> ((ch >> UTF8_LEN_MASK) & 0x1e)) & UTF8_LEN_MASK) + 1;
 }
 
 static inline void Utf8ShiftAndMask(uint32_t* codePoint, const uint8_t byte)
 {
-    *codePoint <<= 6;
+    *codePoint <<= UTF8_SHIFT_WIDTH;
     *codePoint |= 0x3F & byte;
 }
 
@@ -220,22 +239,22 @@ uint32_t Utf8ToUtf32CodePoint(const char* src, size_t length)
     uint32_t unicode = 0;
 
     switch (length) {
-        case 1:
-            return src[0];
-        case 2:
-            unicode = src[0] & 0x1f;
-            Utf8ShiftAndMask(&unicode, src[1]);
+        case UTF8_LENGTH_1:
+            return src[UTF8_FIRST_BYTE_INDEX];
+        case UTF8_LENGTH_2:
+            unicode = src[UTF8_FIRST_BYTE_INDEX] & 0x1f;
+            Utf8ShiftAndMask(&unicode, src[UTF8_SECOND_BYTE_INDEX]);
             return unicode;
-        case 3:
-            unicode = src[0] & 0x0f;
-            Utf8ShiftAndMask(&unicode, src[1]);
-            Utf8ShiftAndMask(&unicode, src[2]);
+        case UTF8_LENGTH_3:
+            unicode = src[UTF8_FIRST_BYTE_INDEX] & 0x0f;
+            Utf8ShiftAndMask(&unicode, src[UTF8_SECOND_BYTE_INDEX]);
+            Utf8ShiftAndMask(&unicode, src[UTF8_THIRD_BYTE_INDEX]);
             return unicode;
-        case 4:
-            unicode = src[0] & 0x07;
-            Utf8ShiftAndMask(&unicode, src[1]);
-            Utf8ShiftAndMask(&unicode, src[2]);
-            Utf8ShiftAndMask(&unicode, src[3]);
+        case UTF8_LENGTH_4:
+            unicode = src[UTF8_FIRST_BYTE_INDEX] & 0x07;
+            Utf8ShiftAndMask(&unicode, src[UTF8_SECOND_BYTE_INDEX]);
+            Utf8ShiftAndMask(&unicode, src[UTF8_THIRD_BYTE_INDEX]);
+            Utf8ShiftAndMask(&unicode, src[UTF8_FORTH_BYTE_INDEX]);
             return unicode;
         default:
             return 0xffff;
@@ -286,7 +305,7 @@ char16_t* Utf8ToUtf16(const char* utf8Str, size_t u8len, char16_t* u16str, size_
         } else {
             // Multiple UTF16 characters with surrogates
             codepoint = codepoint - 0x10000;
-            *u16cur++ = static_cast<char16_t>((codepoint >> 10) + 0xD800);
+            *u16cur++ = static_cast<char16_t>((codepoint >> UTF16_SHIFT_WIDTH) + 0xD800);
             if (u16cur >= u16end) {
                 // Ooops...  not enough room for this surrogate pair.
                 return u16cur - 1;
