@@ -63,7 +63,7 @@ void RWLock::LockWrite()
 
         // Only when no thread has acquired a read lock or a write lock (the lock counter status is FREE)
         // can the write lock be acquired and the counter set to WRITE; otherwise wait
-        for(int status = LOCK_STATUS_FREE; !lockCount_.compare_exchange_weak(status, LOCK_STATUS_WRITE);
+        for (int status = LOCK_STATUS_FREE; !lockCount_.compare_exchange_weak(status, LOCK_STATUS_WRITE);
             status = LOCK_STATUS_FREE) {
         }
 

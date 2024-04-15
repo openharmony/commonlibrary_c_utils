@@ -123,9 +123,5 @@ public:
      */
     virtual void Update(const Observable* o, const ObserverArg* arg) = 0;
 };
-
-
 }
-
 #endif
-

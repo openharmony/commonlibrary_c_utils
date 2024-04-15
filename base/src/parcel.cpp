@@ -106,6 +106,7 @@ size_t Parcel::CalcNewCapacity(size_t minNewCapacity)
     size_t newCapacity = 64;
 
     while (newCapacity < minNewCapacity) {
+        // resize capacity by 2 times
         newCapacity = newCapacity * 2;
     }
 

@@ -38,7 +38,6 @@ namespace OHOS {
  */
 template <typename T>
 class SafeQueueInner {
-
 public:
     SafeQueueInner() {}
 
