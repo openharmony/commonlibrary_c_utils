@@ -303,12 +303,7 @@ HWTEST_F(UtilsParcelTest, test_parcel_readvec_001, TestSize.Level0)
     EXPECT_EQ(result, false);
 }
 
-/**
- * @tc.name: test_parcel_readvec_002
- * @tc.desc: test parcel read vector failed with invlalid vector length -1.
- * @tc.type: FUNC
- */
-HWTEST_F(UtilsParcelTest, test_parcel_readvec_002, TestSize.Level0)
+static void ReadvecTestTwoFunc01()
 {
     Parcel parcel1;
     parcel1.WriteInt32(-1);
@@ -341,87 +336,99 @@ HWTEST_F(UtilsParcelTest, test_parcel_readvec_002, TestSize.Level0)
     val4.push_back(x4);
     result = parcel4.ReadInt32Vector(&val4);
     EXPECT_EQ(result, false);
+}
+
+static void ReadvecTestTwoFunc02()
+{
+    Parcel parcel1;
+    parcel1.WriteInt32(-1);
+    std::vector<int64_t> val1;
+    int64_t x1 = 1;
+    val1.push_back(x1);
+    bool result = parcel1.ReadInt64Vector(&val1);
+    EXPECT_EQ(result, false);
+
+    Parcel parcel2;
+    parcel2.WriteInt32(-1);
+    std::vector<uint8_t> val2;
+    uint8_t x2 = 1;
+    val2.push_back(x2);
+    result = parcel2.ReadUInt8Vector(&val2);
+    EXPECT_EQ(result, false);
+
+    Parcel parcel3;
+    parcel3.WriteInt32(-1);
+    std::vector<uint16_t> val3;
+    uint16_t x3 = 1;
+    val3.push_back(x3);
+    result = parcel3.ReadUInt16Vector(&val3);
+    EXPECT_EQ(result, false);
+
+    Parcel parcel4;
+    parcel4.WriteInt32(-1);
+    std::vector<uint32_t> val4;
+    uint32_t x4 = 1;
+    val4.push_back(x4);
+    result = parcel4.ReadUInt32Vector(&val4);
+    EXPECT_EQ(result, false);
+}
+
+static void ReadvecTestTwoFunc03()
+{
+    Parcel parcel1;
+    parcel1.WriteInt32(-1);
+    std::vector<uint64_t> val1;
+    uint64_t x1 = 1;
+    val1.push_back(x1);
+    bool result = parcel1.ReadUInt64Vector(&val1);
+    EXPECT_EQ(result, false);
+
+    Parcel parcel2;
+    parcel2.WriteInt32(-1);
+    std::vector<float> val2;
+    float x2 = 1;
+    val2.push_back(x2);
+    result = parcel2.ReadFloatVector(&val2);
+    EXPECT_EQ(result, false);
+
+    Parcel parcel3;
+    parcel3.WriteInt32(-1);
+    std::vector<double> val3;
+    double x3 = 1;
+    val3.push_back(x3);
+    result = parcel3.ReadDoubleVector(&val3);
+    EXPECT_EQ(result, false);
+
+    Parcel parcel4;
+    parcel4.WriteInt32(-1);
+    std::vector<std::string> val4;
+    std::string x4 = "test";
+    val4.push_back(x4);
+    result = parcel4.ReadStringVector(&val4);
+    EXPECT_EQ(result, false);
 
     Parcel parcel5;
     parcel5.WriteInt32(-1);
-    std::vector<int64_t> val5;
-    int64_t x5 = 1;
+    std::vector<std::u16string> val5;
+    std::u16string x5 = u"test";
     val5.push_back(x5);
-    result = parcel5.ReadInt64Vector(&val5);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel6;
-    parcel6.WriteInt32(-1);
-    std::vector<uint8_t> val6;
-    uint8_t x6 = 1;
-    val6.push_back(x6);
-    result = parcel6.ReadUInt8Vector(&val6);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel7;
-    parcel7.WriteInt32(-1);
-    std::vector<uint16_t> val7;
-    uint16_t x7 = 1;
-    val7.push_back(x7);
-    result = parcel7.ReadUInt16Vector(&val7);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel8;
-    parcel8.WriteInt32(-1);
-    std::vector<uint32_t> val8;
-    uint32_t x8 = 1;
-    val8.push_back(x8);
-    result = parcel8.ReadUInt32Vector(&val8);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel9;
-    parcel9.WriteInt32(-1);
-    std::vector<uint64_t> val9;
-    uint64_t x9 = 1;
-    val9.push_back(x9);
-    result = parcel9.ReadUInt64Vector(&val9);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel10;
-    parcel10.WriteInt32(-1);
-    std::vector<float> val10;
-    float x10 = 1;
-    val10.push_back(x10);
-    result = parcel10.ReadFloatVector(&val10);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel11;
-    parcel11.WriteInt32(-1);
-    std::vector<double> val11;
-    double x11 = 1;
-    val11.push_back(x11);
-    result = parcel11.ReadDoubleVector(&val11);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel12;
-    parcel12.WriteInt32(-1);
-    std::vector<std::string> val12;
-    std::string x12 = "test";
-    val12.push_back(x12);
-    result = parcel12.ReadStringVector(&val12);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel13;
-    parcel13.WriteInt32(-1);
-    std::vector<std::u16string> val13;
-    std::u16string x13 = u"test";
-    val13.push_back(x13);
-    result = parcel13.ReadString16Vector(&val13);
+    result = parcel5.ReadString16Vector(&val5);
     EXPECT_EQ(result, false);
 }
 
 /**
- * @tc.name: test_parcel_readvec_003
- * @tc.desc: test parcel read vector failed with invlalid vector length
- * std::vector::max_size().
+ * @tc.name: test_parcel_readvec_002
+ * @tc.desc: test parcel read vector failed with invlalid vector length -1.
  * @tc.type: FUNC
  */
-HWTEST_F(UtilsParcelTest, test_parcel_readvec_003, TestSize.Level0)
+HWTEST_F(UtilsParcelTest, test_parcel_readvec_002, TestSize.Level0)
+{
+    ReadvecTestTwoFunc01();
+    ReadvecTestTwoFunc02();
+    ReadvecTestTwoFunc03();
+}
+
+static void ReadvecTestThreeFunc01()
 {
     Parcel parcel1;
     std::vector<bool> val1;
@@ -454,90 +461,101 @@ HWTEST_F(UtilsParcelTest, test_parcel_readvec_003, TestSize.Level0)
     parcel4.WriteInt32(val4.max_size());
     result = parcel4.ReadInt32Vector(&val4);
     EXPECT_EQ(result, false);
+}
+
+static void ReadvecTestThreeFunc02()
+{
+    Parcel parcel1;
+    std::vector<int64_t> val1;
+    int64_t x1 = 1;
+    val1.push_back(x1);
+    parcel1.WriteInt32(val1.max_size());
+    bool result = parcel1.ReadInt64Vector(&val1);
+    EXPECT_EQ(result, false);
+
+    Parcel parcel2;
+    std::vector<uint8_t> val2;
+    uint8_t x2 = 1;
+    val2.push_back(x2);
+    parcel2.WriteInt32(val2.max_size());
+    result = parcel2.ReadUInt8Vector(&val2);
+    EXPECT_EQ(result, false);
+
+    Parcel parcel3;
+    std::vector<uint16_t> val3;
+    uint16_t x3 = 1;
+    val3.push_back(x3);
+    parcel3.WriteInt32(val3.max_size());
+    result = parcel3.ReadUInt16Vector(&val3);
+    EXPECT_EQ(result, false);
+
+    Parcel parcel4;
+    std::vector<uint32_t> val4;
+    uint32_t x4 = 1;
+    val4.push_back(x4);
+    parcel4.WriteInt32(val4.max_size());
+    result = parcel4.ReadUInt32Vector(&val4);
+    EXPECT_EQ(result, false);
+}
+
+static void ReadvecTestThreeFunc03()
+{
+    Parcel parcel1;
+    std::vector<uint64_t> val1;
+    uint64_t x1 = 1;
+    val1.push_back(x1);
+    parcel1.WriteInt32(val1.max_size());
+    bool result = parcel1.ReadUInt64Vector(&val1);
+    EXPECT_EQ(result, false);
+
+    Parcel parcel2;
+    std::vector<float> val2;
+    float x2 = 1;
+    val2.push_back(x2);
+    parcel2.WriteInt32(val2.max_size());
+    result = parcel2.ReadFloatVector(&val2);
+    EXPECT_EQ(result, false);
+
+    Parcel parcel3;
+    std::vector<double> val3;
+    double x3 = 1;
+    val3.push_back(x3);
+    parcel3.WriteInt32(val3.max_size());
+    result = parcel3.ReadDoubleVector(&val3);
+    EXPECT_EQ(result, false);
+
+    Parcel parcel4;
+    std::vector<std::string> val4;
+    std::string x4 = "test";
+    val4.push_back(x4);
+    parcel4.WriteInt32(val4.max_size());
+    result = parcel4.ReadStringVector(&val4);
+    EXPECT_EQ(result, false);
 
     Parcel parcel5;
-    std::vector<int64_t> val5;
-    int64_t x5 = 1;
+    std::vector<std::u16string> val5;
+    std::u16string x5 = u"test";
     val5.push_back(x5);
     parcel5.WriteInt32(val5.max_size());
-    result = parcel5.ReadInt64Vector(&val5);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel6;
-    std::vector<uint8_t> val6;
-    uint8_t x6 = 1;
-    val6.push_back(x6);
-    parcel6.WriteInt32(val6.max_size());
-    result = parcel6.ReadUInt8Vector(&val6);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel7;
-    std::vector<uint16_t> val7;
-    uint16_t x7 = 1;
-    val7.push_back(x7);
-    parcel7.WriteInt32(val7.max_size());
-    result = parcel7.ReadUInt16Vector(&val7);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel8;
-    std::vector<uint32_t> val8;
-    uint32_t x8 = 1;
-    val8.push_back(x8);
-    parcel8.WriteInt32(val8.max_size());
-    result = parcel8.ReadUInt32Vector(&val8);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel9;
-    std::vector<uint64_t> val9;
-    uint64_t x9 = 1;
-    val9.push_back(x9);
-    parcel9.WriteInt32(val9.max_size());
-    result = parcel9.ReadUInt64Vector(&val9);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel10;
-    std::vector<float> val10;
-    float x10 = 1;
-    val10.push_back(x10);
-    parcel10.WriteInt32(val10.max_size());
-    result = parcel10.ReadFloatVector(&val10);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel11;
-    std::vector<double> val11;
-    double x11 = 1;
-    val11.push_back(x11);
-    parcel11.WriteInt32(val11.max_size());
-    result = parcel11.ReadDoubleVector(&val11);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel12;
-    std::vector<std::string> val12;
-    std::string x12 = "test";
-    val12.push_back(x12);
-    parcel12.WriteInt32(val12.max_size());
-    result = parcel12.ReadStringVector(&val12);
-    EXPECT_EQ(result, false);
-
-    Parcel parcel13;
-    std::vector<std::u16string> val13;
-    std::u16string x13 = u"test";
-    val13.push_back(x13);
-    parcel13.WriteInt32(val13.max_size());
-    result = parcel13.ReadString16Vector(&val13);
+    result = parcel5.ReadString16Vector(&val5);
     EXPECT_EQ(result, false);
 }
 
 /**
- * @tc.name: test_parcel_writevec_001
- * @tc.desc: test parcel write vector failed with writting data out of the
- * maximum capacity.
+ * @tc.name: test_parcel_readvec_003
+ * @tc.desc: test parcel read vector failed with invlalid vector length
+ * std::vector::max_size().
  * @tc.type: FUNC
  */
-HWTEST_F(UtilsParcelTest, test_parcel_writevec_001, TestSize.Level0)
+HWTEST_F(UtilsParcelTest, test_parcel_readvec_003, TestSize.Level0)
 {
-    size_t cap = DEFAULT_CPACITY;
+    ReadvecTestThreeFunc01();
+    ReadvecTestThreeFunc02();
+    ReadvecTestThreeFunc03();
+}
 
+static void WritevecTestOneFunc01(const size_t cap)
+{
     Parcel parcel(nullptr);
     std::vector<bool> val1;
     bool x1 = true;
@@ -573,83 +591,104 @@ HWTEST_F(UtilsParcelTest, test_parcel_writevec_001, TestSize.Level0)
     }
     result = parcel.WriteInt32Vector(val4);
     EXPECT_EQ(result, false);
+}
 
-    parcel.FlushBuffer();
-    std::vector<int64_t> val5;
-    int64_t x5 = 1;
+static void WritevecTestOneFunc02(const size_t cap)
+{
+    Parcel parcel(nullptr);
+    std::vector<int64_t> val1;
+    int64_t x1 = 1;
     for (int i = 0; i < cap / sizeof(int64_t); i++) {
-        val5.push_back(x5);
+        val1.push_back(x1);
     }
-    result = parcel.WriteInt64Vector(val5);
+    bool result = parcel.WriteInt64Vector(val1);
     EXPECT_EQ(result, false);
 
     parcel.FlushBuffer();
-    std::vector<uint8_t> val6;
-    uint8_t x6 = 1;
+    std::vector<uint8_t> val2;
+    uint8_t x2 = 1;
     for (int i = 0; i < cap / sizeof(uint8_t); i++) {
-        val6.push_back(x6);
+        val2.push_back(x2);
     }
-    result = parcel.WriteUInt8Vector(val6);
+    result = parcel.WriteUInt8Vector(val2);
     EXPECT_EQ(result, false);
 
     parcel.FlushBuffer();
-    std::vector<uint16_t> val7;
-    uint16_t x7 = 1;
+    std::vector<uint16_t> val3;
+    uint16_t x3 = 1;
     for (int i = 0; i < cap / sizeof(uint16_t); i++) {
-        val7.push_back(x7);
+        val3.push_back(x3);
     }
-    result = parcel.WriteUInt16Vector(val7);
+    result = parcel.WriteUInt16Vector(val3);
     EXPECT_EQ(result, false);
 
     parcel.FlushBuffer();
-    std::vector<uint32_t> val8;
-    uint32_t x8 = 1;
+    std::vector<uint32_t> val4;
+    uint32_t x4 = 1;
     for (int i = 0; i < cap / sizeof(uint32_t); i++) {
-        val8.push_back(x8);
+        val4.push_back(x4);
     }
-    result = parcel.WriteUInt32Vector(val8);
+    result = parcel.WriteUInt32Vector(val4);
     EXPECT_EQ(result, false);
+}
 
-    parcel.FlushBuffer();
-    std::vector<uint64_t> val9;
-    uint64_t x9 = 1;
+static void WritevecTestOneFunc03(const size_t cap)
+{
+    Parcel parcel(nullptr);
+    std::vector<uint64_t> val1;
+    uint64_t x1 = 1;
     for (int i = 0; i < cap / sizeof(uint64_t); i++) {
-        val9.push_back(x9);
+        val1.push_back(x1);
     }
-    result = parcel.WriteUInt64Vector(val9);
+    bool result = parcel.WriteUInt64Vector(val1);
     EXPECT_EQ(result, false);
 
     parcel.FlushBuffer();
-    std::vector<float> val10;
-    float x10 = 1;
+    std::vector<float> val2;
+    float x2 = 1;
     for (int i = 0; i < cap / sizeof(float); i++) {
-        val10.push_back(x10);
+        val2.push_back(x2);
     }
-    result = parcel.WriteFloatVector(val10);
+    result = parcel.WriteFloatVector(val2);
     EXPECT_EQ(result, false);
 
     parcel.FlushBuffer();
-    std::vector<double> val11;
-    double x11 = 1;
+    std::vector<double> val3;
+    double x3 = 1;
     for (int i = 0; i < cap / sizeof(double); i++) {
-        val11.push_back(x11);
+        val3.push_back(x3);
     }
-    result = parcel.WriteDoubleVector(val11);
+    result = parcel.WriteDoubleVector(val3);
     EXPECT_EQ(result, false);
 
     parcel.FlushBuffer();
-    std::vector<std::string> val12;
-    std::string x12((cap / sizeof(char)), 't');
-    val12.push_back(x12);
-    result = parcel.WriteStringVector(val12);
+    std::vector<std::string> val4;
+    std::string x4((cap / sizeof(char)), 't');
+    val4.push_back(x4);
+    result = parcel.WriteStringVector(val4);
     EXPECT_EQ(result, false);
 
     parcel.FlushBuffer();
-    std::vector<std::u16string> val13;
-    std::u16string x13((cap / sizeof(char16_t)), u't');
-    val13.push_back(x13);
-    result = parcel.WriteString16Vector(val13);
+    std::vector<std::u16string> val5;
+    std::u16string x5((cap / sizeof(char16_t)), u't');
+    val5.push_back(x5);
+    result = parcel.WriteString16Vector(val5);
     EXPECT_EQ(result, false);
+}
+
+/**
+ * @tc.name: test_parcel_writevec_001
+ * @tc.desc: test parcel write vector failed with writting data out of the
+ * maximum capacity.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UtilsParcelTest, test_parcel_writevec_001, TestSize.Level0)
+{
+    size_t cap = DEFAULT_CPACITY;
+
+    WritevecTestOneFunc01(cap);
+    WritevecTestOneFunc02(cap);
+    WritevecTestOneFunc03(cap);
 }
 
 /**
@@ -1394,18 +1433,13 @@ void WriteVectorTestData(Parcel &parcel, const VectorTestData &data)
     EXPECT_EQ(result, true);
 }
 
-void ReadVectorTestData(Parcel &parcel, const VectorTestData &data)
+void ReadVectorTestDataFunc01(Parcel &parcel, const VectorTestData &data)
 {
     vector<bool> boolread;
     vector<int8_t> int8read;
     vector<int16_t> int16read;
     vector<int32_t> int32read;
     vector<int64_t> int64read;
-
-    vector<uint8_t> uint8read;
-    vector<uint16_t> uint16read;
-    vector<uint32_t> uint32read;
-    vector<uint64_t> uint64read;
 
     bool result = parcel.ReadBoolVector(&boolread);
     EXPECT_EQ(result, true);
@@ -1436,8 +1470,16 @@ void ReadVectorTestData(Parcel &parcel, const VectorTestData &data)
     for (size_t i = 0; i < data.int64test.size(); i++) {
         EXPECT_EQ(data.int64test[i], int64read[i]);
     }
+}
 
-    result = parcel.ReadUInt8Vector(&uint8read);
+void ReadVectorTestDataFunc02(Parcel &parcel, const VectorTestData &data)
+{
+    vector<uint8_t> uint8read;
+    vector<uint16_t> uint16read;
+    vector<uint32_t> uint32read;
+    vector<uint64_t> uint64read;
+
+    bool result = parcel.ReadUInt8Vector(&uint8read);
     EXPECT_EQ(result, true);
     for (size_t i = 0; i < data.uint8test.size(); i++) {
         EXPECT_EQ(data.uint8test[i], uint8read[i]);
@@ -1460,6 +1502,12 @@ void ReadVectorTestData(Parcel &parcel, const VectorTestData &data)
     for (size_t i = 0; i < data.uint64test.size(); i++) {
         EXPECT_EQ(data.uint64test[i], uint64read[i]);
     }
+}
+
+void ReadVectorTestData(Parcel &parcel, const VectorTestData &data)
+{
+    ReadVectorTestDataFunc01(parcel, data);
+    ReadVectorTestDataFunc02(parcel, data);
 }
 
 /**

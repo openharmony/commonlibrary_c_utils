@@ -393,6 +393,14 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndBlockInblan
     joinThread.join();
 }
 
+static void QueuePushFullEquivalent(const int Equivalent)
+{
+    for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
+        DemoThreadData::shareQueue.Push(Equivalent);
+    }
+    ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
+}
+
 /*
  * @tc.name: testMutilthreadConcurrentGetAndBlockInfullqueue001
  * @tc.desc: Multi-threaded get() on the full queue. When n threads are waiting to reach a certain
@@ -411,10 +419,7 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndBlockInfull
     timeT += 2;
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
     int t = 1;
-    for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
-        DemoThreadData::shareQueue.Push(t);
-    }
-    ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
+    QueuePushFullEquivalent(t);
 
     // start thread to join
     demoDatas[0].joinStatus = false;
@@ -434,8 +439,7 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndBlockInfull
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
     ASSERT_TRUE(demoDatas[0].joinStatus);
 
-    unsigned int getedOut = 0;
-    unsigned int ungetedOut = 0;
+    unsigned int getedOut = 0, ungetedOut = 0;
     GetThreadDateGetedStatus(demoDatas, getedOut, ungetedOut);
 
     ASSERT_EQ(getedOut, QUEUE_SLOTS);
@@ -629,10 +633,7 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndPopInfullqu
     timeT += 2;
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
     int t = 1;
-    for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
-        DemoThreadData::shareQueue.Push(t);
-    }
-    ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
+    QueuePushFullEquivalent(t);
 
     // start thread to join
     demoDatas[0].joinStatus = false;
@@ -654,10 +655,7 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndPopInfullqu
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
     ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
-    unsigned int getedOut = 0;
-    unsigned int ungetedOut = 0;
-    unsigned int pushedIn = 0;
-    unsigned int unpushedIn = 0;
+    unsigned int getedOut = 0, ungetedOut = 0, pushedIn = 0, unpushedIn = 0;
     GetThreadDateGetedStatus(demoDatas, getedOut, ungetedOut);
     GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
 
