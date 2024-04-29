@@ -304,6 +304,7 @@ int RegisterEventThread()
     int handle = 10;
     for (int i = 0; i < CYCLE_NUM2; i++) {
         sptr<IRemoteObject> remote = ipc.FindOrNewObject(handle);
+        remote->CheckIsAttemptAcquireSet(remote);
         if (remote) {
             remote->IsProxyObject();
         }
@@ -348,10 +349,12 @@ HWTEST_F(UtilsRefbaseTest, testRefbaseOperateNull001, TestSize.Level0)
 
     remoteObject->IncWeakRef(nullptr);
     remoteObject->IncStrongRef(nullptr);
+    remoteObject->CheckIsAttemptAcquireSet(nullptr);
     remoteObject->DecStrongRef(nullptr);
     remoteObject->AttemptAcquire(this);
 
     remoteObject->IncStrongRef(nullptr);
+    remoteObject->CheckIsAttemptAcquireSet(nullptr);
     remoteObject->DecStrongRef(nullptr);
 
     remoteObject->DecWeakRef(nullptr);
@@ -468,6 +471,7 @@ HWTEST_F(UtilsRefbaseTest, testRefbaseAcquire001, TestSize.Level0)
     EXPECT_EQ(testobject->GetSptrRefCount(), 1);
     {
         EXPECT_TRUE(testobject->IsAttemptAcquireSet());
+        testobject->CheckIsAttemptAcquireSet(this);
         sptr<RefBaseTest> sptrRef = testobject;
         EXPECT_EQ(sptrRef->GetSptrRefCount(), 1);
         EXPECT_FALSE(testobject->IsAttemptAcquireSet());
