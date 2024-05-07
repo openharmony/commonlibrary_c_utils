@@ -51,8 +51,6 @@ public:
         } else {
             BENCHMARK_LOGD("Create test dir Failed: %{public}s", dir.c_str());
         }
-
-        BENCHMARK_LOGD("Page size: %{public}lld", MappedFile::PageSize());
     }
 
     void TearDown(const ::benchmark::State& state) override
@@ -73,17 +71,11 @@ void PrintStatus(MappedFile& mf)
     BENCHMARK_LOGD("Mapped Region Start: %{public}p\n"
                    "Mapped Region End: %{public}p\n"
                    "View start: %{public}p\n"
-                   "View End: %{public}p\n"
-                   "View Size: %{public}lld\n"
-                   "File Offset Start: %{public}lld\n"
-                   "File Offset End: %{public}lld",
+                   "View End: %{public}p\n",
                    reinterpret_cast<void*>(mf.RegionStart()),
                    reinterpret_cast<void*>(mf.RegionEnd()),
                    reinterpret_cast<void*>(mf.Begin()),
-                   reinterpret_cast<void*>(mf.End()),
-                   mf.Size(),
-                   mf.StartOffset(),
-                   mf.EndOffset());
+                   reinterpret_cast<void*>(mf.End()));
 }
 
 bool CreateTestFile(const std::string& path, const std::string& content)
