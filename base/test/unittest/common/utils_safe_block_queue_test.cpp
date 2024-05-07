@@ -44,13 +44,13 @@ public:
         putStatus = false;
         getStatus = false;
     }
-    static SafeBlockQueue<int> shareQueue;
     bool putStatus;
     bool getStatus;
+    static SafeBlockQueue<int> shareQueue;
 
-    void Put(int i)
+    void Put(int j)
     {
-        shareQueue.Push(i);
+        shareQueue.Push(j);
         putStatus = true;
     }
 
@@ -68,8 +68,8 @@ void PutHandleThreadData(DemoThreadData& q, int i)
     q.Put(i);
 }
 
-void GetThreadDatePushedStatus(std::array<DemoThreadData, THREAD_NUM>& demoDatas,
-                                             unsigned int& pushedIn, unsigned int& unpushedIn)
+void GetThreadDatePushedStatus(std::array<DemoThreadData, THREAD_NUM>& demoDatas, unsigned int& pushedIn,
+                               unsigned int& unpushedIn)
 {
     pushedIn = 0;
     unpushedIn = 0;
@@ -143,6 +143,23 @@ HWTEST_F(UtilsSafeBlockQueue, testGet001, TestSize.Level0)
     ASSERT_EQ(t, 0);
 }
 
+static void ThreadsJoin(std::thread (&threads)[THREAD_NUM])
+{
+    for (auto& t : threads) {
+        t.join();
+    }
+}
+
+static void CheckFullQueueStatus(std::array<DemoThreadData, THREAD_NUM>& demoDatas, unsigned int& pushedIn,
+    unsigned int& unpushedIn, unsigned int& getedOut, unsigned int& ungetedOut)
+{
+    ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
+    GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
+    GetThreadDateGetedStatus(demoDatas, getedOut, ungetedOut);
+    ASSERT_EQ(pushedIn, THREAD_NUM);
+    ASSERT_EQ(getedOut, THREAD_NUM - QUEUE_SLOTS);
+}
+
 /*
  * @tc.name: testMutilthreadPutAndBlock001
  * @tc.desc: Multiple threads put until blocking runs, one thread gets, all threads finish running normally
@@ -162,10 +179,7 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadPutAndBlock001, TestSize.Level0)
     std::this_thread::sleep_for(std::chrono::seconds(2));
     ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
 
-    unsigned int pushedIn = 0;
-    unsigned int unpushedIn = 0;
-    unsigned int getedOut = 0;
-    unsigned int ungetedOut = 0;
+    unsigned int pushedIn = 0, unpushedIn = 0, getedOut = 0, ungetedOut = 0;
     GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
 
     ASSERT_EQ(pushedIn, QUEUE_SLOTS);
@@ -178,21 +192,24 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadPutAndBlock001, TestSize.Level0)
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
     // queue is full and some threads is blocked and is not joined
-    ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
-    GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
-    GetThreadDateGetedStatus(demoDatas, getedOut, ungetedOut);
-    ASSERT_EQ(pushedIn, THREAD_NUM);
-    ASSERT_EQ(getedOut, THREAD_NUM - QUEUE_SLOTS);
-
-    for (auto& t : threads) {
-        t.join();
-    }
+    CheckFullQueueStatus(demoDatas, pushedIn, unpushedIn, getedOut, ungetedOut);
+    ThreadsJoin(threads);
 
     while (!DemoThreadData::shareQueue.IsEmpty()) {
         demoDatas[0].Get();
     }
 
     // here means all thread end ok or if some operation blocked and the testcase blocked
+}
+
+static std::time_t GetTimeAddTwoSeconds()
+{
+    using std::chrono::system_clock;
+    std::time_t timeT = system_clock::to_time_t(system_clock::now());
+    cout << "start time: " << timeT << endl;
+    const int twoSec = 2;
+    timeT += twoSec;
+    return timeT;
 }
 
 /*
@@ -209,10 +226,7 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentPutAndBlockInblankqueue00
 
     using std::chrono::system_clock;
 
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    cout << "start time: " << timeT << endl;
-    timeT += 2;
-
+    std::time_t timeT = GetTimeAddTwoSeconds();
     // 2. start thread
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
     for (unsigned int i = 0; i < THREAD_NUM; i++) {
@@ -239,20 +253,29 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentPutAndBlockInblankqueue00
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
     // queue is full and some threads is blocked and is not joined
-    ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
-    GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
-    GetThreadDateGetedStatus(demoDatas, getedOut, ungetedOut);
-    ASSERT_EQ(pushedIn, THREAD_NUM);
-    ASSERT_EQ(getedOut, THREAD_NUM - QUEUE_SLOTS);
-
-    for (auto& t : threads) {
-        t.join();
-    }
+    CheckFullQueueStatus(demoDatas, pushedIn, unpushedIn, getedOut, ungetedOut);
+    ThreadsJoin(threads);
 
     while (!DemoThreadData::shareQueue.IsEmpty()) {
         demoDatas[0].Get();
     }
     // here means all thread end ok or if some operation blocked and the testcase blocked
+}
+
+static void QueuePushInfull()
+{
+    for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
+        int t = i;
+        DemoThreadData::shareQueue.Push(t);
+    }
+}
+
+static void QueuePushInnotfull(const unsigned int remain)
+{
+    for (unsigned int i = 0; i < QUEUE_SLOTS - remain; i++) {
+        int t = i;
+        DemoThreadData::shareQueue.Push(t);
+    }
 }
 
 /*
@@ -269,14 +292,9 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentPutAndBlockInfullqueue001
 
     using std::chrono::system_clock;
 
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    cout << "start time: " << timeT << endl;
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
-    for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
-        int t = i;
-        DemoThreadData::shareQueue.Push(t);
-    }
+    QueuePushInfull();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
 
     // 2. start thread put in full queue
@@ -302,10 +320,7 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentPutAndBlockInfullqueue001
         ASSERT_EQ(unpushedIn, THREAD_NUM - (i + 1));
     }
 
-    for (auto& t : threads) {
-        t.join();
-    }
-
+    ThreadsJoin(threads);
     while (!DemoThreadData::shareQueue.IsEmpty()) {
         demoDatas[0].Get();
     }
@@ -325,9 +340,7 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentGetAndBlockInblankqueue00
 
     using std::chrono::system_clock;
 
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    cout << "start time: " << timeT << endl;
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
 
     // 2. start thread put in empty queue
@@ -357,10 +370,7 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentGetAndBlockInblankqueue00
         ASSERT_EQ(ungetedOut, THREAD_NUM - (i + 1));
     }
 
-    for (auto& t : threads) {
-        t.join();
-    }
-
+    ThreadsJoin(threads);
     while (!DemoThreadData::shareQueue.IsEmpty()) {
         demoDatas[0].Get();
     }
@@ -379,9 +389,7 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentGetAndBlockInfullqueue001
 
     using std::chrono::system_clock;
 
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    cout << "start time: " << timeT << endl;
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
     int t = 1;
     for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
@@ -417,10 +425,7 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentGetAndBlockInfullqueue001
     ASSERT_EQ(getedOut, THREAD_NUM);
     ASSERT_EQ(ungetedOut, static_cast<unsigned int>(0));
 
-    for (auto& t : threads) {
-        t.join();
-    }
-
+    ThreadsJoin(threads);
     while (!DemoThreadData::shareQueue.IsEmpty()) {
         demoDatas[0].Get();
     }
@@ -441,14 +446,9 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentGetAndBlockInnotfullqueue
     using std::chrono::system_clock;
 
     const unsigned int REMAIN_SLOTS = 5;
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    cout << "start time: " << timeT << endl;
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
-    for (unsigned int i = 0; i < QUEUE_SLOTS - REMAIN_SLOTS; i++) {
-        int t = i;
-        DemoThreadData::shareQueue.Push(t);
-    }
+    QueuePushInnotfull(REMAIN_SLOTS);
 
     // 2. start thread put in not full queue
     for (unsigned int i = 0; i < THREAD_NUM; i++) {
@@ -475,10 +475,7 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentGetAndBlockInnotfullqueue
     ASSERT_EQ(getedOut, THREAD_NUM);
     ASSERT_EQ(ungetedOut, static_cast<unsigned int>(0));
 
-    for (auto& t : threads) {
-        t.join();
-    }
-
+    ThreadsJoin(threads);
     while (!DemoThreadData::shareQueue.IsEmpty()) {
         demoDatas[0].Get();
     }
@@ -499,14 +496,9 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentPutAndBlockInnotfullqueue
     using std::chrono::system_clock;
 
     const unsigned int REMAIN_SLOTS = 5;
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    cout << "start time: " << timeT << endl;
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
-    for (unsigned int i = 0; i < QUEUE_SLOTS - REMAIN_SLOTS; i++) {
-        int t = i;
-        DemoThreadData::shareQueue.Push(t);
-    }
+    QueuePushInnotfull(REMAIN_SLOTS);
 
     // 2. start thread put in not full queue
     for (unsigned int i = 0; i < THREAD_NUM; i++) {
@@ -532,13 +524,23 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentPutAndBlockInnotfullqueue
     ASSERT_EQ(putedin, THREAD_NUM);
     ASSERT_EQ(unputedin, static_cast<unsigned int>(0));
 
-    for (auto& t : threads) {
-        t.join();
-    }
-
+    ThreadsJoin(threads);
     while (!DemoThreadData::shareQueue.IsEmpty()) {
         demoDatas[0].Get();
     }
+}
+
+static void CheckQueueStatus(std::array<DemoThreadData, THREAD_NUM>& demoDatas)
+{
+    unsigned int getedOut = 0;
+    unsigned int ungetedOut = 0;
+    unsigned int pushedIn = 0;
+    unsigned int unpushedIn = 0;
+    GetThreadDateGetedStatus(demoDatas, getedOut, ungetedOut);
+    GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
+
+    ASSERT_EQ(pushedIn, THREAD_NUM);
+    ASSERT_EQ(getedOut, THREAD_NUM);
 }
 
 /*
@@ -557,9 +559,7 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentGetAndPopInblankqueue001,
 
     using std::chrono::system_clock;
 
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    cout << "start time: " << timeT << endl;
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
 
     // 2. start thread put and get in empty queue
@@ -577,23 +577,10 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentGetAndPopInblankqueue001,
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
-    unsigned int getedOut = 0;
-    unsigned int ungetedOut = 0;
-    unsigned int pushedIn = 0;
-    unsigned int unpushedIn = 0;
-    GetThreadDateGetedStatus(demoDatas, getedOut, ungetedOut);
-    GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
+    CheckQueueStatus(demoDatas);
 
-    ASSERT_EQ(pushedIn, THREAD_NUM);
-    ASSERT_EQ(getedOut, THREAD_NUM);
-
-    for (auto& t : threadsout) {
-        t.join();
-    }
-
-    for (auto& t : threadsin) {
-        t.join();
-    }
+    ThreadsJoin(threadsout);
+    ThreadsJoin(threadsin);
 
     while (!DemoThreadData::shareQueue.IsEmpty()) {
         demoDatas[0].Get();
@@ -617,9 +604,7 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentGetAndPopInfullqueue001, 
 
     using std::chrono::system_clock;
 
-    std::time_t timeT = system_clock::to_time_t(system_clock::now());
-    cout << "start time: " << timeT << endl;
-    timeT += 2;
+    std::time_t timeT = GetTimeAddTwoSeconds();
     ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
     int t = 1;
     for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
@@ -640,23 +625,10 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentGetAndPopInfullqueue001, 
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
     ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
-    unsigned int getedOut = 0;
-    unsigned int ungetedOut = 0;
-    unsigned int pushedIn = 0;
-    unsigned int unpushedIn = 0;
-    GetThreadDateGetedStatus(demoDatas, getedOut, ungetedOut);
-    GetThreadDatePushedStatus(demoDatas, pushedIn, unpushedIn);
+    CheckQueueStatus(demoDatas);
 
-    ASSERT_EQ(pushedIn, THREAD_NUM);
-    ASSERT_EQ(getedOut, THREAD_NUM);
-
-    for (auto& t : threadsout) {
-        t.join();
-    }
-
-    for (auto& t : threadsin) {
-        t.join();
-    }
+    ThreadsJoin(threadsout);
+    ThreadsJoin(threadsin);
 
     while (!DemoThreadData::shareQueue.IsEmpty()) {
         demoDatas[0].Get();
