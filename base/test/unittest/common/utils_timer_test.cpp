@@ -60,13 +60,13 @@ void UtilsTimerTest::TearDown(void)
 std::atomic<int> g_data1(0);
 void TimeOutCallback1()
 {
-    g_data1 += 1;
+    g_data1 = g_data1 + 1;
 }
 
 std::atomic<int> g_data2(0);
 void TimeOutCallback2()
 {
-    g_data2 += 1;
+    g_data2 = g_data2 + 1;
 }
 
 /*
@@ -124,6 +124,17 @@ HWTEST_F(UtilsTimerTest, testTimer003, TestSize.Level0)
     EXPECT_GE(g_data2, 2);
 }
 
+static void TestTimerEvent(Utils::Timer& timer)
+{
+    uint32_t interval = 1;
+    timer.Register(TimeOutCallback1, interval);
+    uint32_t interval2 = 2;
+    timer.Register(TimeOutCallback1, interval2);
+    int sleepTime = 30;
+    std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
+    timer.Shutdown();
+}
+
 /*
  * @tc.name: testTimer004
  * @tc.desc: timer unit test
@@ -134,10 +145,7 @@ HWTEST_F(UtilsTimerTest, testTimer004, TestSize.Level0)
     Utils::Timer timer("test_timer");
     uint32_t ret = timer.Setup();
     EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
-    timer.Register(TimeOutCallback1, 1);
-    timer.Register(TimeOutCallback1, 2);
-    std::this_thread::sleep_for(std::chrono::milliseconds(30));
-    timer.Shutdown();
+    TestTimerEvent(timer);
     EXPECT_GE(g_data1, 5);
 }
 
@@ -148,7 +156,10 @@ public:
     bool Init();
     bool StartTimer(int milliseconds, bool once);
     void StopTimer();
-    int GetData() const {return data_;}
+    int GetData() const
+    {
+        return data_;
+    }
 private:
     void TimeOutProc()
     {
@@ -204,6 +215,20 @@ HWTEST_F(UtilsTimerTest, testTimer006, TestSize.Level0)
     EXPECT_EQ(9, a.GetData());
 }
 
+static void TimerEventFun(Utils::Timer& timer)
+{
+    uint32_t timerId = 0;
+    uint32_t loops = 10;
+    uint32_t interval = 7;
+    int sleepTime = 10;
+    for (uint32_t i = 0; i < loops; i++) {
+        timerId = timer.Register(TimeOutCallback1, interval, true);
+        std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
+    }
+    timer.Unregister(timerId);
+    timer.Unregister(timerId);
+}
+
 /*
  * @tc.name: testTimer007
  * @tc.desc: abnormal case
@@ -214,18 +239,23 @@ HWTEST_F(UtilsTimerTest, testTimer007, TestSize.Level0)
     Utils::Timer timer("test_timer", -1);
     uint32_t ret = timer.Setup();
     EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
-
-    uint32_t timerId = 0;
-    for (uint32_t i = 0; i < 10; i++) {
-        timerId = timer.Register(TimeOutCallback1, 7, true);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-    timer.Unregister(timerId);
-    timer.Unregister(timerId);
-
+    TimerEventFun(timer);
     timer.Shutdown();
     timer.Shutdown(false);
     EXPECT_GE(g_data1, 5);
+}
+
+static void SleepLoopFunc()
+{
+    int loops = 11;
+    int sleepTime = 10;
+    int64_t desiredVal = 10;
+    for (int i = 0; i < loops; i++) {
+        int64_t pre = CurMs();
+        std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
+        int64_t cur = CurMs();
+        EXPECT_GE(cur - pre, desiredVal);
+    }
 }
 
 /*
@@ -240,12 +270,7 @@ HWTEST_F(UtilsTimerTest, testTimer008, TestSize.Level0)
     EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
     timer.Register(TimeOutCallback1, 10);
 
-    for (int i = 0; i < 11; i++) {
-        int64_t pre = CurMs();
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        int64_t cur = CurMs();
-        EXPECT_GE(cur - pre, 10);
-    }
+    SleepLoopFunc();
     timer.Shutdown();
     EXPECT_GE(g_data1, 10);
 }
@@ -300,6 +325,15 @@ HWTEST_F(UtilsTimerTest, testTimer009, TestSize.Level0)
     EXPECT_GE(g_data1, 10); /* 18 for max */
 }
 
+static void TimerRegisterMechanism(Utils::Timer& timer, bool once)
+{
+    uint32_t interval = 10;
+    timer.Register(TimeOutCallback1, interval, once);
+    timer.Register(TimeOutCallback1, interval, !once);
+    timer.Register(TimeOutCallback1, interval, once);
+    timer.Register(TimeOutCallback1, interval, !once);
+}
+
 /*
  * @tc.name: testTimer010
  * @tc.desc: once timer register
@@ -310,10 +344,8 @@ HWTEST_F(UtilsTimerTest, testTimer010, TestSize.Level0)
     Utils::Timer timer("test_timer");
     uint32_t ret = timer.Setup();
     EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
-    timer.Register(TimeOutCallback1, 10, true);
-    timer.Register(TimeOutCallback1, 10);
-    timer.Register(TimeOutCallback1, 10, true);
-    timer.Register(TimeOutCallback1, 10);
+    bool once = true;
+    TimerRegisterMechanism(timer, once);
     std::this_thread::sleep_for(std::chrono::milliseconds(52));
     timer.Shutdown();
     EXPECT_GE(g_data1, 8); /* 12 for max */
@@ -329,10 +361,8 @@ HWTEST_F(UtilsTimerTest, testTimer011, TestSize.Level0)
     Utils::Timer timer("test_timer");
     uint32_t ret = timer.Setup();
     EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
-    timer.Register(TimeOutCallback1, 10);
-    timer.Register(TimeOutCallback1, 10, true);
-    timer.Register(TimeOutCallback1, 10);
-    timer.Register(TimeOutCallback1, 10, true);
+    bool once = false;
+    TimerRegisterMechanism(timer, once);
     std::this_thread::sleep_for(std::chrono::milliseconds(52));
     timer.Shutdown();
     EXPECT_GE(g_data1, 8); /* 12 for max */
