@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Copyright (c) 2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,19 +12,22 @@
 # limitations under the License.
 import("//build/test.gni")
 
-##############################group##########################################
-group("fuzztest") {
-  testonly = true
-  deps = []
-  deps += [
-    # deps file
-    "ashmem_fuzzer:AshmemFuzzTest",
-    "directory_fuzzer:DirectoryFuzzTest",
-    "parcel_fuzzer:ParcelFuzzTest",
-    "refbase_fuzzer:RefbaseFuzzTest",
-    "string_fuzzer:StringFuzzTest",
-    "thread_fuzzer:ThreadFuzzTest",
-    "timer_fuzzer:TimerFuzzTest",
+##############################fuzztest##########################################
+ohos_fuzztest("ThreadFuzzTest") {
+  module_out_path = "c_utils/c_utils"
+  fuzz_config_file = "."
+  include_dirs = [ "../" ]
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
   ]
+  defines = [ "DEBUG_FUZZ" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog_base",
+  ]
+  sources = [ "thread_fuzzer.cpp" ]
 }
 ###############################################################################
