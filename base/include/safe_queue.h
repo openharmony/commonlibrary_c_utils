@@ -109,7 +109,6 @@ protected:
  */
 template <typename T>
 class SafeQueue : public SafeQueueInner<T> {
-
 protected:
     using SafeQueueInner<T>::deque_;
     using SafeQueueInner<T>::mutex_;
@@ -143,7 +142,6 @@ protected:
  */
 template <typename T>
 class SafeStack : public SafeQueueInner<T> {
-
 protected:
     using SafeQueueInner<T>::deque_;
     using SafeQueueInner<T>::mutex_;

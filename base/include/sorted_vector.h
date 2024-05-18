@@ -29,7 +29,6 @@ namespace OHOS {
  */
 template <class TYPE, bool AllowDuplicate = true>
 class SortedVector {
-
 public:
     using value_type = TYPE;
     using size_type = std::size_t;
@@ -306,7 +305,6 @@ SortedVector<TYPE, AllowDuplicate>::SortedVector(const SortedVector<TYPE, false>
 template <class TYPE, bool AllowDuplicate>
 SortedVector<TYPE, AllowDuplicate>::SortedVector(const SortedVector<TYPE, true>& rhs)
 {
-
     if (AllowDuplicate) {
         std::copy(rhs.Begin(), rhs.End(), std::back_inserter(vec_));
     } else {
