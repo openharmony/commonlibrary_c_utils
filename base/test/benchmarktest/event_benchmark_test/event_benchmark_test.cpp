@@ -205,9 +205,37 @@ BENCHMARK_F(BenchmarkEventTest, testIOEventHandler002)(benchmark::State& state)
     BENCHMARK_LOGD("EventTest testIOEventHandler002 end.");
 }
 
+static void AddHandler(std::shared_ptr<IOEventReactor>& reactor, std::shared_ptr<IOEventHandler>& handler1,
+                       std::shared_ptr<IOEventHandler>& handler2, std::shared_ptr<IOEventHandler>& handler3,
+                       benchmark::State& state)
+{
+    AssertEqual(reactor->AddHandler(handler1.get()), EVENT_SYS_ERR_OK,
+        "reactor->AddHandler(handler1.get()) did not equal EVENT_SYS_ERR_OK as expected.", state);
+    AssertEqual(reactor->AddHandler(handler2.get()), EVENT_SYS_ERR_OK,
+        "reactor->AddHandler(handler2.get()) did not equal EVENT_SYS_ERR_OK as expected.", state);
+    AssertUnequal(reactor->AddHandler(handler3.get()), EVENT_SYS_ERR_OK,
+        "reactor->AddHandler(handler3.get()) was not different from EVENT_SYS_ERR_OK as expected.", state);
+    AssertUnequal(reactor->AddHandler(nullptr), EVENT_SYS_ERR_OK,
+        "reactor->AddHandler(nullptr) was not different from EVENT_SYS_ERR_OK as expected.", state);
+}
+
+static void RemoveHandler(std::shared_ptr<IOEventReactor>& reactor, std::shared_ptr<IOEventHandler>& handler2,
+                          std::shared_ptr<IOEventHandler>& handler3, std::shared_ptr<IOEventHandler>& handler4,
+                          benchmark::State& state)
+{
+    AssertUnequal(reactor->RemoveHandler(nullptr), EVENT_SYS_ERR_OK,
+        "reactor->RemoveHandler(nullptr) was not different from EVENT_SYS_ERR_OK as expected.", state);
+    AssertUnequal(reactor->RemoveHandler(handler3.get()), EVENT_SYS_ERR_OK,
+        "reactor->RemoveHandler(handler3.get()) was not different from EVENT_SYS_ERR_OK as expected.", state);
+    AssertUnequal(reactor->RemoveHandler(handler4.get()), EVENT_SYS_ERR_OK,
+        "reactor->RemoveHandler(handler4.get()) was not different from EVENT_SYS_ERR_OK as expected.", state);
+    AssertEqual(reactor->RemoveHandler(handler2.get()), EVENT_SYS_ERR_OK,
+        "reactor->RemoveHandler(handler2.get()) did not equal EVENT_SYS_ERR_OK as expected.", state);
+}
+
 static void UpdateHandler(std::shared_ptr<IOEventReactor>& reactor, std::shared_ptr<IOEventHandler>& handler1,
-                          std::shared_ptr<IOEventHandler>& handler2, std::shared_ptr<IOEventHandler>& handler3,
-                          std::shared_ptr<IOEventHandler>& handler4, benchmark::State& state)
+                          std::shared_ptr<IOEventHandler>& handler3, std::shared_ptr<IOEventHandler>& handler4,
+                          benchmark::State& state)
 {
     // Update handler
     AssertUnequal(reactor->UpdateHandler(nullptr), EVENT_SYS_ERR_OK,
@@ -218,12 +246,6 @@ static void UpdateHandler(std::shared_ptr<IOEventReactor>& reactor, std::shared_
         "reactor->UpdateHandler(handler1.get()) did not equal EVENT_SYS_ERR_OK as expected.", state);
     AssertEqual(reactor->UpdateHandler(handler4.get()), EVENT_SYS_ERR_OK,
         "reactor->UpdateHandler(handler4.get()) did not equal EVENT_SYS_ERR_OK as expected.", state);
-
-    // Update handler from the handler side.
-    AssertEqual(handler2->Update(reactor.get()), true,
-        "handler2->Update(reactor.get()) was not different from false as expected.", state);
-    AssertUnequal(handler3->Update(reactor.get()), true,
-        "handler3->Update(reactor.get()) was not different from true as expected.", state);
 }
 
 /*
@@ -251,14 +273,7 @@ BENCHMARK_F(BenchmarkEventTest, testIOEventReactor001)(benchmark::State& state)
             "reactor->SetUp() did not equal EVENT_SYS_ERR_OK as expected.", state);
 
         // 3. Add handler
-        AssertEqual(reactor->AddHandler(handler1.get()), EVENT_SYS_ERR_OK,
-            "reactor->AddHandler(handler1.get()) did not equal EVENT_SYS_ERR_OK as expected.", state);
-        AssertEqual(reactor->AddHandler(handler2.get()), EVENT_SYS_ERR_OK,
-            "reactor->AddHandler(handler2.get()) did not equal EVENT_SYS_ERR_OK as expected.", state);
-        AssertUnequal(reactor->AddHandler(handler3.get()), EVENT_SYS_ERR_OK,
-            "reactor->AddHandler(handler3.get()) was not different from EVENT_SYS_ERR_OK as expected.", state);
-        AssertUnequal(reactor->AddHandler(nullptr), EVENT_SYS_ERR_OK,
-            "reactor->AddHandler(nullptr) was not different from EVENT_SYS_ERR_OK as expected.", state);
+        AddHandler(reactor, handler1, handler2, handler3, state);
 
         // 4. Add handler from the handler side.
         AssertUnequal(handler1->Start(reactor.get()), true,
@@ -267,21 +282,20 @@ BENCHMARK_F(BenchmarkEventTest, testIOEventReactor001)(benchmark::State& state)
             "handler3->Start(reactor.get()) was not different from false as expected.", state);
 
         // 5. Remove handler
-        AssertUnequal(reactor->RemoveHandler(nullptr), EVENT_SYS_ERR_OK,
-            "reactor->RemoveHandler(nullptr) was not different from EVENT_SYS_ERR_OK as expected.", state);
-        AssertUnequal(reactor->RemoveHandler(handler3.get()), EVENT_SYS_ERR_OK,
-            "reactor->RemoveHandler(handler3.get()) was not different from EVENT_SYS_ERR_OK as expected.", state);
-        AssertUnequal(reactor->RemoveHandler(handler4.get()), EVENT_SYS_ERR_OK,
-            "reactor->RemoveHandler(handler4.get()) was not different from EVENT_SYS_ERR_OK as expected.", state);
-        AssertEqual(reactor->RemoveHandler(handler2.get()), EVENT_SYS_ERR_OK,
-            "reactor->RemoveHandler(handler2.get()) did not equal EVENT_SYS_ERR_OK as expected.", state);
+        RemoveHandler(reactor, handler2, handler3, handler4, state);
 
         // 6. Remove handler from the handler side.
         AssertUnequal(handler2->Stop(reactor.get()), true,
             "handler2->Stop(reactor.get()) was not different from false as expected.", state);
 
         // 7. Update handler
-        UpdateHandler(reactor, handler1, handler2, handler3, handler4, state);
+        UpdateHandler(reactor, handler1, handler3, handler4, state);
+
+        // Update handler from the handler side.
+        AssertEqual(handler2->Update(reactor.get()), true,
+            "handler2->Update(reactor.get()) was not different from false as expected.", state);
+        AssertUnequal(handler3->Update(reactor.get()), true,
+            "handler3->Update(reactor.get()) was not different from true as expected.", state);
     
         // 9. Find handler
         AssertUnequal(reactor->FindHandler(nullptr), EVENT_SYS_ERR_OK,
