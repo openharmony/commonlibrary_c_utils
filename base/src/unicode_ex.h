@@ -18,5 +18,9 @@
 namespace OHOS {
 bool String8ToString16(const std::string& str8, std::u16string& str16);
 bool String16ToString8(const std::u16string& str16, std::string& str8);
+extern "C" {
+    void StrncpyStr16ToStr8(const char16_t* utf16Str, size_t str16Len, char* utf8Str, size_t str8Len);
+    int Utf16ToUtf8Length(const char16_t* str16, size_t str16Len);
+}
 }
 #endif  // UTILS_BASE_LOG_H
