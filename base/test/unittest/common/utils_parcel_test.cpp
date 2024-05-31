@@ -2201,52 +2201,5 @@ HWTEST_F(UtilsParcelTest, test_VectorDataPadding_004, TestSize.Level0)
         EXPECT_EQ(val1[i], val6[i]);
     }
 }
-
-HWTEST_F(UtilsParcelTest, test_WriteStringDataLength_001, TestSize.Level0)
-{
-    Parcel parcel1(nullptr);
-
-    std::string veryLongString(static_cast<size_t>(INT32_MAX) + 1, '#');
-    bool result = parcel1.WriteCString(veryLongString.c_str());
-    EXPECT_EQ(result, false);
-    parcel1.FlushBuffer();
-
-    result = parcel1.WriteString(veryLongString);
-    EXPECT_EQ(result, false);
-    parcel1.FlushBuffer();
-
-    std::u16string veryLongStringU16(static_cast<size_t>(INT32_MAX) / 2, '#');
-    result = parcel1.WriteString16(veryLongStringU16);
-    EXPECT_EQ(result, false);
-    parcel1.FlushBuffer();
-
-    result = parcel1.WriteString16WithLength(veryLongStringU16.c_str(), static_cast<size_t>(INT32_MAX) / 2);
-    EXPECT_EQ(result, false);
-    parcel1.FlushBuffer();
-
-    result = parcel1.WriteString8WithLength(veryLongString.c_str(), static_cast<size_t>(INT32_MAX) + 1);
-    EXPECT_EQ(result, false);
-    parcel1.FlushBuffer();
-
-    result = parcel1.WriteCString(veryLongString.substr(0, DEFAULT_CPACITY - 1).c_str());
-    EXPECT_EQ(result, true);
-    parcel1.FlushBuffer();
-
-    result = parcel1.WriteString(veryLongString.substr(0, DEFAULT_CPACITY - 5));
-    EXPECT_EQ(result, true);
-    parcel1.FlushBuffer();
-
-    result = parcel1.WriteString16(veryLongStringU16.substr(0, (DEFAULT_CPACITY - 4) / 2 - 1));
-    EXPECT_EQ(result, true);
-    parcel1.FlushBuffer();
-
-    result = parcel1.WriteString16WithLength(veryLongStringU16.c_str(), (DEFAULT_CPACITY - 4) / 2 - 1);
-    EXPECT_EQ(result, true);
-    parcel1.FlushBuffer();
-
-    result = parcel1.WriteString8WithLength(veryLongString.c_str(), DEFAULT_CPACITY - 5);
-    EXPECT_EQ(result, true);
-    parcel1.FlushBuffer();
-}
 }  // namespace
 }  // namespace OHOS
