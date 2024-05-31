@@ -28,7 +28,7 @@ using namespace std;
 
 namespace OHOS {
 const std::string& DEFAULT_THREAD_NAME = "default";
-const int MAX_STACK_SIZE = 4096;
+const int MAX_STACK_SIZE = 1024;
 const int MAX_PRIORITY = 10;
 using ThreadRunFunc = bool (*)(int& data);
 
