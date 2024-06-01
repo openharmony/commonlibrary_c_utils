@@ -38,24 +38,20 @@ void AshmemTestFunc(FuzzedDataProvider* dataProvider)
     }
 
     string memoryContent = dataProvider->ConsumeRandomLengthString(MAX_MEMORY_SIZE);
-    ret = ashmem->WriteToAshmem(memoryContent.c_str(), sizeof(memoryContent), 0);
+    ret = ashmem->WriteToAshmem(memoryContent.c_str(), memoryContent.size(), 0);
     if (ret != true) {
         return;
     }
 
     string memoryContent2 = dataProvider->ConsumeRandomLengthString(MAX_MEMORY_SIZE);
-    ret = ashmem->WriteToAshmem(memoryContent2.c_str(), sizeof(memoryContent2), sizeof(memoryContent2));
+    ret = ashmem->WriteToAshmem(memoryContent2.c_str(), memoryContent2.size(), memoryContent.size());
     if (ret != true) {
         return;
     }
 
-    auto readData = ashmem->ReadFromAshmem(sizeof(memoryContent), 0);
+    ashmem->ReadFromAshmem(memoryContent.size(), 0);
 
-    const char *readContent = reinterpret_cast<const char *>(readData);
-
-    readData = ashmem->ReadFromAshmem(sizeof(memoryContent2), sizeof(memoryContent2));
-
-    readContent = reinterpret_cast<const char *>(readData);
+    ashmem->ReadFromAshmem(memoryContent2.size(), memoryContent.size());
 
     int prot = dataProvider->ConsumeIntegral<int>();
     ashmem->SetProtection(prot);
