@@ -125,7 +125,7 @@ bool TestThread::Run()
 {
     BENCHMARK_LOGD("ThreadTest bool TestThread::Run is called.");
     priority_ = getpriority(PRIO_PROCESS, 0);
-    char threadName[MAX_THREAD_NAME_LEN] = {0};
+    char threadName[MAX_THREAD_NAME_LEN + 1] = {0};
     prctl(PR_GET_NAME, threadName, 0, 0);
     name_ = threadName;
 
@@ -456,7 +456,7 @@ bool TestThread2::Run()
 {
     BENCHMARK_LOGD("ThreadTest bool TestThread2::Run is called.");
     priority_ = getpriority(PRIO_PROCESS, 0);
-    char threadName[MAX_THREAD_NAME_LEN] = {0};
+    char threadName[MAX_THREAD_NAME_LEN + 1] = {0};
     prctl(PR_GET_NAME, threadName, 0, 0);
     name_ = threadName;
 

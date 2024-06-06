@@ -69,7 +69,7 @@ bool TestThread::ReadyToWork()
 bool TestThread::Run()
 {
     priority_ = getpriority(PRIO_PROCESS, 0);
-    char threadName[MAX_THREAD_NAME_LEN] = {0};
+    char threadName[MAX_THREAD_NAME_LEN + 1] = {0};
     prctl(PR_GET_NAME, threadName, 0, 0);
     name_ = threadName;
 
