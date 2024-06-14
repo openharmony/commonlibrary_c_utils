@@ -16,6 +16,8 @@
 #include <gtest/gtest.h>
 #include "string_ex.h"
 #include <iostream>
+#include <securec.h>
+
 using namespace testing::ext;
 using namespace std;
 
@@ -531,6 +533,61 @@ HWTEST_F(UtilsStringTest, test_strcovert_04, TestSize.Level0)
     EXPECT_EQ(0, str8Result.compare(str8Value));
 }
 
+HWTEST_F(UtilsStringTest, test_getintstrcovert_01, TestSize.Level0)
+{
+    u16string str16Value = u"你好";
+    string str8Result = Str16ToStr8(str16Value);
+    int str8Length = str8Result.length();
+    int bufferLen = 255;
+    char buffer[bufferLen];
+    memset_s(buffer, sizeof(buffer), 0, sizeof(buffer));
+    int int8Result = Char16ToChar8(str16Value, buffer, bufferLen);
+
+    EXPECT_EQ(0, str8Result.compare(buffer));
+    EXPECT_EQ(str8Length + 1, int8Result);
+}
+
+HWTEST_F(UtilsStringTest, test_getintstrcovert_02, TestSize.Level0)
+{
+    u16string str16Value = u"某某技术有限公司";
+    string str8Result = Str16ToStr8(str16Value);
+    int str8Length = str8Result.length();
+    int bufferLen = 255;
+    char buffer[bufferLen];
+    memset_s(buffer, sizeof(buffer), 0, sizeof(buffer));
+    int int8Result = Char16ToChar8(str16Value, buffer, bufferLen);
+
+    EXPECT_EQ(0, str8Result.compare(buffer));
+    EXPECT_EQ(str8Length + 1, int8Result);
+}
+
+HWTEST_F(UtilsStringTest, test_getintstrcovert_03, TestSize.Level0)
+{
+    u16string str16Value = u"hello world!";
+    string str8Result = Str16ToStr8(str16Value);
+    int str8Length = str8Result.length();
+    int bufferLen = 255;
+    char buffer[bufferLen];
+    memset_s(buffer, sizeof(buffer), 0, sizeof(buffer));
+    int int8Result = Char16ToChar8(str16Value, buffer, bufferLen);
+
+    EXPECT_EQ(0, str8Result.compare(buffer));
+    EXPECT_EQ(str8Length + 1, int8Result);
+}
+
+HWTEST_F(UtilsStringTest, test_getintstrcovert_04, TestSize.Level0)
+{
+    u16string str16Value = u"1234567890!@#$%^&*().";
+    string str8Result = Str16ToStr8(str16Value);
+    int str8Length = str8Result.length();
+    int bufferLen = 255;
+    char buffer[bufferLen];
+    memset_s(buffer, sizeof(buffer), 0, sizeof(buffer));
+    int int8Result = Char16ToChar8(str16Value, buffer, bufferLen);
+
+    EXPECT_EQ(0, str8Result.compare(buffer));
+    EXPECT_EQ(str8Length + 1, int8Result);
+}
 
 HWTEST_F(UtilsStringTest, test_getsubstr_01, TestSize.Level0)
 {

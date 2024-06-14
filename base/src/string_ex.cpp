@@ -271,5 +271,37 @@ string Str16ToStr8(const u16string& str16)
 
     return str8Value;
 }
+
+int GetUtf16ToUtf8Length(const u16string& str16)
+{
+    size_t str16Len = str16.length();
+    if (str16Len == 0) {
+        return -1;
+    }
+    const char16_t *utf16Str = str16.c_str();
+    return Utf16ToUtf8Length(utf16Str, str16Len);
+}
+
+int Char16ToChar8(const u16string& str16, char *buffer, int bufferLen)
+{
+    if (buffer == nullptr || bufferLen <= 0) {
+        UTILS_LOGE("param is invalid!");
+        return -1;
+    }
+    size_t str16Len = str16.length();
+    if (str16Len == 0) {
+        UTILS_LOGE("str16 is empty!");
+        return -1;
+    }
+    const char16_t *utf16Str = str16.c_str();
+    int utf8Len = Utf16ToUtf8Length(utf16Str, str16Len);
+    if (utf8Len < 0 || (utf8Len + 1) > bufferLen) {
+        UTILS_LOGE("utf8buffer len:%{public}d, actual buffer len:%{public}d!", utf8Len + 1, bufferLen);
+        return -1;
+    }
+    StrncpyStr16ToStr8(utf16Str, str16Len, buffer, utf8Len + 1);
+    return utf8Len + 1;
+}
+
 #endif
 } // namespace OHOS

@@ -242,6 +242,27 @@ std::string Str16ToStr8(const std::u16string& str16);
  * @return Returns an empty `std::u16string` object if the operation fails.
  */
 std::u16string Str8ToStr16(const std::string& str);
+
+/**
+ * @ingroup StringOperation
+ * @brief get the length of utf8 from utf16.
+ *
+ * @param str16 Indicates a `std::u16string` object.
+ * @return Returns -1 if the str16 is empty or the result is greater than INT MAX.
+ */
+int GetUtf16ToUtf8Length(const std::u16string& str16);
+
+/**
+ * @ingroup StringOperation
+ * @brief Converts a string from UTF-16 to UTF-8 encoded.
+ *
+ * @param str16 Indicates a `std::u16string` object.
+ * @param buffer Converted UTF-8 encoded buffer.
+ * @param bufferLen Buffer size.
+ * @return Returns the length of the converted UTF-8 encoding including the terminator '\0';
+ * Returns -1 if the operation fails.
+ */
+int Char16ToChar8(const std::u16string& str16, char *buffer, int bufferLen);
 #endif
 } // namespace OHOS
 
