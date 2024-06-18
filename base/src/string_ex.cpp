@@ -24,6 +24,10 @@ using namespace std;
 
 namespace OHOS {
 
+static const int CHAR16_TO_CHAR8_PARAM_INVALID = -1;
+static const int CHAR16_TO_CHAR8_EMPTY_STR = -2;
+static const int CHAR16_TO_CHAR8_INSUFFICIENT_BUFFER = -3;
+
 string UpperStr(const string& str)
 {
     string upperString = str;
@@ -285,19 +289,17 @@ int GetUtf16ToUtf8Length(const u16string& str16)
 int Char16ToChar8(const u16string& str16, char *buffer, int bufferLen)
 {
     if (buffer == nullptr || bufferLen <= 0) {
-        UTILS_LOGE("param is invalid!");
-        return -1;
+        return CHAR16_TO_CHAR8_PARAM_INVALID;
     }
     size_t str16Len = str16.length();
     if (str16Len == 0) {
-        UTILS_LOGE("str16 is empty!");
-        return -1;
+        return CHAR16_TO_CHAR8_EMPTY_STR;
     }
     const char16_t *utf16Str = str16.c_str();
     int utf8Len = Utf16ToUtf8Length(utf16Str, str16Len);
     if (utf8Len < 0 || (utf8Len + 1) > bufferLen) {
-        UTILS_LOGE("utf8buffer len:%{public}d, actual buffer len:%{public}d!", utf8Len + 1, bufferLen);
-        return -1;
+        UTILS_LOGD("utf8buffer len:%{public}d, actual buffer len:%{public}d!", utf8Len + 1, bufferLen);
+        return CHAR16_TO_CHAR8_INSUFFICIENT_BUFFER;
     }
     StrncpyStr16ToStr8(utf16Str, str16Len, buffer, utf8Len + 1);
     return utf8Len + 1;
