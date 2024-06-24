@@ -33,14 +33,17 @@ public:
 
     SafeMap(const SafeMap& rhs)
     {
-        map_ = rhs.map_;
+        operator=(rhs);
     }
 
     SafeMap& operator=(const SafeMap& rhs)
     {
-        if (&rhs != this) {
-            map_ = rhs.map_;
+        if (this == &rhs) {
+            return *this;
         }
+        auto tmp = rhs.Clone();
+        std::lock_guard<std::mutex> lock(mutex_);
+        map_ = std::move(tmp);
 
         return *this;
     }
@@ -211,8 +214,14 @@ public:
     }
 
 private:
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
     std::map<K, V> map_;
+
+    std::map<K, V> Clone() const noexcept
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        return map_;
+    }
 };
 
 } // namespace OHOS
