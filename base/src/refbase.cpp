@@ -244,7 +244,7 @@ int RefCounter::DecStrongRefCount(const void* objectId)
     int curCount = GetStrongRefCount();
     if (curCount == INITIAL_PRIMARY_VALUE) {
         // unexpected case: there had never a strong reference.
-        UTILS_LOGF("decStrongRef when there is nerver a strong reference");
+        UTILS_LOGD("decStrongRef when there is nerver a strong reference");
     } else if (curCount > 0) {
         // we should update the current count here.
         // it may be changed after last operation.

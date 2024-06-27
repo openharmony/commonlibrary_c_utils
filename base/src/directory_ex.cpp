@@ -421,7 +421,7 @@ bool PathToRealPath(const string& path, string& realPath)
 
     char tmpPath[PATH_MAX] = {0};
     if (realpath(path.c_str(), tmpPath) == nullptr) {
-        UTILS_LOGE("path to realpath error: %{public}s", strerror(errno));
+        UTILS_LOGE("path (%{public}s) to realpath error: %{public}s", path.c_str(), strerror(errno));
         return false;
     }
 
