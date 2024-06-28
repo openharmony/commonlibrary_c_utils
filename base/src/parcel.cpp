@@ -21,6 +21,8 @@ namespace OHOS {
 
 static const size_t DEFAULT_CPACITY = 204800; // 200K
 static const size_t CAPACITY_THRESHOLD = 4096; // 4k
+static const int BINDER_TYPE_HANDLE = 0x73682a85; // binder header type handle
+static const int BINDER_TYPE_FD = 0x66642a85; // binder header type fd
 
 Parcelable::Parcelable() : Parcelable(false)
 {}
@@ -150,6 +152,18 @@ bool Parcel::EnsureWritableCapacity(size_t desireCapacity)
     return false;
 }
 
+bool Parcel::IsReadObjectData(const size_t nextObj, const size_t upperBound)
+{
+    binder_size_t *objects = objectOffsets_;
+    auto offset = objects[nextObj];
+    auto currentObject = reinterpret_cast<parcel_flat_binder_object *>(data_ + offset);
+    if (currentObject->hdr.type == BINDER_TYPE_FD || currentObject->hdr.type == BINDER_TYPE_HANDLE) {
+        return true;
+    }
+    UTILS_LOGE("Non-object Read object data, readPos = %{public}zu, upperBound = %{public}zu", readCursor_, upperBound);
+    return false;
+}
+
 // ValidateReadData only works in basic type read. It doesn't work when read remote object.
 // And read/write remote object has no effect on "nextObjectIdx_".
 bool Parcel::ValidateReadData([[maybe_unused]]size_t upperBound)
@@ -165,9 +179,7 @@ bool Parcel::ValidateReadData([[maybe_unused]]size_t upperBound)
         size_t nextObj = nextObjectIdx_;
         do {
             if (readPos < objects[nextObj] + sizeof(parcel_flat_binder_object)) {
-                UTILS_LOGE("Non-object Read object data, readPos = %{public}zu, upperBound = %{public}zu",
-                           readPos, upperBound);
-                return false;
+                return IsReadObjectData(nextObj, upperBound);
             }
             nextObj++;
         } while (nextObj < objSize && upperBound > objects[nextObj]);
@@ -646,6 +658,23 @@ bool Parcel::EnsureObjectsCapacity()
     return true;
 }
 
+const uint8_t *Parcel::ReadBuffer(size_t length, bool isValidate)
+{
+    if (GetReadableBytes() >= length) {
+        uint8_t *buffer = data_ + readCursor_;
+#ifdef PARCEL_OBJECT_CHECK
+        size_t upperBound = readCursor_ + length;
+        if (isValidate && !ValidateReadData(upperBound)) {
+            return nullptr;
+        }
+#endif
+        readCursor_ += length;
+        return buffer;
+    }
+
+    return nullptr;
+}
+
 bool Parcel::WriteObjectOffset(binder_size_t offset)
 {
     if (offset > dataSize_) {
@@ -787,6 +816,12 @@ const uint8_t *Parcel::ReadBuffer(size_t length)
 {
     if (GetReadableBytes() >= length) {
         uint8_t *buffer = data_ + readCursor_;
+#ifdef PARCEL_OBJECT_CHECK
+        size_t upperBound = readCursor_ + length;
+        if (!ValidateReadData(upperBound)) {
+            return nullptr;
+        }
+#endif
         readCursor_ += length;
         return buffer;
     }
@@ -815,6 +850,12 @@ const uint8_t *Parcel::ReadUnpadBuffer(size_t length)
 {
     if (GetReadableBytes() >= length) {
         uint8_t *buffer = data_ + readCursor_;
+#ifdef PARCEL_OBJECT_CHECK
+        size_t upperBound = readCursor_ + length;
+        if (!ValidateReadData(upperBound)) {
+            return nullptr;
+        }
+#endif
         readCursor_ += length;
         SkipBytes(GetPadSize(length));
         return buffer;
