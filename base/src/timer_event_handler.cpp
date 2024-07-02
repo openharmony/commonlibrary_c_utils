@@ -80,7 +80,7 @@ uint32_t TimerEventHandler::Initialize()
         return TIMER_ERR_DEAL_FAILED;
     }
 
-    SetReadCallback(std::bind(&TimerEventHandler::TimeOut, this));
+    SetReadCallback([this] { this->TimeOut(); });
     EnableRead();
     return TIMER_ERR_OK;
 }

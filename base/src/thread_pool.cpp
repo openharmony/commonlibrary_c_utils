@@ -47,7 +47,7 @@ uint32_t ThreadPool::Start(int numThreads)
     threads_.reserve(numThreads);
 
     for (int i = 0; i < numThreads; ++i) {
-        std::thread t(&ThreadPool::WorkInThread, this);
+        std::thread t([this] { this->WorkInThread(); });
         // Give the name of ThreadPool to threads created by the ThreadPool.
         int err = pthread_setname_np(t.native_handle(), (myName_ + std::to_string(i)).c_str());
         if (err != 0) {

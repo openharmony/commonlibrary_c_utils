@@ -41,7 +41,7 @@ uint32_t Timer::Setup()
         return TIMER_ERR_INVALID_VALUE;
     }
     reactor_->SwitchOn();
-    std::thread loop_thread(std::bind(&Timer::MainLoop, this));
+    std::thread loop_thread([this] { this->MainLoop(); });
     thread_.swap(loop_thread);
 
     return TIMER_ERR_OK;
@@ -85,7 +85,7 @@ uint32_t Timer::Register(const TimerCallback& callback, uint32_t interval /* ms 
     static std::atomic_uint32_t timerId = 1;
     int timerFd = once ? INVALID_TIMER_FD : GetTimerFd(interval);
     if (timerFd == INVALID_TIMER_FD) {
-        uint32_t ret = DoRegister(std::bind(&Timer::OnTimer, this, std::placeholders::_1), interval, once, timerFd);
+        uint32_t ret = DoRegister([this](int fd) { this->OnTimer(fd); }, interval, once, timerFd);
         if (ret != TIMER_ERR_OK) {
             UTILS_LOGE("do register interval timer %{public}d failed, return %{public}u", interval, ret);
             return TIMER_ERR_DEAL_FAILED;
@@ -155,8 +155,7 @@ void Timer::MainLoop()
 
 uint32_t Timer::DoRegister(const TimerListCallback& callback, uint32_t interval, bool once, int &timerFd)
 {
-    using namespace std::placeholders;
-    std::function<void(int)> cb = std::bind(&Timer::DoTimerListCallback, this, callback, _1);
+    std::function<void(int)> cb = [this, callback](int fd) { this->DoTimerListCallback(callback, fd); };
     uint32_t ret = reactor_->ScheduleTimer(cb, interval, timerFd, once);
     if ((ret != TIMER_ERR_OK) || (timerFd < 0)) {
         UTILS_LOGE("ScheduleTimer failed!ret:%{public}d, timerFd:%{public}d", ret, timerFd);
