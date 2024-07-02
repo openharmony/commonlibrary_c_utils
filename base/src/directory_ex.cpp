@@ -140,6 +140,9 @@ string ExcludeTrailingPathDelimiter(const std::string& path)
 
 string IncludeTrailingPathDelimiter(const std::string& path)
 {
+    if (path.empty()) {
+        return  "/";
+    }
     if (path.rfind("/") != path.size() - 1) {
         return path + "/";
     }
@@ -164,7 +167,10 @@ void GetDirFiles(const string& path, vector<string>& files)
         if (ptr == nullptr) {
             closedir(topNode);
             traverseStack.pop();
-            currentPath.erase(currentPath.find_last_of("/"));
+            auto pos = currentPath.find_last_of("/");
+            if (pos != string::npos) {
+                currentPath.erase(pos);
+            }
             continue;
         }
 

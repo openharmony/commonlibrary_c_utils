@@ -140,6 +140,17 @@ HWTEST_F(UtilsDirectoryTest, testIncludeTrailingPathDelimiter001, TestSize.Level
 }
 
 /*
+ * @tc.name: testIncludeTrailingPathDelimiter002
+ * @tc.desc: directory unit test
+ */
+HWTEST_F(UtilsDirectoryTest, testIncludeTrailingPathDelimiter002, TestSize.Level0)
+{
+    string strResult = "/";
+    string strName = IncludeTrailingPathDelimiter("");
+    EXPECT_EQ(strResult, strName);
+}
+
+/*
  * @tc.name: testGetDirFiles001
  * @tc.desc: test GetDirFiles works on multi-level directory
  */
