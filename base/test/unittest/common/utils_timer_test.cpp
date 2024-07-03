@@ -236,7 +236,7 @@ static void TimerEventFun(Utils::Timer& timer)
 HWTEST_F(UtilsTimerTest, testTimer007, TestSize.Level0)
 {
     g_data1 = 0;
-    Utils::Timer timer("test_timer", -1);
+    Utils::Timer timer("test_timer");
     uint32_t ret = timer.Setup();
     EXPECT_EQ(Utils::TIMER_ERR_OK, ret);
     TimerEventFun(timer);
