@@ -26,9 +26,8 @@ ohos_benchmarktest("ObserverTest") {
   ]
   sources = [ "observer_benchmark_test.cpp" ]
 
-  deps = [ "//third_party/benchmark:benchmark" ]
-
   external_deps = [
+    "benchmark:benchmark",
     "c_utils:utils",
     "hilog:libhilog_base",
   ]
