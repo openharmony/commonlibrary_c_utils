@@ -17,8 +17,13 @@
     "subsystem": "commonlibrary",
     "adapted_system_type": [ "standard" ],
     "features":[
-      "c_utils_feature_coverage = false",
-      "c_utils_feature_intsan = true"
+      "c_utils_feature_coverage",
+      "c_utils_debug_refbase",
+      "c_utils_track_all",
+      "c_utils_print_track_at_once",
+      "c_utils_debug_log_enabled",
+      "c_utils_feature_intsan",
+      "c_utils_parcel_object_check"
     ],
     "deps": {
       "components": [
