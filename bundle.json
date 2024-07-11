@@ -22,7 +22,8 @@
     ],
     "deps": {
       "components": [
-        "hilog"
+        "hilog",
+        "googletest"
       ],
       "third_party": [
         "bounds_checking_function"
