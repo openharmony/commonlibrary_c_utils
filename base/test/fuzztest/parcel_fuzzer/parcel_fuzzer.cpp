@@ -145,7 +145,7 @@ bool RemoteObject::Marshalling(Parcel& parcel) const
 
 sptr<RemoteObject> RemoteObject::Unmarshalling(Parcel& parcel)
 {
-    const uint8_t* buffer = parcel.ReadBuffer(sizeof(parcel_flat_binder_object));
+    const uint8_t* buffer = parcel.ReadBuffer(sizeof(parcel_flat_binder_object), false);
     if (buffer == nullptr) {
         return nullptr;
     }

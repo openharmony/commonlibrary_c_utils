@@ -514,6 +514,14 @@ public:
     const uint8_t *ReadBuffer(size_t length);
 
     /**
+     * @brief Read a block of data (buffer data) from this parcel.
+     *
+     * @param length Size of the buffer(Bytes).
+     * @return A `uint8_t` pointer to the buffer.
+     */
+    const uint8_t *ReadBuffer(size_t length, bool isValidate);
+
+    /**
      * @brief Reads a block of data (buffer data) without padding (alignment)
      * from this parcel.
      *
@@ -825,6 +833,8 @@ private:
     bool WriteParcelableOffset(size_t offset);
 
     const uint8_t *BasicReadBuffer(size_t length);
+    
+    bool IsReadObjectData(const size_t nextObj, const size_t upperBound);
 
     bool ValidateReadData(size_t upperBound);
 
