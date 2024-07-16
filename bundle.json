@@ -28,6 +28,7 @@
     "deps": {
       "components": [
         "hilog",
+        "googletest",
         "benchmark"
       ],
       "third_party": [
