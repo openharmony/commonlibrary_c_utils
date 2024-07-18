@@ -67,14 +67,14 @@ static int AshmemOpenLocked()
 {
     int fd = TEMP_FAILURE_RETRY(open("/dev/ashmem", O_RDWR | O_CLOEXEC));
     if (fd < 0) {
-        UTILS_LOGE("%{public}s: fd is invalid, fd = %{public}d", __func__, fd);
+        UTILS_LOGE("%{public}s: fd is invalid, fd = %{public}d, errno = %{public}d", __func__, fd, errno);
         return fd;
     }
 
     struct stat st;
     int ret = TEMP_FAILURE_RETRY(fstat(fd, &st));
     if (ret < 0) {
-        UTILS_LOGE("%{public}s: Failed to exec fstat, ret = %{public}d", __func__, ret);
+        UTILS_LOGE("%{public}s: Failed to exec fstat, ret = %{public}d, errno = %{public}d", __func__, ret, errno);
         close(fd);
         return ret;
     }
@@ -119,7 +119,8 @@ int AshmemCreate(const char *name, size_t size)
         }
         ret = TEMP_FAILURE_RETRY(ioctl(fd, ASHMEM_SET_NAME, buf));
         if (ret < 0) {
-            UTILS_LOGE("%{public}s: Failed to set name, name= %{public}s, ret= %{public}d", __func__, name, ret);
+            UTILS_LOGE("%{public}s: Failed to set name, name= %{public}s, ret= %{public}d, errno = %{public}d",
+                       __func__, name, ret,  errno);
             close(fd);
             return ret;
         }
@@ -127,7 +128,7 @@ int AshmemCreate(const char *name, size_t size)
 
     ret = TEMP_FAILURE_RETRY(ioctl(fd, ASHMEM_SET_SIZE, size));
     if (ret < 0) {
-        UTILS_LOGE("%{public}s: Failed to set size, size= %{public}zu", __func__, size);
+        UTILS_LOGE("%{public}s: Failed to set size, size= %{public}zu, errno = %{public}d", __func__, size, errno);
         close(fd);
         return ret;
     }
@@ -209,7 +210,7 @@ bool Ashmem::MapAshmem(int mapType)
 {
     void *startAddr = ::mmap(nullptr, memorySize_, mapType, MAP_SHARED, memoryFd_, 0);
     if (startAddr == MAP_FAILED) {
-        UTILS_LOGE("Failed to exec mmap");
+        UTILS_LOGE("Failed to exec mmap, errno = %{public}d", errno);
         return false;
     }
 
