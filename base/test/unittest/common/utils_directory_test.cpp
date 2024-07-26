@@ -156,9 +156,9 @@ HWTEST_F(UtilsDirectoryTest, testIncludeTrailingPathDelimiter002, TestSize.Level
  */
 HWTEST_F(UtilsDirectoryTest, testGetDirFiles001, TestSize.Level0)
 {
-    string parent_path = "/data/test_dir";
+    string parentPath = "/data/test_dir";
 
-    ForceCreateDirectory(parent_path);
+    ForceCreateDirectory(parentPath);
 
     string dirs[6] = {
         "/data/test_dir/level1_1",
@@ -191,14 +191,14 @@ HWTEST_F(UtilsDirectoryTest, testGetDirFiles001, TestSize.Level0)
 
     vector<string> files;
 
-    GetDirFiles(parent_path, files);
+    GetDirFiles(parentPath, files);
 
     for (auto &filepath : resultfiles) {
         auto pos = find(files.begin(), files.end(), filepath);
         EXPECT_NE(pos, files.end());
     }
 
-    ForceRemoveDirectory(parent_path);
+    ForceRemoveDirectory(parentPath);
 }
 
 /*
@@ -247,62 +247,62 @@ HWTEST_F(UtilsDirectoryTest, testGetDirFiles002, TestSize.Level0)
 HWTEST_F(UtilsDirectoryTest, testGetDirFiles003, TestSize.Level0)
 {
     // create a test dir
-    string original_data_path = "/data/original";
-    EXPECT_EQ(ForceCreateDirectory(original_data_path), true);
+    string originalDataPath = "/data/original";
+    EXPECT_EQ(ForceCreateDirectory(originalDataPath), true);
 
-    string original_file_path = "/data/original/original_file";
-    string original_directory_path = "/data/original/original_directory";
+    string originalFilePath = "/data/original/original_file";
+    string originalDirectoryPath = "/data/original/original_directory";
 
-    ofstream(original_file_path, fstream::out);
+    ofstream(originalFilePath, fstream::out);
 
-    ForceCreateDirectory(original_directory_path);
+    ForceCreateDirectory(originalDirectoryPath);
 
-    string test_data_dir = "/data/test_dir";
+    string testDataDir = "/data/test_dir";
 
-    EXPECT_EQ(ForceCreateDirectory(test_data_dir), true);
+    EXPECT_EQ(ForceCreateDirectory(testDataDir), true);
 
     // test symlink to directory outside the target directory
-    string linktodir = IncludeTrailingPathDelimiter(test_data_dir) + "symlink_dir";
+    string linktodir = IncludeTrailingPathDelimiter(testDataDir) + "symlink_dir";
 
-    EXPECT_EQ(symlink(original_directory_path.c_str(), linktodir.c_str()), 0);
+    EXPECT_EQ(symlink(originalDirectoryPath.c_str(), linktodir.c_str()), 0);
 
-    vector<string> dir_result;
-    GetDirFiles(test_data_dir, dir_result);
+    vector<string> dirResult;
+    GetDirFiles(testDataDir, dirResult);
 
-    EXPECT_EQ(dir_result.size(), 1);
-    EXPECT_EQ(dir_result[0], linktodir);
+    EXPECT_EQ(dirResult.size(), 1);
+    EXPECT_EQ(dirResult[0], linktodir);
 
     EXPECT_EQ(ForceRemoveDirectory(linktodir), true);
 
     // test symlink to file outside the target directory
-    string linktofile = IncludeTrailingPathDelimiter(test_data_dir) + "symlink_file";
-    EXPECT_EQ(symlink(original_file_path.c_str(), linktofile.c_str()), 0);
+    string linktofile = IncludeTrailingPathDelimiter(testDataDir) + "symlink_file";
+    EXPECT_EQ(symlink(originalFilePath.c_str(), linktofile.c_str()), 0);
 
-    vector<string> file_result;
-    GetDirFiles(test_data_dir, file_result);
-    EXPECT_EQ(file_result.size(), 1);
-    EXPECT_EQ(file_result[0], linktofile);
+    vector<string> fileResult;
+    GetDirFiles(testDataDir, fileResult);
+    EXPECT_EQ(fileResult.size(), 1);
+    EXPECT_EQ(fileResult[0], linktofile);
 
     EXPECT_EQ(RemoveFile(linktofile), true);
 
     // test symlink of files in the same directory
-    string source_file = IncludeTrailingPathDelimiter(test_data_dir) + "source";
-    string symlink_file = IncludeTrailingPathDelimiter(test_data_dir) + "symlink_file";
+    string sourceFile = IncludeTrailingPathDelimiter(testDataDir) + "source";
+    string symlinkFile = IncludeTrailingPathDelimiter(testDataDir) + "symlink_file";
 
-    ofstream(source_file, fstream::out);
-    EXPECT_EQ(symlink(source_file.c_str(), symlink_file.c_str()), 0);
+    ofstream(sourceFile, fstream::out);
+    EXPECT_EQ(symlink(sourceFile.c_str(), symlinkFile.c_str()), 0);
 
-    vector<string> internal_files;
-    GetDirFiles(test_data_dir, internal_files);
+    vector<string> internalFiles;
+    GetDirFiles(testDataDir, internalFiles);
 
-    EXPECT_NE(find(internal_files.begin(), internal_files.end(), source_file), internal_files.end());
-    EXPECT_NE(find(internal_files.begin(), internal_files.end(), symlink_file), internal_files.end());
+    EXPECT_NE(find(internalFiles.begin(), internalFiles.end(), sourceFile), internalFiles.end());
+    EXPECT_NE(find(internalFiles.begin(), internalFiles.end(), symlinkFile), internalFiles.end());
 
-    EXPECT_EQ(RemoveFile(source_file), true);
-    EXPECT_EQ(RemoveFile(symlink_file), true);
+    EXPECT_EQ(RemoveFile(sourceFile), true);
+    EXPECT_EQ(RemoveFile(symlinkFile), true);
 
-    ForceRemoveDirectory(original_data_path);
-    ForceRemoveDirectory(test_data_dir);
+    ForceRemoveDirectory(originalDataPath);
+    ForceRemoveDirectory(testDataDir);
 }
 
 /*
