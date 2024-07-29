@@ -128,6 +128,8 @@ void EventDemultiplexer::Polling(int timeout /* ms */)
             if (itor != eventHandlers_.end()) {
                 taskQue.emplace_back(itor->second);
                 eventQue.emplace_back(events);
+            } else {
+                UTILS_LOGE("fd not found in eventHandlers_, fd=%{public}d", targetFd);
             }
         }
     }
