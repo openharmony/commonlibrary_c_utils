@@ -27,7 +27,7 @@ using namespace std;
 namespace OHOS {
 namespace {
 
-static char const* testfilename = "testfilename.test";
+static const char *TEST_FILE_NAME = "testfilename.test";
 
 class BenchmarkUniqueFd : public benchmark::Fixture {
 public:
@@ -42,7 +42,7 @@ public:
     void SetUp(const ::benchmark::State& state) override
     {
         ofstream outfile;
-        outfile.open(testfilename, ios::out | ios::trunc);
+        outfile.open(TEST_FILE_NAME, ios::out | ios::trunc);
         outfile << "testdata\n"
                 << std::endl;
         outfile.close();
@@ -51,11 +51,11 @@ public:
     void TearDown(::benchmark::State& state) override
     {
         ifstream inputfile;
-        inputfile.open(testfilename, ios::in);
+        inputfile.open(TEST_FILE_NAME, ios::in);
         std::string testStr;
         inputfile >> testStr;
         inputfile.close();
-        AssertEqual(remove(testfilename), 0, "remove(testfilename) did not equal 0 as expected.", state);
+        AssertEqual(remove(TEST_FILE_NAME), 0, "remove(TEST_FILE_NAME) did not equal 0 as expected.", state);
     }
 
 protected:
@@ -85,7 +85,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueCtroFromInt)(benchmark::State& sta
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueCtroFromInt start.");
     const int expectedValue = -1;
     while (state.KeepRunning()) {
-        UniqueFd ufd2(open(testfilename, O_RDWR, FILE_PERMISSION_READ_WRITE));
+        UniqueFd ufd2(open(TEST_FILE_NAME, O_RDWR, FILE_PERMISSION_READ_WRITE));
         AssertUnequal(ufd2, expectedValue, "ufd2 was not different from expectedValue as expected.", state);
     }
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueCtroFromInt end.");
@@ -95,7 +95,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueFdeqcompare)(benchmark::State& sta
 {
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueFdeqcompare start.");
     while (state.KeepRunning()) {
-        int fd = open(testfilename, O_RDWR, FILE_PERMISSION_READ_WRITE);
+        int fd = open(TEST_FILE_NAME, O_RDWR, FILE_PERMISSION_READ_WRITE);
         UniqueFd ufd2(fd);
         AssertEqual(fd, ufd2, "fd did not equal ufd2 as expected.", state);
         AssertEqual(ufd2, fd, "ufd2 did not equal fd as expected.", state);
@@ -107,7 +107,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueFdeqcompareNl)(benchmark::State& s
 {
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueFdeqcompareNl start.");
     while (state.KeepRunning()) {
-        int fd = open(testfilename, O_RDWR, FILE_PERMISSION_READ_WRITE);
+        int fd = open(TEST_FILE_NAME, O_RDWR, FILE_PERMISSION_READ_WRITE);
         UniqueFd ufd2(fd);
         AssertGreaterThanOrEqual(ufd2, 0, "ufd2 >= 0 did not equal true as expected.", state);
         AssertLessThanOrEqual(0, ufd2, "0 <= ufd2 did not equal true as expected.", state);
@@ -119,7 +119,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueFdeqcompareBg)(benchmark::State& s
 {
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueFdeqcompareBg start.");
     while (state.KeepRunning()) {
-        int fd = open(testfilename, O_RDWR, FILE_PERMISSION_READ_WRITE);
+        int fd = open(TEST_FILE_NAME, O_RDWR, FILE_PERMISSION_READ_WRITE);
         UniqueFd ufd2(fd);
         AssertGreaterThan(ufd2, MIN_VALID_FD, "ufd2 > MIN_VALID_FD did not equal true as expected.", state);
         AssertLessThan(MIN_VALID_FD, ufd2, "MIN_VALID_FD < ufd2 did not equal true as expected.", state);
@@ -131,7 +131,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueFdeqcompareNb)(benchmark::State& s
 {
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueFdeqcompareNb start.");
     while (state.KeepRunning()) {
-        int fd = open(testfilename, O_RDWR, FILE_PERMISSION_READ_WRITE);
+        int fd = open(TEST_FILE_NAME, O_RDWR, FILE_PERMISSION_READ_WRITE);
         UniqueFd ufd2(fd);
         AssertLessThanOrEqual(ufd2, MAX_VALID_FD, "ufd2 <= MAX_VALID_FD did not equal true as expected.", state);
         AssertGreaterThanOrEqual(MAX_VALID_FD, ufd2, "MAX_VALID_FD >= ufd2 did not equal true as expected.", state);
@@ -143,7 +143,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueFdeqcompareLess)(benchmark::State&
 {
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueFdeqcompareLess start.");
     while (state.KeepRunning()) {
-        int fd = open(testfilename, O_RDWR, FILE_PERMISSION_READ_WRITE);
+        int fd = open(TEST_FILE_NAME, O_RDWR, FILE_PERMISSION_READ_WRITE);
         UniqueFd ufd2(fd);
         AssertLessThan(ufd2, MAX_VALID_FD, "ufd2 < MAX_VALID_FD did not equal true as expected.", state);
         AssertGreaterThan(MAX_VALID_FD, ufd2, "MAX_VALID_FD > ufd2 did not equal true as expected.", state);
@@ -155,7 +155,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueFdeqcompareNeq)(benchmark::State& 
 {
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueFdeqcompareNeq start.");
     while (state.KeepRunning()) {
-        int fd = open(testfilename, O_RDWR, FILE_PERMISSION_READ_WRITE);
+        int fd = open(TEST_FILE_NAME, O_RDWR, FILE_PERMISSION_READ_WRITE);
         UniqueFd ufd2(fd);
         AssertUnequal(ufd2, MAX_VALID_FD, "ufd2 != MAX_VALID_FD did not equal true as expected.", state);
         AssertUnequal(MAX_VALID_FD, ufd2, "MAX_VALID_FD != ufd2 did not equal true as expected.", state);
@@ -170,7 +170,7 @@ public:
     {
         BENCHMARK_LOGD("UniqueFd static void Close is called.");
 
-        iflag = 10;
+        iflag = 10; // give the expected fd an arbitrary value other than 0.
         close(fd);
     }
 };
@@ -185,7 +185,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueFdDefineDeletor)(benchmark::State&
     const int invalidFileDescriptor = -1;
     while (state.KeepRunning()) {
         NewDeleter::iflag = 0;
-        int fd = open(testfilename, O_RDWR);
+        int fd = open(TEST_FILE_NAME, O_RDWR);
 
         {
             UniqueFdAddDeletor<NewDeleter> ufd2(fd);
@@ -205,7 +205,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueFdDefineDeletorCloseStatus)(benchm
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueFdDefineDeletorCloseStatus start.");
     const int errorReturn = -1;
     while (state.KeepRunning()) {
-        int fd = open(testfilename, O_RDWR);
+        int fd = open(TEST_FILE_NAME, O_RDWR);
 
         {
             UniqueFdAddDeletor<NewDeleter> ufd2(fd);
@@ -223,7 +223,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueFdRelease)(benchmark::State& state
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueFdRelease start.");
     const int expectedValue = -1;
     while (state.KeepRunning()) {
-        UniqueFd ufd(open(testfilename, O_RDWR, FILE_PERMISSION_READ_WRITE));
+        UniqueFd ufd(open(TEST_FILE_NAME, O_RDWR, FILE_PERMISSION_READ_WRITE));
         AssertUnequal(ufd, expectedValue, "ufd was not different from expectedValue as expected.", state);
 
         int fd = ufd.Release();
@@ -238,7 +238,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueFdOperatorInt)(benchmark::State& s
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueFdOperatorInt start.");
     const int expectedValue = -1;
     while (state.KeepRunning()) {
-        UniqueFd ufd(open(testfilename, O_RDWR, FILE_PERMISSION_READ_WRITE));
+        UniqueFd ufd(open(TEST_FILE_NAME, O_RDWR, FILE_PERMISSION_READ_WRITE));
         AssertUnequal(ufd, expectedValue, "ufd was not different from expectedValue as expected.", state);
 
         int fd = ufd;
@@ -252,7 +252,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueFdGet)(benchmark::State& state)
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueFdGet start.");
     const int expectedValue = -1;
     while (state.KeepRunning()) {
-        UniqueFd ufd(open(testfilename, O_RDWR, FILE_PERMISSION_READ_WRITE));
+        UniqueFd ufd(open(TEST_FILE_NAME, O_RDWR, FILE_PERMISSION_READ_WRITE));
         AssertUnequal(ufd, expectedValue, "ufd was not different from expectedValue as expected.", state);
 
         int fd = ufd.Get();
@@ -266,7 +266,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueFdMoveConstructor)(benchmark::Stat
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueFdMoveConstructor start.");
     const int expectedValue = -1;
     while (state.KeepRunning()) {
-        UniqueFd ufd(open(testfilename, O_RDWR, FILE_PERMISSION_READ_WRITE));
+        UniqueFd ufd(open(TEST_FILE_NAME, O_RDWR, FILE_PERMISSION_READ_WRITE));
         AssertUnequal(ufd, expectedValue, "ufd was not different from expectedValue as expected.", state);
 
         UniqueFd ufd1(std::move(ufd));
@@ -281,7 +281,7 @@ BENCHMARK_F(BenchmarkUniqueFd, testUtilsUniqueFdMoveAssignment)(benchmark::State
     BENCHMARK_LOGD("UniqueFd testUtilsUniqueFdMoveAssignment start.");
     const int expectedValue = -1;
     while (state.KeepRunning()) {
-        UniqueFd ufd(open(testfilename, O_RDWR, FILE_PERMISSION_READ_WRITE));
+        UniqueFd ufd(open(TEST_FILE_NAME, O_RDWR, FILE_PERMISSION_READ_WRITE));
         AssertUnequal(ufd, expectedValue, "ufd was not different from expectedValue as expected.", state);
 
         UniqueFd ufd1;

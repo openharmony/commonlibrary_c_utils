@@ -33,7 +33,7 @@ const int SLEEP_NANO_SECONDS = 10;
 uint32_t GetThreadId()
 {
     std::thread::id tid = this_thread::get_id();
-    return *(uint32_t*)&tid;
+    return *reinterpret_cast<uint32_t*>(&tid);
 }
 
 struct TestRefBase : public RefBase {

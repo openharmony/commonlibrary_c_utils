@@ -144,7 +144,6 @@ bool StringExistsInFile(const std::string& fileName, const std::string& subStr, 
 /**
  * @ingroup FileReadWrite
  * @brief Obtains the number of occurrences of the specified string in a file.
-
  *
  * @param fileName Indicates the path of the target file.
  * @param subStr Indicates the <b>std::string</b> object to search.

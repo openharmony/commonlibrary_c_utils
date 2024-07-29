@@ -76,6 +76,38 @@ int RemoveTestFile(const std::string& path)
     return unlink(path.c_str());
 }
 
+void LoadString(string& filename, string& content, benchmark::State& state)
+{
+    while (state.KeepRunning()) {
+        string result;
+        CreateTestFile(filename, content);
+        int fd = open(filename.c_str(), O_RDONLY);
+        AssertTrue((LoadStringFromFd(fd, result)),
+            "LoadStringFromFd(fd, result) did not equal true as expected.", state);
+        close(fd);
+        RemoveTestFile(filename);
+        AssertEqual(result, content, "result == content did not equal true as expected.", state);
+    }
+}
+
+void SaveString(string& filename, string& content, benchmark::State& state)
+{
+    while (state.KeepRunning()) {
+        int fd = open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+        bool ret = SaveStringToFd(fd, content);
+        close(fd);
+        AssertEqual(ret, true, "ret did not equal true as expected.", state);
+
+        string loadResult;
+        fd = open(filename.c_str(), O_RDONLY);
+        ret = LoadStringFromFd(fd, loadResult);
+        close(fd);
+        RemoveTestFile(filename);
+        AssertEqual(ret, true, "ret did not equal true as expected.", state);
+        AssertEqual(loadResult, content, "loadResult did not equal content as expected.", state);
+    }
+}
+
 /*
  * @tc.name: testLoadStringFromFile001
  * @tc.desc: Test loading an existed file 'meminfo'
@@ -214,20 +246,6 @@ BENCHMARK_F(BenchmarkFileTest, testLoadStringFromFd001)(benchmark::State& state)
         AssertEqual(result, "", "result did not equal "" as expected.", state);
     }
     BENCHMARK_LOGD("FileTest testLoadStringFromFd001 end.");
-}
-
-void LoadString(string& filename, string& content, benchmark::State& state)
-{
-    while (state.KeepRunning()) {
-        string result;
-        CreateTestFile(filename, content);
-        int fd = open(filename.c_str(), O_RDONLY);
-        AssertTrue((LoadStringFromFd(fd, result)),
-            "LoadStringFromFd(fd, result) did not equal true as expected.", state);
-        close(fd);
-        RemoveTestFile(filename);
-        AssertEqual(result, content, "result == content did not equal true as expected.", state);
-    }
 }
 
 /*
@@ -462,24 +480,6 @@ BENCHMARK_F(BenchmarkFileTest, testSaveStringToFd001)(benchmark::State& state)
         AssertEqual(ret, false, "ret did not equal false as expected.", state);
     }
     BENCHMARK_LOGD("FileTest testSaveStringToFd001 end.");
-}
-
-void SaveString(string& filename, string& content, benchmark::State& state)
-{
-    while (state.KeepRunning()) {
-        int fd = open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-        bool ret = SaveStringToFd(fd, content);
-        close(fd);
-        AssertEqual(ret, true, "ret did not equal true as expected.", state);
-
-        string loadResult;
-        fd = open(filename.c_str(), O_RDONLY);
-        ret = LoadStringFromFd(fd, loadResult);
-        close(fd);
-        RemoveTestFile(filename);
-        AssertEqual(ret, true, "ret did not equal true as expected.", state);
-        AssertEqual(loadResult, content, "loadResult did not equal content as expected.", state);
-    }
 }
 
 /*
