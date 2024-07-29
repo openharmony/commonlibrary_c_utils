@@ -25,6 +25,9 @@ declare_args() {
 
 config("utils_config") {
   include_dirs = [ "include" ]
+  if (current_os == "ios") {
+    defines = [ "IOS_PLATFORM" ]
+  }
 }
 
 config("utils_coverage_config") {
@@ -102,7 +105,6 @@ ohos_static_library("utilsbase") {
     public_configs = [ ":utils_config" ]
 
     public_external_deps = [ "bounds_checking_function:libsec_static" ]
-    defines = [ "IOS_PLATFORM" ]
 
     subsystem_name = "commonlibrary"
     part_name = "c_utils"
@@ -152,7 +154,6 @@ ohos_shared_library("utils") {
     all_dependent_configs = [ ":utils_config" ]
     public_configs = [ ":utils_config" ]
     public_external_deps = [ "bounds_checking_function:libsec_shared" ]
-    defines = [ "IOS_PLATFORM" ]
 
     subsystem_name = "commonlibrary"
     part_name = "c_utils"
