@@ -43,9 +43,9 @@ namespace OHOS {
 #define ARRAY_SIZE(a) (sizeof((a)) / sizeof((a[0])))
 
 // Used to free the space pointed by pointer p
-#define FREE_AND_NIL(p) do {if (p) { delete (p); (p) = nullptr;}} while(0)
+#define FREE_AND_NIL(p) do {if (p) { delete (p); (p) = nullptr;}} while (0)
 // Used to free the array space pointed by pointer p
-#define FREE_AND_NIL_ARRAY(p) do {if (p) {delete[] (p); (p) = nullptr;}} while(0)
+#define FREE_AND_NIL_ARRAY(p) do {if (p) {delete[] (p); (p) = nullptr;}} while (0)
 
 // Used to return the maximum of two numbers
 #define MAX(x, y)  (((x) > (y)) ? (x) : (y))
