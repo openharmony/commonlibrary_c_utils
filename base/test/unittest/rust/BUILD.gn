@@ -25,10 +25,12 @@ if (host_os == "linux" && !is_asan && !is_arkui_x) {
     testonly = true
     deps = []
 
-    deps += [
-      ":rust_utils_ashmem_test",
-      ":rust_utils_file_test",
-    ]
+    if (!use_clang_coverage) {
+      deps += [
+        ":rust_utils_ashmem_test",
+        ":rust_utils_file_test",
+      ]
+    }
   }
 
   ohos_rust_unittest("rust_utils_ashmem_test") {
