@@ -595,5 +595,26 @@ HWTEST_F(UtilsSortedVector, testAddNotAllowDuplicate, TestSize.Level0)
         ASSERT_EQ(i, svec[i]);
     }
 }
+
+HWTEST_F(UtilsSortedVector, testErase, TestSize.Level0)
+{
+    SortedVector<int, false> svec;
+
+    for (int i = 9; i >= 0; i--) {
+
+        ASSERT_NE(svec.Add(i), static_cast<ssize_t>(-1));
+    }
+    ASSERT_EQ(static_cast<size_t>(10), svec.Size());
+
+    ASSERT_EQ(svec.Front(), 0);
+
+    int currentSize = svec.Size();
+    svec.PopBack();
+    ASSERT_EQ(svec.Size(), currentSize - 1);
+
+    auto iter = svec.Erase(svec.IndexOf(3));
+    ASSERT_EQ(iter[0], 4);
+}
+
 }  // namespace
 }  // namespace OHOS

@@ -634,5 +634,22 @@ HWTEST_F(UtilsSafeBlockQueue, testMutilthreadConcurrentGetAndPopInfullqueue001, 
         demoDatas[0].Get();
     }
 }
+
+/*
+ * @tc.name: testPushAndPopNoWait
+ * @tc.desc: test PushNoWait and PopNoWait
+ */
+HWTEST_F(UtilsSafeBlockQueue, testPushAndPopNoWait, TestSize.Level0)
+{
+    ASSERT_TRUE(DemoThreadData::shareQueue.IsEmpty());
+
+    int testElem = 1;
+    DemoThreadData::shareQueue.PushNoWait(testElem);
+
+    int outElem = 0;
+    DemoThreadData::shareQueue.PopNotWait(outElem);
+
+    ASSERT_EQ(testElem, outElem);
+}
 }  // namespace
 }  // namespace OHOS

@@ -65,6 +65,10 @@ public:
         g_freeFlag = 1;
     }
 
+    void OnLastWeakRef(const void *objectIda) override
+    {
+    }
+
     void SetRefPtr()
     {
         isgetrefptr_ = true;
@@ -681,6 +685,45 @@ HWTEST_F(UtilsRefbaseTest, testSptrefbase011, TestSize.Level0)
     EXPECT_EQ(strongObject->GetSptrRefCount(), 1);
 }
 
+/*
+ * @tc.name: testSptrefbase012
+ * @tc.desc: Refbase
+ */
+HWTEST_F(UtilsRefbaseTest, testSptrefbase012, TestSize.Level0)
+{
+    // test clear
+    sptr<RefBaseTest> testObject1 = new RefBaseTest();
+    testObject1.clear();
+    ASSERT_EQ(testObject1.GetRefPtr(), nullptr);
+}
+
+/*
+ * @tc.name: testSptrefbase013
+ * @tc.desc: Refbase
+ */
+HWTEST_F(UtilsRefbaseTest, testSptrefbase013, TestSize.Level0)
+{
+    sptr<RefBaseTest> testObject1;
+    wptr<RefBaseTest> testObject2 = new RefBaseTest();
+    testObject1 = testObject2;
+    ASSERT_EQ(testObject2->GetWptrRefCount(), 2);
+    ASSERT_EQ(testObject1->GetSptrRefCount(), 1);
+}
+
+/*
+ * @tc.name: testSptrefbase014
+ * @tc.desc: Refbase
+ */
+HWTEST_F(UtilsRefbaseTest, testSptrefbase014, TestSize.Level0)
+{
+    sptr<RefBaseTest> testObject1(new RefBaseTest());
+    const RefBaseTest *rawPointer = testObject1.GetRefPtr();
+    ASSERT_TRUE(testObject1 == rawPointer);
+
+    wptr<RefBaseTest> testObject2(new RefBaseTest());
+    ASSERT_FALSE(testObject1 == testObject2);
+}
+
 class SptrTest : public RefBase {
 public:
     SptrTest()
@@ -1032,6 +1075,26 @@ HWTEST_F(UtilsRefbaseTest, testWptrefbase008, TestSize.Level0)
     wptr<WptrTest2> testObject2;
     testObject2 = testObject1.GetRefPtr();
     EXPECT_EQ(testObject1->GetWptrRefCount(), 2);
+}
+
+/*
+ * @tc.name: testWptrefbase008
+ * @tc.desc: Refbase
+ */
+HWTEST_F(UtilsRefbaseTest, testWptrefbase009, TestSize.Level0)
+{
+    // test bool operator==(const T *)
+    wptr<WptrTest> testObject1 = new WptrTest();
+    const WptrTest *rawPointer = testObject1.GetRefPtr();
+    ASSERT_TRUE(testObject1 == rawPointer);
+
+    // test bool operator==(const wptr &)
+    wptr<WptrTest> testObject2 = testObject1;
+    ASSERT_TRUE(testObject2 == testObject1);
+
+    // test operator==(const sptr &)
+    sptr<WptrTest> testObject3 = new WptrTest();
+    ASSERT_FALSE(testObject2 == testObject3);
 }
 
 /*

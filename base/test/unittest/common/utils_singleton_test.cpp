@@ -139,6 +139,15 @@ HWTEST_F(UtilsSingletonTest, test_SingletonTest, TestSize.Level0)
     EXPECT_EQ(st1.GetObjAddr(), st2.GetObjAddr());
 }
 
+HWTEST_F(UtilsSingletonTest, test_DestroyInstanceTest, TestSize.Level0)
+{
+    shared_ptr<DelayedSingletonTest> sp1 = DelayedSingletonTest::GetInstance();
+    auto oldInstance = sp1;
+    sp1->DestroyInstance();
+
+    auto newInstance = sp1->GetInstance();
+    ASSERT_NE(oldInstance->GetObjAddr(), newInstance->GetObjAddr());
+}
 
 HWTEST_F(UtilsSingletonTest, test_DelayedSingletonTest, TestSize.Level0)
 {
