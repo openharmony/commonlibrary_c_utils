@@ -17,6 +17,7 @@
 #include "string_ex.h"
 #include <iostream>
 #include <securec.h>
+#include <string>
 
 using namespace testing::ext;
 using namespace std;
@@ -664,6 +665,14 @@ HWTEST_F(UtilsStringTest, DexToHexString_01, TestSize.Level0)
 
     result = DexToHexString(11259375, false);
     EXPECT_EQ(result, "abcdef");
+}
+
+HWTEST_F(UtilsStringTest, GetUtf16ToUtf8Length, TestSize.Level0)
+{
+    string strValue = "hello world";
+    u16string str16 = Str8ToStr16(strValue);
+    GetUtf16ToUtf8Length(str16);
+    ASSERT_EQ(strValue.length(), str16.length());
 }
 }  // namespace
 }  // namespace OHOS

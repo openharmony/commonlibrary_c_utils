@@ -158,5 +158,19 @@ HWTEST_F(UtilsUniqueFd, testUtilsUniqueFdDefineDeletorCloseStatus, TestSize.Leve
     int ret = write(fd, buf, sizeof(buf));
     ASSERT_EQ(ret, -1);
 };
+
+HWTEST_F(UtilsUniqueFd, testUtilsUniqueFdReleaseAndGet, TestSize.Level0)
+{
+    int fd = open(testfilename, O_RDWR);
+
+    UniqueFd ufd2(fd);
+    ASSERT_EQ(ufd2.Get(), fd);
+    ASSERT_EQ(ufd2.Release(), fd);
+
+    UniqueFd ufd3(fd);
+    UniqueFd ufd1;
+    ufd1 = std::move(ufd3);
+    ASSERT_EQ(ufd1, fd);
+};
 }  // namespace
 }  // namespace OHOS

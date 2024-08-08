@@ -286,5 +286,31 @@ HWTEST_F(UtilsSafeQueue, testMutilthreadConcurrentGetAndPopInNotEmptyQueue, Test
     putInTestThread.ResetStatus();
     getOutTestThread.ResetStatus();
 }
+
+/*
+* Feature: SafeBlockQueue
+* Function:Erase and Clear
+* SubFunction: NA
+* FunctionPoints:
+* EnvConditions: NA
+* CaseDescription: Push elememts into the queue, then erase certain element, finally clear the queue.
+*/
+HWTEST_F(UtilsSafeQueue, testEraseAndClearInNotEmptyQueue, TestSize.Level0)
+{
+    ASSERT_EQ(DemoThreadData::shareQueue.Size(), 0);
+
+    int t = 1;
+    for (unsigned int i = 0; i < THREAD_NUM; i++)
+    {
+        DemoThreadData::shareQueue.Push(t);
+    }
+    ASSERT_TRUE(DemoThreadData::shareQueue.Size() == THREAD_NUM);
+    ASSERT_FALSE(DemoThreadData::shareQueue.Empty());
+
+    DemoThreadData::shareQueue.Erase(t);
+    ASSERT_EQ(DemoThreadData::shareQueue.Size(), THREAD_NUM - 1);
+    DemoThreadData::shareQueue.Clear();
+    ASSERT_EQ(DemoThreadData::shareQueue.Size(), 0);
+}
 }  // namespace
 }  // namespace OHOS
