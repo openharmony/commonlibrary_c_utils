@@ -297,7 +297,7 @@ int Char16ToChar8(const u16string& str16, char *buffer, int bufferLen)
     }
     const char16_t *utf16Str = str16.c_str();
     int utf8Len = Utf16ToUtf8Length(utf16Str, str16Len);
-    if (utf8Len < 0 || (utf8Len + 1) > bufferLen) {
+    if (utf8Len < 0 || utf8Len >= INT_MAX || (utf8Len + 1) > bufferLen) {
         UTILS_LOGD("utf8buffer len:%{public}d, actual buffer len:%{public}d!", utf8Len + 1, bufferLen);
         return CHAR16_TO_CHAR8_INSUFFICIENT_BUFFER;
     }

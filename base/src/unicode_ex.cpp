@@ -181,7 +181,7 @@ char* Char16ToChar8(const char16_t* str16, size_t str16Len)
 {
     char* str8 = nullptr;
     int utf8Len = Utf16ToUtf8Length(str16, str16Len);
-    if (utf8Len < 0) {
+    if (utf8Len < 0 || utf8Len >= INT_MAX) {
         return nullptr;
     }
 
