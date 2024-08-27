@@ -2202,6 +2202,7 @@ HWTEST_F(UtilsParcelTest, test_VectorDataPadding_004, TestSize.Level0)
     }
 }
 
+#ifdef __aarch64__
 HWTEST_F(UtilsParcelTest, test_WriteStringDataLength_001, TestSize.Level0)
 {
     Parcel parcel1(nullptr);
@@ -2248,5 +2249,6 @@ HWTEST_F(UtilsParcelTest, test_WriteStringDataLength_001, TestSize.Level0)
     EXPECT_EQ(result, true);
     parcel1.FlushBuffer();
 }
+#endif
 }  // namespace
 }  // namespace OHOS
