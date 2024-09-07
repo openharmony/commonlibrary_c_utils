@@ -126,6 +126,10 @@ bool Parcel::EnsureWritableCapacity(size_t desireCapacity)
         return false;
     }
     if (desireCapacity <= GetWritableBytes()) {
+        if (data_ == nullptr) {
+            UTILS_LOGE("data_ is nullptr when capacity is available");
+            return false;
+        }
         return true;
     }
 
