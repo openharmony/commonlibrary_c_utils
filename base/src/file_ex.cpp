@@ -345,6 +345,7 @@ bool SaveBufferToFile(const string& filePath, const vector<char>& content, bool 
     }
 
     file.write(&content[0], content.size());
+    file.flush();
     return true;
 }
 
