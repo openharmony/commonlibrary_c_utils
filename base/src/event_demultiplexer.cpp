@@ -113,7 +113,8 @@ void EventDemultiplexer::Polling(int timeout /* ms */)
     }
     if (nfds == -1) {
         if (errno != INTERRUPTED_SYS_CALL) {
-            UTILS_LOGE("epoll_wait failed, errno %{public}d", errno);
+            UTILS_LOGE("epoll_wait failed, errno %{public}d, epollFd_: %{public}d, pollEvents.size: %{public}zu",
+                errno, epollFd_, epollEvents.size());
         }
         return;
     }
