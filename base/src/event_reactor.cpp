@@ -76,7 +76,10 @@ void EventReactor::RunLoop(int timeout) const
     }
 
     while (loopReady_ && switch_) {
-        demultiplexer_->Polling(timeout);
+        if (demultiplexer_->Polling(timeout) == EPOLL_CRITICAL_ERROR) {
+            UTILS_LOGE("polling critical error occure: %{public}d", timeout);
+            break;
+        }
     }
 
     loopReady_ = false;

@@ -25,6 +25,8 @@
 namespace OHOS {
 namespace Utils {
 
+#define EPOLL_CRITICAL_ERROR (-10)
+
 class EventDemultiplexer;
 class EventHandler;
 class TimerEventHandler;

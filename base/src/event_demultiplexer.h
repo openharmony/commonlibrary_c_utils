@@ -36,7 +36,7 @@ public:
     uint32_t StartUp();
     void CleanUp();
 
-    void Polling(int timeout);
+    int Polling(int timeout);
 
     uint32_t UpdateEventHandler(EventHandler* handler);
 

@@ -32,6 +32,8 @@ static const int EPOLL_MAX_EVENS_INIT = 8;
 static const int HALF_OF_MAX_EVENT = 2;
 static const int EPOLL_INVALID_FD = -1;
 static const int INTERRUPTED_SYS_CALL = 4;
+static const int EPOLL_ERROR_BADF = 9;
+static const int EPOLL_ERROR_EINVAL = 22;
 
 EventDemultiplexer::EventDemultiplexer()
     : epollFd_(epoll_create1(EPOLL_CLOEXEC)), maxEvents_(EPOLL_MAX_EVENS_INIT), mutex_(), eventHandlers_()
@@ -101,7 +103,7 @@ uint32_t EventDemultiplexer::Update(int operation, EventHandler* handler)
     return TIMER_ERR_OK;
 }
 
-void EventDemultiplexer::Polling(int timeout /* ms */)
+int EventDemultiplexer::Polling(int timeout /* ms */)
 {
     std::vector<struct epoll_event> epollEvents(maxEvents_);
     std::vector<std::shared_ptr<EventHandler>> taskQue;
@@ -109,14 +111,18 @@ void EventDemultiplexer::Polling(int timeout /* ms */)
 
     int nfds = epoll_wait(epollFd_, &epollEvents[0], static_cast<int>(epollEvents.size()), timeout);
     if (nfds == 0) {
-        return;
+        return nfds;
     }
     if (nfds == -1) {
         if (errno != INTERRUPTED_SYS_CALL) {
             UTILS_LOGE("epoll_wait failed, errno %{public}d, epollFd_: %{public}d, pollEvents.size: %{public}zu",
                 errno, epollFd_, epollEvents.size());
         }
-        return;
+        if (errno == EPOLL_ERROR_BADF || errno == EPOLL_ERROR_EINVAL) {
+            UTILS_LOGE("epoll_wait critical error, thread exit");
+            return EPOLL_CRITICAL_ERROR;
+        }
+        return nfds;
     }
 
     {
@@ -142,6 +148,7 @@ void EventDemultiplexer::Polling(int timeout /* ms */)
     if (nfds == maxEvents_) {
         maxEvents_ *= HALF_OF_MAX_EVENT;
     }
+    return nfds;
 }
 
 uint32_t EventDemultiplexer::Epoll2Reactor(uint32_t epollEvents)
