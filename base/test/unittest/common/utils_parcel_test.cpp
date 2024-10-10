@@ -26,6 +26,8 @@ using namespace std;
 
 namespace OHOS {
 namespace {
+static const int BINDER_TYPE_HANDLE = 0x73682a85; // binder header type handle
+static const int BINDER_TYPE_FD = 0x66642a85; // binder header type fd
 const int MAX_PARCEL_SIZE = 1000;
 char g_data[MAX_PARCEL_SIZE];
 class UtilsParcelTest : public testing::Test {
@@ -71,6 +73,70 @@ sptr<RemoteObject> RemoteObject::Unmarshalling(Parcel &parcel)
         return nullptr;
     }
     sptr<RemoteObject> obj = new RemoteObject();
+    return obj;
+}
+
+class RemoteFdObject : public virtual Parcelable {
+public:
+    RemoteFdObject() { asRemote_ = true; };
+    bool Marshalling(Parcel &parcel) const override;
+    static sptr<RemoteFdObject> Unmarshalling(Parcel &parcel);
+};
+
+bool RemoteFdObject::Marshalling(Parcel &parcel) const
+{
+    parcel_flat_binder_object flat;
+    flat.hdr.type = BINDER_TYPE_FD;
+    flat.flags = 0x7f;
+    flat.binder = 0;
+    flat.handle = (uint32_t)(-1);
+    flat.cookie = reinterpret_cast<uintptr_t>(this);
+    bool status = parcel.WriteBuffer(&flat, sizeof(parcel_flat_binder_object));
+    if (!status) {
+        return false;
+    }
+    return true;
+}
+
+sptr<RemoteFdObject> RemoteFdObject::Unmarshalling(Parcel &parcel)
+{
+    const uint8_t *buffer = parcel.ReadBuffer(sizeof(parcel_flat_binder_object), false);
+    if (buffer == nullptr) {
+        return nullptr;
+    }
+    sptr<RemoteFdObject> obj = new RemoteFdObject();
+    return obj;
+}
+
+class RemoteHandleObject : public virtual Parcelable {
+public:
+    RemoteHandleObject() { asRemote_ = true; };
+    bool Marshalling(Parcel &parcel) const override;
+    static sptr<RemoteHandleObject> Unmarshalling(Parcel &parcel);
+};
+
+bool RemoteHandleObject::Marshalling(Parcel &parcel) const
+{
+    parcel_flat_binder_object flat;
+    flat.hdr.type = BINDER_TYPE_HANDLE;
+    flat.flags = 0x7f;
+    flat.binder = 0;
+    flat.handle = (uint32_t)(-1);
+    flat.cookie = reinterpret_cast<uintptr_t>(this);
+    bool status = parcel.WriteBuffer(&flat, sizeof(parcel_flat_binder_object));
+    if (!status) {
+        return false;
+    }
+    return true;
+}
+
+sptr<RemoteHandleObject> RemoteHandleObject::Unmarshalling(Parcel &parcel)
+{
+    const uint8_t *buffer = parcel.ReadBuffer(sizeof(parcel_flat_binder_object), false);
+    if (buffer == nullptr) {
+        return nullptr;
+    }
+    sptr<RemoteHandleObject> obj = new RemoteHandleObject();
     return obj;
 }
 
@@ -1968,6 +2034,107 @@ HWTEST_F(UtilsParcelTest, test_ValidateReadData_002, TestSize.Level0)
 
     sptr<RemoteObject> readObj1 = parcel.ReadObject<RemoteObject>();
     EXPECT_EQ(true, readObj1.GetRefPtr() == nullptr);
+}
+
+HWTEST_F(UtilsParcelTest, test_multiRemoteObjectReadBuffer_001, TestSize.Level0)
+{
+    Parcel parcel(nullptr);
+
+    RemoteFdObject obj1;
+    bool result = parcel.WriteRemoteObject(&obj1);
+    EXPECT_EQ(result, true);
+
+    RemoteHandleObject obj2;
+    result = parcel.WriteRemoteObject(&obj2);
+    EXPECT_EQ(result, true);
+
+    RemoteObject obj3;
+    result = parcel.WriteRemoteObject(&obj3);
+    EXPECT_EQ(result, true);
+
+    const uint8_t *buffer = parcel.ReadBuffer(sizeof(parcel_flat_binder_object) * 3);
+    EXPECT_EQ(true, buffer == nullptr);
+}
+
+HWTEST_F(UtilsParcelTest, test_multiRemoteObjectReadBuffer_002, TestSize.Level0)
+{
+    Parcel parcel(nullptr);
+
+    RemoteFdObject obj1;
+    bool result = parcel.WriteRemoteObject(&obj1);
+    EXPECT_EQ(result, true);
+
+    RemoteObject obj2;
+    result = parcel.WriteRemoteObject(&obj2);
+    EXPECT_EQ(result, true);
+
+    RemoteHandleObject obj3;
+    result = parcel.WriteRemoteObject(&obj3);
+    EXPECT_EQ(result, true);
+
+    const uint8_t *buffer = parcel.ReadBuffer(sizeof(parcel_flat_binder_object) * 3);
+    EXPECT_EQ(true, buffer == nullptr);
+}
+
+HWTEST_F(UtilsParcelTest, test_multiRemoteObjectReadBuffer_003, TestSize.Level0)
+{
+    Parcel parcel(nullptr);
+
+    RemoteObject obj1;
+    bool result = parcel.WriteRemoteObject(&obj1);
+    EXPECT_EQ(result, true);
+
+    RemoteHandleObject obj2;
+    result = parcel.WriteRemoteObject(&obj2);
+    EXPECT_EQ(result, true);
+
+    RemoteFdObject obj3;
+    result = parcel.WriteRemoteObject(&obj3);
+    EXPECT_EQ(result, true);
+
+    const uint8_t *buffer = parcel.ReadBuffer(sizeof(parcel_flat_binder_object) * 3);
+    EXPECT_EQ(true, buffer == nullptr);
+}
+
+HWTEST_F(UtilsParcelTest, test_multiRemoteObjectReadBuffer_004, TestSize.Level0)
+{
+    Parcel parcel(nullptr);
+
+    RemoteFdObject obj1;
+    bool result = parcel.WriteRemoteObject(&obj1);
+    EXPECT_EQ(result, true);
+
+    RemoteHandleObject obj2;
+    result = parcel.WriteRemoteObject(&obj2);
+    EXPECT_EQ(result, true);
+
+    RemoteFdObject obj3;
+    result = parcel.WriteRemoteObject(&obj3);
+    EXPECT_EQ(result, true);
+
+    const uint8_t *buffer = parcel.ReadBuffer(sizeof(parcel_flat_binder_object) * 3);
+    EXPECT_EQ(true, buffer != nullptr);
+}
+
+HWTEST_F(UtilsParcelTest, test_multiRemoteObjectReadBuffer_005, TestSize.Level0)
+{
+    Parcel parcel(nullptr);
+
+    RemoteFdObject obj1;
+    bool result = parcel.WriteRemoteObject(&obj1);
+    EXPECT_EQ(result, true);
+
+    RemoteObject obj2;
+    result = parcel.WriteRemoteObject(&obj2);
+    EXPECT_EQ(result, true);
+
+    RemoteHandleObject obj3;
+    result = parcel.WriteRemoteObject(&obj3);
+    EXPECT_EQ(result, true);
+
+    size_t readLength = 36;
+    const uint8_t *buffer = parcel.ReadBuffer(readLength);
+    EXPECT_EQ(true, buffer == nullptr);
 }
 
 HWTEST_F(UtilsParcelTest, test_RewindWrite_001, TestSize.Level0)
