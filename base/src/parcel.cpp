@@ -183,7 +183,9 @@ bool Parcel::ValidateReadData([[maybe_unused]]size_t upperBound)
         size_t nextObj = nextObjectIdx_;
         do {
             if (readPos < objects[nextObj] + sizeof(parcel_flat_binder_object)) {
-                return IsReadObjectData(nextObj, upperBound);
+                if (!IsReadObjectData(nextObj, upperBound)) {
+                    return false;
+                }
             }
             nextObj++;
         } while (nextObj < objSize && upperBound > objects[nextObj]);
