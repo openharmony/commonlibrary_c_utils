@@ -165,7 +165,7 @@ void StrncpyStr16ToStr8(const char16_t* utf16Str, size_t str16Len, char* utf8Str
             utf32 = static_cast<char32_t>(*curUtf16++);
         }
         const size_t len = Utf32CodePointUtf8Length(utf32);
-        if (str8Len < len) {
+        if (str8Len <= len) {
             break;
         }
 
