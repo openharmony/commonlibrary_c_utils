@@ -1098,6 +1098,9 @@ const char *Parcel::ReadCString()
     const char* eos = reinterpret_cast<const char*>(memchr(cstr, 0, avail));
     if (eos != nullptr) {
         const size_t dataLength = eos - cstr;
+        if (!ValidateReadData(dataLength + 1)) {
+            return nullptr;
+        }
         readCursor_ += (dataLength + 1);
         SkipBytes(GetPadSize(dataLength + 1));
         return cstr;
