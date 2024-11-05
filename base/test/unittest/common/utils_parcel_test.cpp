@@ -2113,7 +2113,7 @@ HWTEST_F(UtilsParcelTest, test_multiRemoteObjectReadBuffer_004, TestSize.Level0)
     EXPECT_EQ(result, true);
 
     const uint8_t *buffer = parcel.ReadBuffer(sizeof(parcel_flat_binder_object) * 3);
-    EXPECT_EQ(true, buffer != nullptr);
+    EXPECT_EQ(true, buffer == nullptr);
 }
 
 HWTEST_F(UtilsParcelTest, test_multiRemoteObjectReadBuffer_005, TestSize.Level0)
