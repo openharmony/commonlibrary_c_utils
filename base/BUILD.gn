@@ -25,12 +25,8 @@ declare_args() {
 
 config("utils_config") {
   include_dirs = [ "include" ]
-  defines = []
   if (current_os == "ios") {
-    defines += [ "IOS_PLATFORM" ]
-  }
-  if (is_emulator == true) {
-    defines += [ "EMULATOR_PLATFORM" ]
+    defines = [ "IOS_PLATFORM" ]
   }
 }
 
