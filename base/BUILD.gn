@@ -32,6 +32,9 @@ config("utils_config") {
   if (is_emulator == true) {
     defines += [ "EMULATOR_PLATFORM" ]
   }
+  if (current_os == "ohos") {
+    defines += [ "OHOS_PLATFORM" ]
+  }
 }
 
 config("utils_coverage_config") {

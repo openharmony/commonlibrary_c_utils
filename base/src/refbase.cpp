@@ -211,7 +211,7 @@ bool RefCounter::IsRefPtrValid()
     return callback_ != nullptr;
 }
 
-#ifndef EMULATOR_PLATFORM
+#ifdef OHOS_PLATFORM
 void RefCounter::SetCanPromote(const CanPromote &canPromote)
 {
     canPromote_ = canPromote;
@@ -374,7 +374,7 @@ bool RefCounter::AttemptIncStrongRef(const void *objectId, int &outCount)
     }
 
     if (IsLifeTimeExtended()) {
-#ifndef EMULATOR_PLATFORM
+#ifdef OHOS_PLATFORM
         if (!IsCanPromoteValid() || !canPromote_()) {
             return false;
         }
@@ -418,7 +418,7 @@ RefBase::RefBase() : refs_(new RefCounter())
 {
     refs_->IncRefCount();
     refs_->SetCallback([this] { this->RefPtrCallback(); });
-#ifndef EMULATOR_PLATFORM
+#ifdef OHOS_PLATFORM
     refs_->SetCanPromote([this] { return this->CanPromote(); });
 #endif
 }
@@ -429,13 +429,13 @@ RefBase::RefBase(const RefBase &)
     if (refs_ != nullptr) {
         refs_->IncRefCount();
         refs_->SetCallback([this] { this->RefPtrCallback(); });
-#ifndef EMULATOR_PLATFORM
+#ifdef OHOS_PLATFORM
         refs_->SetCanPromote([this] { return this->CanPromote(); });
 #endif
     }
 }
 
-#ifndef EMULATOR_PLATFORM
+#ifdef OHOS_PLATFORM
 bool RefBase::CanPromote()
 {
     return true;
@@ -464,7 +464,7 @@ RefBase &RefBase::operator=(const RefBase &)
     if (refs_ != nullptr) {
         refs_->IncRefCount();
         refs_->SetCallback([this] { this->RefPtrCallback(); });
-#ifndef EMULATOR_PLATFORM
+#ifdef OHOS_PLATFORM
         refs_->SetCanPromote([this] { return this->CanPromote(); });
 #endif
     }
