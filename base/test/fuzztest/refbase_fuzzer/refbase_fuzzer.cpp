@@ -343,9 +343,47 @@ void TestLoop(const std::vector<uint8_t>& fuzzOps)
     CleanUpStrongCounter(state);
 }
 
+class RefBaseTest : public RefBase {
+public:
+    RefBaseTest()
+    {
+    }
+    ~RefBaseTest()
+    {
+    }
+
+    void OnLastWeakRef(const void *objectIda) override
+    {
+       FUZZ_LOGI("OnLastWeakRef is called"); 
+    }
+};
+
+void TestRefBaseFunc()
+{
+    RefBaseTest* testobject = new RefBaseTest();
+    testobject->AttemptAcquire(testobject);
+    testobject->CheckIsAttemptAcquireSet(testobject);
+    testobject->OnLastWeakRef(testobject);
+
+    RefBaseTest* testobject1 = new RefBaseTest();
+    RefBaseTest* testobject2(testobject1);
+    RefBaseTest* testobject3 = testobject2;
+
+    wptr<RefBaseTest>testWptrObject(testobject3);
+    RefBaseTest* testobject4 = testWptrObject.GetRefPtr();
+    FUZZ_LOGI("testobject4 = %{public}p", testobject4);
+
+    RefBase baseObject1{};
+    RefBase baseObject2{};
+    baseObject2 = std::move(baseObject1);
+    RefBase baseObject3(std::move(baseObject2));
+}
+
 void RefbaseTestFunc(const uint8_t* data, size_t size, FuzzedDataProvider* dataProvider)
 {
     FUZZ_LOGI("RefbaseTestFunc start");
+    TestRefBaseFunc();
+
     g_ref = new TestRefBase(&g_refDeleted, g_deletedLock);
     g_refModified = false;
     uint8_t threadNum = 1;
