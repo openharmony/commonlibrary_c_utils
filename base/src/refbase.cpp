@@ -211,23 +211,6 @@ bool RefCounter::IsRefPtrValid()
     return callback_ != nullptr;
 }
 
-#ifndef EMULATOR_PLATFORM
-void RefCounter::SetCanPromote(const CanPromote &canPromote)
-{
-    canPromote_ = canPromote;
-}
-
-void RefCounter::RemoveCanPromote()
-{
-    canPromote_ = nullptr;
-}
-
-bool RefCounter::IsCanPromoteValid()
-{
-    return canPromote_ != nullptr;
-}
-#endif
-
 RefCounter::~RefCounter()
 {
 #ifdef DEBUG_REFBASE
@@ -374,11 +357,6 @@ bool RefCounter::AttemptIncStrongRef(const void *objectId, int &outCount)
     }
 
     if (IsLifeTimeExtended()) {
-#ifndef EMULATOR_PLATFORM
-        if (!IsCanPromoteValid() || !canPromote_()) {
-            return false;
-        }
-#endif
         curCount = atomicStrong_.fetch_add(1, std::memory_order_relaxed);
     }
 
@@ -418,9 +396,6 @@ RefBase::RefBase() : refs_(new RefCounter())
 {
     refs_->IncRefCount();
     refs_->SetCallback([this] { this->RefPtrCallback(); });
-#ifndef EMULATOR_PLATFORM
-    refs_->SetCanPromote([this] { return this->CanPromote(); });
-#endif
 }
 
 RefBase::RefBase(const RefBase &)
@@ -429,18 +404,8 @@ RefBase::RefBase(const RefBase &)
     if (refs_ != nullptr) {
         refs_->IncRefCount();
         refs_->SetCallback([this] { this->RefPtrCallback(); });
-#ifndef EMULATOR_PLATFORM
-        refs_->SetCanPromote([this] { return this->CanPromote(); });
-#endif
     }
 }
-
-#ifndef EMULATOR_PLATFORM
-bool RefBase::CanPromote()
-{
-    return true;
-}
-#endif
 
 void RefBase::RefPtrCallback()
 {
@@ -464,9 +429,6 @@ RefBase &RefBase::operator=(const RefBase &)
     if (refs_ != nullptr) {
         refs_->IncRefCount();
         refs_->SetCallback([this] { this->RefPtrCallback(); });
-#ifndef EMULATOR_PLATFORM
-        refs_->SetCanPromote([this] { return this->CanPromote(); });
-#endif
     }
 
     return *this;
