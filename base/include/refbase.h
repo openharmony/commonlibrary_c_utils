@@ -240,16 +240,6 @@ public:
      */
     void ExtendObjectLifetime();
 
-#ifndef EMULATOR_PLATFORM
-    using CanPromote = std::function<bool()>;
-
-    void SetCanPromote(const CanPromote& canPromote);
-
-    void RemoveCanPromote();
-
-    bool IsCanPromoteValid();
-#endif
-
 #if ((defined DEBUG_REFBASE) && (!defined TRACK_ALL))
     /**
      * @brief Enables tracking. It is applicable to debugging only.
@@ -267,9 +257,6 @@ private:
     std::atomic<int> atomicAttempt_; // Number of attempts
     RefPtrCallback callback_ = nullptr; // Callback function to deallocate the corresponding RefBase object
     static constexpr unsigned int FLAG_EXTEND_LIFE_TIME = 0x00000002; // Extended life-time bit to be set via logic-OR
-#ifndef EMULATOR_PLATFORM
-    CanPromote canPromote_ = nullptr;
-#endif
 #ifdef DEBUG_REFBASE
 #ifdef TRACK_ALL
     bool enableTrack = true;
@@ -594,10 +581,6 @@ public:
      * be implemented only if DEBUG_REFBASE, but not TRACK_ALL, is defined.
      */
     void EnableTracker();
-
-#ifndef EMULATOR_PLATFORM
-    virtual bool CanPromote();
-#endif
 
 private:
     RefCounter *refs_ = nullptr; // Pointer to the corresponding reference
