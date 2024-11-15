@@ -21,6 +21,8 @@ declare_args() {
   c_utils_debug_log_enabled = false
   c_utils_feature_intsan = true
   c_utils_parcel_object_check = true
+  c_utils_feature_enable_pgo = false
+  c_utils_feature_pgo_path = ""
 }
 
 config("utils_config") {
@@ -227,6 +229,25 @@ ohos_shared_library("utils") {
       "system",
       "updater",
     ]
+  }
+  if (is_ohos && is_clang && enhanced_opt &&
+      (target_cpu == "arm" || target_cpu == "arm64")) {
+    if (c_utils_feature_enable_pgo) {
+      cflags = [
+        "-fprofile-use=" +
+            rebase_path("${c_utils_feature_pgo_path}/libutils.profdata",
+                        root_build_dir),
+        "-Wno-error=backend-plugin",
+        "-Wno-profile-instr-out-of-date",
+        "-Wno-profile-instr-unprofiled",
+      ]
+    }
+
+    ldflags = [ "-Wl,-Bsymbolic" ]
+    if (c_utils_feature_enable_pgo && target_cpu == "arm64" &&
+        enable_enhanced_opt) {
+      ldflags += [ "-Wl,--aarch64-inline-plt" ]
+    }
   }
 }
 

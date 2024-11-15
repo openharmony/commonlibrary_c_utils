@@ -23,7 +23,9 @@
       "c_utils_print_track_at_once",
       "c_utils_debug_log_enabled",
       "c_utils_feature_intsan",
-      "c_utils_parcel_object_check"
+      "c_utils_parcel_object_check",
+      "c_utils_feature_enable_pgo",
+      "c_utils_feature_pgo_path"
     ],
     "deps": {
       "components": [
