@@ -379,7 +379,7 @@ void TestRefBaseFunc()
     RefBase baseObject3(std::move(baseObject2));
 }
 
-void RefbaseTestFunc(const uint8_t* data, size_t size, FuzzedDataProvider* dataProvider)
+void RefbaseTestFunc(FuzzedDataProvider* dataProvider)
 {
     FUZZ_LOGI("RefbaseTestFunc start");
     TestRefBaseFunc();
@@ -415,6 +415,6 @@ void RefbaseTestFunc(const uint8_t* data, size_t size, FuzzedDataProvider* dataP
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
     FuzzedDataProvider dataProvider(data, size);
-    OHOS::RefbaseTestFunc(data, size, &dataProvider);
+    OHOS::RefbaseTestFunc(&dataProvider);
     return 0;
 }

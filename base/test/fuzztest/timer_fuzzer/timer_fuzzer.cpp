@@ -62,7 +62,7 @@ const std::vector<std::function<void(FuzzedDataProvider*, Utils::Timer&, vector<
     },
 };
 
-void TimerTestFunc(const uint8_t* data, size_t size, FuzzedDataProvider* dataProvider)
+void TimerTestFunc(FuzzedDataProvider* dataProvider)
 {
     FUZZ_LOGI("TimerTestFunc start");
     string teststr = dataProvider->ConsumeRandomLengthString(MAX_STRING_LENGTH);
@@ -93,6 +93,6 @@ void TimerTestFunc(const uint8_t* data, size_t size, FuzzedDataProvider* dataPro
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
     FuzzedDataProvider dataProvider(data, size);
-    OHOS::TimerTestFunc(data, size, &dataProvider);
+    OHOS::TimerTestFunc(&dataProvider);
     return 0;
 }

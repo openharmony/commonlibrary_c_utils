@@ -504,7 +504,7 @@ const std::vector<std::function<void(FuzzedDataProvider*, Parcel&)>> other_opera
     },
 };
 
-void ParcelTestFunc(const uint8_t* data, size_t size, FuzzedDataProvider* dataProvider)
+void ParcelTestFunc(FuzzedDataProvider* dataProvider)
 {
     FUZZ_LOGI("ParcelTestFunc start");
     uint8_t opSet = dataProvider->ConsumeIntegralInRange<uint8_t>(GENERAL_GROUP, OTHER_GROUP);
@@ -545,6 +545,6 @@ void ParcelTestFunc(const uint8_t* data, size_t size, FuzzedDataProvider* dataPr
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
     FuzzedDataProvider dataProvider(data, size);
-    OHOS::ParcelTestFunc(data, size, &dataProvider);
+    OHOS::ParcelTestFunc(&dataProvider);
     return 0;
 }
