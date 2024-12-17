@@ -418,10 +418,10 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndBlockInblan
     joinThread.join();
 }
 
-static void QueuePushFullEquivalent(const int Equivalent)
+static void QueuePushFullEquivalent(const int equivalent)
 {
     for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
-        DemoThreadData::shareQueue.Push(Equivalent);
+        DemoThreadData::shareQueue.Push(equivalent);
     }
     ASSERT_TRUE(DemoThreadData::shareQueue.IsFull());
 }
