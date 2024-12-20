@@ -488,8 +488,8 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndBlockInfull
     ASSERT_EQ(getedOut, THREAD_NUM);
     ASSERT_EQ(ungetedOut, static_cast<unsigned int>(0));
 
-    for (auto& t : threads) {
-        t.join();
+    for (auto& thd : threads) {
+        thd.join();
     }
 
     while (!DemoThreadData::shareQueue.IsEmpty()) {
@@ -680,12 +680,12 @@ HWTEST_F(UtilsSafeBlockQueueTracking, testMutilthreadConcurrentGetAndPopInfullqu
     ASSERT_FALSE(demoDatas[0].joinStatus);
     demoDatas[0].joinStatus = false;
 
-    for (auto& t : threadsout) {
-        t.join();
+    for (auto& thdout : threadsout) {
+        thdout.join();
     }
 
-    for (auto& t : threadsin) {
-        t.join();
+    for (auto& thdin : threadsin) {
+        thdin.join();
     }
 
     while (!DemoThreadData::shareQueue.IsEmpty()) {
