@@ -19,10 +19,6 @@
 #include "common_timer_errors.h"
 #include "utils_log.h"
 
-#include <cstdio>
-#include <unistd.h>
-#include <sys/syscall.h>
-
 namespace OHOS {
 namespace Utils {
 

@@ -14,15 +14,6 @@
  */
 #include "semaphore_ex.h"
 
-#include <pthread.h>   // pthread_mutex_lock
-#include <sys/types.h> // pid_t
-#include <unistd.h>    // getpid
-#include <fcntl.h>     // O_CREAT
-#include <semaphore.h> // sem_t
-
-#include <sstream>     // ostringstream
-#include <iomanip>     // setw/setfill
-
 using namespace std;
 
 namespace OHOS {

@@ -13,12 +13,6 @@
  * limitations under the License.
  */
 
-#include <atomic>
-#include <mutex>
-#include <ostream>
-#include <queue>
-#include <climits>
-#include <iostream>
 #include "utils_log.h"
 #include "common_event_sys_errors.h"
 #include "io_event_epoll.h"

@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-#include <mutex>
 #include "utils_log.h"
 #include "common_event_sys_errors.h"
 #include "io_event_reactor.h"

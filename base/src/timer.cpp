@@ -16,9 +16,7 @@
 #include "timer.h"
 #include "event_reactor.h"
 
-#include <algorithm>
 #include "common_timer_errors.h"
-#include <atomic>
 #include <sys/prctl.h>
 #include "timer_event_handler.h" /* for INVALID_TIMER_FD */
 #include "utils_log.h"

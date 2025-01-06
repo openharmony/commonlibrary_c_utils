@@ -15,7 +15,6 @@
 
 #include "event_handler.h"
 #include "event_reactor.h"
-#include <sys/epoll.h>
 
 namespace OHOS {
 namespace Utils {

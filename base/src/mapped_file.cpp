@@ -14,12 +14,8 @@
  */
 #include "mapped_file.h"
 
-#include <fcntl.h>
-#include <sys/stat.h>
 #include <sys/mman.h>
-#include <unistd.h>
 #include "common_mapped_file_errors.h"
-#include "errors.h"
 #include "file_ex.h"
 #include "utils_log.h"
 

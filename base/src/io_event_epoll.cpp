@@ -12,14 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <cstdio>
-#include <cstring>
-#include <queue>
-#include <vector>
+
 #include <sys/epoll.h>
 #include <unistd.h>
 #include "utils_log.h"
-#include "io_event_common.h"
 #include "common_event_sys_errors.h"
 #include "io_event_epoll.h"
 

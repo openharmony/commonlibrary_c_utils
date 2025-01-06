@@ -14,7 +14,6 @@
  */
 
 #include "rwlock.h"
-#include <cassert>
 
 namespace OHOS {
 namespace Utils {
