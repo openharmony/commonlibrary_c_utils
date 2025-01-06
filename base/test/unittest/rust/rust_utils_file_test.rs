@@ -20,11 +20,16 @@ use std::io::prelude::*;
 use std::fs::remove_file;
 use std::os::unix::io::{AsRawFd, RawFd};
 use std::ffi::c_char;
+use std::sync::Mutex;
 
 pub const CONTENT_STR: &str = "TTtt@#$%^&*()_+~`";
 pub const FILE_PATH: &str = "./tmp.txt";
 pub const NULL_STR: &str = "";
 pub const MAX_FILE_LENGTH: usize = 32 * 1024 * 1024;
+
+// Use mutex to make sure only one testcase can be running at the same time.
+// Testcases in this file which involved file operation should use TEST_MUTEX to prevent fd reuse in other threads.
+static TEST_MUTEX: std::sync::Mutex<()> = Mutex::new(());
 
 // This code is converted from 43 functions of the utils_file_test.cpp.
 
@@ -47,6 +52,7 @@ pub fn remove_test_file(path: &String) -> Result<(), std::io::Error> {
 
 #[test]
 fn test_load_string_from_file_001() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut str = String::new();
     let filename = String::from("/proc/meminfo");
     assert!(file_ex::ffi::RustLoadStringFromFile(&filename, &mut str));
@@ -65,6 +71,7 @@ fn test_load_string_from_file_001() {
 
 #[test]
 fn test_load_string_from_file_002() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut str = String::new();
     let filename = NULL_STR.to_string();
     assert!(!file_ex::ffi::RustLoadStringFromFile(&filename, &mut str));
@@ -73,6 +80,7 @@ fn test_load_string_from_file_002() {
 
 #[test]
 fn test_load_string_from_file_003() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut str = String::new();
     let filename = FILE_PATH.to_string() + ".003";
     let content = NULL_STR.to_string();
@@ -84,6 +92,7 @@ fn test_load_string_from_file_003() {
 
 #[test]
 fn test_load_string_from_file_004() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut str = String::new();
     let filename = FILE_PATH.to_string() + ".004";
     let content = CONTENT_STR.to_string();
@@ -95,6 +104,7 @@ fn test_load_string_from_file_004() {
 
 #[test]
 fn test_load_string_from_file_005() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut str = String::new();
     let filename = FILE_PATH.to_string() + ".005";
     let content: String = "t".repeat(MAX_FILE_LENGTH);
@@ -106,6 +116,7 @@ fn test_load_string_from_file_005() {
 
 #[test]
 fn test_load_string_from_file_006() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut str = String::new();
     let filename = FILE_PATH.to_string() + ".006";
     let content: String = "t".repeat(MAX_FILE_LENGTH + 1);
@@ -117,6 +128,7 @@ fn test_load_string_from_file_006() {
 
 #[test]
 fn test_load_string_from_fd_001() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut result = String::new();
     assert!(!file_ex::ffi::RustLoadStringFromFd(-1, &mut result));
     assert_eq!(result, "");
@@ -124,6 +136,7 @@ fn test_load_string_from_fd_001() {
 
 #[test]
 fn test_load_string_from_fd_002() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut result = String::new();
     let filename =FILE_PATH.to_string() + ".008";
     let content = NULL_STR.to_string();
@@ -137,6 +150,7 @@ fn test_load_string_from_fd_002() {
 
 #[test]
 fn test_load_string_from_fd_003() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut result = String::new();
     let filename = FILE_PATH.to_string() + ".009";
     let content = CONTENT_STR.to_string();
@@ -150,6 +164,7 @@ fn test_load_string_from_fd_003() {
 
 #[test]
 fn test_load_string_from_fd_004() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut result = String::new();
     let filename = FILE_PATH.to_string() + ".010";
     let content: String = "t".repeat(MAX_FILE_LENGTH);
@@ -163,6 +178,7 @@ fn test_load_string_from_fd_004() {
 
 #[test]
 fn test_load_string_from_fd_005() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut result = String::new();
     let filename = FILE_PATH.to_string() + ".011";
     let content: String = "t".repeat(MAX_FILE_LENGTH + 1);
@@ -176,6 +192,7 @@ fn test_load_string_from_fd_005() {
 
 #[test]
 fn test_load_string_from_fd_006() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut result = String::new();
     let filename = FILE_PATH.to_string() + ".012";
     let content = CONTENT_STR.to_string();
@@ -192,6 +209,7 @@ fn test_load_string_from_fd_006() {
 
 #[test]
 fn test_save_string_to_file_001() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let path = FILE_PATH.to_string() + ".013";
     let content = CONTENT_STR.to_string();
     let new_content = NULL_STR.to_string();
@@ -207,6 +225,7 @@ fn test_save_string_to_file_001() {
 
 #[test]
 fn test_save_string_to_file_002() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let path = FILE_PATH.to_string() + ".014";
     let content = "Before truncated!".to_string();
     create_test_file(&path, &content);
@@ -222,6 +241,7 @@ fn test_save_string_to_file_002() {
 
 #[test]
 fn test_save_string_to_file_003() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let path = FILE_PATH.to_string() + ".015";
     let content = "Before truncated!".to_string();
     create_test_file(&path, &content);
@@ -238,6 +258,7 @@ fn test_save_string_to_file_003() {
 
 #[test]
 fn test_save_string_to_file_004() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let path = FILE_PATH.to_string()+ ".016";
     let new_content = NULL_STR.to_string();
     let content = "Before truncated!".to_string();
@@ -253,6 +274,7 @@ fn test_save_string_to_file_004() {
 
 #[test]
 fn test_save_string_to_file_005() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let path = FILE_PATH.to_string()+ ".017";
     let content = "Before truncated!".to_string();
     create_test_file(&path, &content);
@@ -269,6 +291,7 @@ fn test_save_string_to_file_005() {
 
 #[test]
 fn test_save_string_to_fd_001() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut content = String::new();
     let mut ret = file_ex::ffi::RustSaveStringToFd(0, &content);
     assert!(!ret);
@@ -284,6 +307,7 @@ fn test_save_string_to_fd_001() {
 
 #[test]
 fn test_save_string_to_fd_002() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let content = String::new();
     let filename = FILE_PATH.to_string() + ".019";
     let mut file = File::create_new(&filename).expect("Failed to create file");
@@ -302,6 +326,7 @@ fn test_save_string_to_fd_002() {
 
 #[test]
 fn test_save_string_to_fd_003() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let content = CONTENT_STR.to_string();
     let filename = FILE_PATH.to_string() + ".020";
     let mut file = File::create_new(&filename).expect("Failed to create file");
@@ -320,6 +345,7 @@ fn test_save_string_to_fd_003() {
 
 #[test]
 fn test_save_string_to_fd_004() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let content = CONTENT_STR.to_string();
     let filename = FILE_PATH.to_string() + ".021";
     File::create(&filename).expect("Failed to create file");
@@ -339,6 +365,7 @@ fn test_save_string_to_fd_004() {
 
 #[test]
 fn test_load_buffer_from_file_001() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut buff: Vec<c_char> = Vec::new();
     let filename = FILE_PATH.to_string() + ".022";
     let ret = file_ex::ffi::RustLoadBufferFromFile(&filename, &mut buff);
@@ -348,6 +375,7 @@ fn test_load_buffer_from_file_001() {
 
 #[test]
 fn test_load_buffer_from_file_002() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut buff: Vec<c_char> = Vec::new();
     let filename = FILE_PATH.to_string() + ".023";
     let content = "".to_string();
@@ -360,6 +388,7 @@ fn test_load_buffer_from_file_002() {
 
 #[test]
 fn test_load_buffer_from_file_003() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut buff: Vec<c_char> = Vec::new();
     let filename = FILE_PATH.to_string() + ".024";
     let content = "TXB".to_string();
@@ -375,6 +404,7 @@ fn test_load_buffer_from_file_003() {
 
 #[test]
 fn test_load_buffer_from_file_004() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut buff: Vec<c_char> = Vec::new();
     let filename = FILE_PATH.to_string() + ".025";
     let content = "t".repeat(MAX_FILE_LENGTH + 1);
@@ -387,6 +417,7 @@ fn test_load_buffer_from_file_004() {
 
 #[test]
 fn test_save_buffer_to_file_001() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let filename = FILE_PATH.to_string()  + ".026";
     let content = "ttxx".to_string();
     create_test_file(&filename, &content);
@@ -403,6 +434,7 @@ fn test_save_buffer_to_file_001() {
 
 #[test]
 fn test_save_buffer_to_file_002() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let filename = FILE_PATH.to_string()  + ".027";
     let content = "ttxx".to_string();
     create_test_file(&filename, &content);
@@ -420,6 +452,7 @@ fn test_save_buffer_to_file_002() {
 
 #[test]
 fn test_save_buffer_to_file_003() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let filename = FILE_PATH.to_string() + ".028";
     let content = "ttxx".to_string();
     create_test_file(&filename, &content);
@@ -437,6 +470,7 @@ fn test_save_buffer_to_file_003() {
 
 #[test]
 fn test_string_exists_in_file_001() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let str_value = "abc".to_string();
     let filename = String::new();
     assert!(!file_ex::ffi::RustStringExistsInFile(&filename, &str_value, true));
@@ -445,6 +479,7 @@ fn test_string_exists_in_file_001() {
 
 #[test]
 fn test_string_exists_in_file_002() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let str_value = NULL_STR.to_string();
     let filename = FILE_PATH.to_string() + ".030";
     let content = "hello world!".to_string();
@@ -455,6 +490,7 @@ fn test_string_exists_in_file_002() {
 
 #[test]
 fn test_string_exists_in_file_003() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let str_value = "world".to_string();
     let filename = FILE_PATH.to_string() + ".031";
     let content = "hello world!".to_string();
@@ -465,6 +501,7 @@ fn test_string_exists_in_file_003() {
 
 #[test]
 fn test_string_exists_in_file_004() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let str_value1 = "t".repeat(MAX_FILE_LENGTH + 1);
     let str_value2 = "t".repeat(MAX_FILE_LENGTH);
     let filename = FILE_PATH.to_string() + ".032";
@@ -477,6 +514,7 @@ fn test_string_exists_in_file_004() {
 
 #[test]
 fn test_string_exists_in_file_005() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let str_value = "woRld".to_string();
     let filename = FILE_PATH.to_string() + ".033";
     let content = "hello world!".to_string();
@@ -488,6 +526,7 @@ fn test_string_exists_in_file_005() {
 
 #[test]
 fn test_string_exists_in_file_006() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let str_value1 = "woRld".to_string();
     let str_value2 = "123".to_string();
     let str_value3 = "llo ".to_string();
@@ -515,6 +554,7 @@ fn test_string_exists_in_file_006() {
 
 #[test]
 fn test_string_exists_in_file_007() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let str_value1 = "is".to_string();
     let str_value2 = "\n\ris".to_string();
     let filename = FILE_PATH.to_string() + ".035";
@@ -531,6 +571,7 @@ fn test_string_exists_in_file_007() {
 #[test]
 fn test_file_exist_001()
 {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let filepath = "/proc/meminfo".to_string();
     let filepath1 = "/proc/meminfo1".to_string();
 
@@ -541,6 +582,7 @@ fn test_file_exist_001()
 #[test]
 fn test_count_str_in_file_001()
 {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let str = "abc".to_string();
     let filename = "".to_string();
     assert_eq!(file_ex::ffi::RustCountStrInFile(&filename, &str, true), -1);
@@ -550,6 +592,7 @@ fn test_count_str_in_file_001()
 #[test]
 fn test_count_str_in_file_002()
 {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let str = NULL_STR.to_string();
     let filename = FILE_PATH.to_string() + ".038";
     let content = "hello world!".to_string();
@@ -561,6 +604,7 @@ fn test_count_str_in_file_002()
 #[test]
 fn test_count_str_in_file_003()
 {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let str1 = "t".repeat(MAX_FILE_LENGTH + 1);
     let str2 = "t".repeat(MAX_FILE_LENGTH);
     let filename = FILE_PATH.to_string() + ".039";
@@ -574,6 +618,7 @@ fn test_count_str_in_file_003()
 #[test]
 fn test_count_str_in_file_004()
 {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let str1 = "very".to_string();
     let str2 = "VERY".to_string();
     let str3 = "abc".to_string();
@@ -593,6 +638,7 @@ fn test_count_str_in_file_004()
 #[test]
 fn test_count_str_in_file_005()
 {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let str1 = "aba".to_string();
     let filename = FILE_PATH.to_string() + ".041";
     let content = "This is abababaBABa.".to_string();
