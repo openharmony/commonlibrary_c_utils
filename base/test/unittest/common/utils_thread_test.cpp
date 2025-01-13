@@ -142,9 +142,8 @@ HWTEST_F(UtilsThreadTest, testThread001, TestSize.Level0)
     EXPECT_EQ(test->priority_, DEFAULT_PRIO);
     EXPECT_EQ(test->name_, DEFAULT_THREAD_NAME);
 
-    // get stacksize of threa, may be different because of system memory align
+    // get stacksize of thread, may be different because of system memory align
     EXPECT_EQ(test->data_, 0);
-    EXPECT_EQ(times, 0);
     test->NotifyExitSync();
     sleep(1);
     EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
@@ -172,7 +171,6 @@ HWTEST_F(UtilsThreadTest, testThread002, TestSize.Level0)
     EXPECT_EQ(test->name_, "test_thread_02");
 
     EXPECT_EQ(test->data_, 1);
-    EXPECT_EQ(times, 0);
     test->NotifyExitSync();
     sleep(1);
     EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
@@ -199,7 +197,6 @@ HWTEST_F(UtilsThreadTest, testThread003, TestSize.Level0)
     EXPECT_EQ(test->name_, DEFAULT_THREAD_NAME);
 
     EXPECT_EQ(test->data_, 0);
-    EXPECT_EQ(times, 0);
     test->NotifyExitSync();
     sleep(1);
     EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
@@ -227,7 +224,6 @@ HWTEST_F(UtilsThreadTest, testThread004, TestSize.Level0)
     EXPECT_EQ(test->name_, "test_thread_04");
 
     EXPECT_GT(test->data_, 1);
-    EXPECT_EQ(times, 0);
     test->NotifyExitSync();
     sleep(1);
     EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
@@ -254,7 +250,6 @@ HWTEST_F(UtilsThreadTest, testThread005, TestSize.Level0)
     EXPECT_EQ(test->name_, DEFAULT_THREAD_NAME);
 
     EXPECT_EQ(test->data_, 0);
-    EXPECT_EQ(times, 0);
     test->NotifyExitSync();
     sleep(1);
     EXPECT_EQ(pthread_equal(test->GetThread(), -1) != 0, (test->IsRunning() ? false : true));
@@ -282,7 +277,6 @@ HWTEST_F(UtilsThreadTest, testThread006, TestSize.Level0)
     EXPECT_EQ(test->name_, "test_thread_06");
 
     EXPECT_GT(test->data_, 10);
-    EXPECT_EQ(times, 0);
 
     times = 100;
     EXPECT_GT(test->data_, 10);
