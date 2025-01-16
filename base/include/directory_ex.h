@@ -123,6 +123,8 @@ bool ForceCreateDirectory(const std::string& path);
  */
 bool ForceRemoveDirectory(const std::string& path);
 
+bool ForceRemoveDirectoryBMS(const std::string& path);
+
 /**
  * @brief Removes the file specified by <b>fileName</b>.
  *

@@ -323,6 +323,87 @@ bool ForceRemoveDirectory(const string& path)
     return faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) != 0;
 }
 
+bool ForceRemoveDirectoryInternal(DIR *dir)
+{
+    bool ret = true;
+    int rootFd = dirfd(dir);
+    if (rootFd < 0) {
+        UTILS_LOGE("BMS: Failed to get dirfd, fd: %{public}d: %{public}s ", rootFd, strerror(errno));
+        return false;
+    }
+
+    while (true) {
+        struct dirent *ptr = readdir(dir);
+        if (ptr == nullptr) {
+            break;
+        }
+        const char *name = ptr->d_name;
+
+        // current dir or parent dir
+        if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
+            continue;
+        }
+
+        if (ptr->d_type == DT_DIR) {
+            int subFd = openat(rootFd, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+            if (subFd < 0) {
+                UTILS_LOGE("BMS: Failed in subFd openat: %{public}s, errno: %{public}s ", name, strerror(errno));
+                ret = false;
+                continue;
+            }
+            DIR *subDir = fdopendir(subFd);
+            if (subDir == nullptr) {
+                close(subFd);
+                UTILS_LOGE("BMS: Failed in fdopendir: %{public}s", strerror(errno));
+                ret = false;
+                continue;
+            }
+            ret = ForceRemoveDirectoryInternal(subDir);
+            closedir(subDir);
+            if (unlinkat(rootFd, name, AT_REMOVEDIR) < 0) {
+                UTILS_LOGE("BMS: Couldn't unlinkat subDir %{public}s: %{public}s", name, strerror(errno));
+                ret = false;
+                continue;
+            }
+        } else {
+            if (faccessat(rootFd, name, F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
+                if (unlinkat(rootFd, name, 0) < 0) {
+                    UTILS_LOGE("BMS: Couldn't unlinkat subFile %{public}s: %{public}s", name, strerror(errno));
+                    return false;
+                }
+            } else {
+                UTILS_LOGE("BMS: Access to file: %{public}s is failed, errno: %{public}s", name, strerror(errno));
+                return false;
+            }
+        }
+    }
+
+    return ret;
+}
+
+bool ForceRemoveDirectoryBMS(const string& path)
+{
+    bool ret = true;
+    DIR *dir = opendir(path.c_str());
+    if (dir == nullptr) {
+        UTILS_LOGE("BMS: Failed to open root dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
+        return false;
+    }
+    ret = ForceRemoveDirectoryInternal(dir);
+    if (!ret) {
+        UTILS_LOGE("BMS: Failed to remove some subfile under path: %{public}s", path.c_str());
+    }
+    closedir(dir);
+    if (faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) == 0) {
+        if (remove(path.c_str()) != 0) {
+            UTILS_LOGE("BMS: Failed to remove root dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
+            return false;
+        }
+    }
+
+    return faccessat(AT_FDCWD, path.c_str(), F_OK, AT_SYMLINK_NOFOLLOW) != 0;
+}
+
 bool RemoveFile(const string& fileName)
 {
     if (access(fileName.c_str(), F_OK) == 0) {
