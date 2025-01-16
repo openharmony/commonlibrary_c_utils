@@ -15,7 +15,6 @@
 
 #include "datetime_ex.h"
 #include <chrono>
-#include <cmath>
 #include "utils_log.h"
 
 using namespace std::chrono;

@@ -15,7 +15,6 @@
 
 #include "directory_ex.h"
 #include <dirent.h>
-#include <cerrno>
 #include <fcntl.h>
 #include <stack>
 #include "securec.h"

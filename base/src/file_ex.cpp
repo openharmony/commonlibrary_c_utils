@@ -15,15 +15,7 @@
 
 #include "file_ex.h"
 #include <fstream>
-#include <iostream>
-#include <algorithm>
-#include <iterator>
-#include <sys/stat.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <cstdio>
-#include <securec.h>
-#include <cstring>
 #include "directory_ex.h"
 #include "utils_log.h"
 

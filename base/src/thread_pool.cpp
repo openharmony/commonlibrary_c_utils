@@ -17,9 +17,6 @@
 #include "errors.h"
 #include "utils_log.h"
 
-#include <memory>
-#include <pthread.h>
-
 namespace OHOS {
 
 ThreadPool::ThreadPool(const std::string& name)

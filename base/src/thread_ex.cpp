@@ -16,7 +16,6 @@
 #include "thread_ex.h"
 #include <sys/resource.h>
 #include <sys/prctl.h>
-#include <iostream>
 #include "utils_log.h"
 
 namespace OHOS {

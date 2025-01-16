@@ -15,20 +15,11 @@
 
 #include "ashmem.h"
 
-#include <cerrno>
-#include <cstdio>
-#include <string>
 #include <fcntl.h>
-#include <linux/ashmem.h>
-#include <pthread.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <sys/syscall.h>
-#include <sys/sysmacros.h>
-#include <sys/types.h>
 #include <unistd.h>
-#include <dlfcn.h>
 #include "securec.h"
 #include "utils_log.h"
 

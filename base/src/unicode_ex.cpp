@@ -15,10 +15,6 @@
 
 #include "unicode_ex.h"
 
-#include <climits>
-#include <cstdio>
-#include <cstdlib>
-
 #include "utils_log.h"
 using namespace std;
 /***************************************UTF8 and UTF16 unicode**********************************************

@@ -18,7 +18,6 @@
 #include "common_timer_errors.h"
 #include "utils_log.h"
 
-#include <unistd.h>
 #include <sys/timerfd.h>
 
 namespace OHOS {

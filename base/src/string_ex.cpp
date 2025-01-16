@@ -16,8 +16,6 @@
 #include "string_ex.h"
 #include "unicode_ex.h"
 #include "utils_log.h"
-#include "securec.h"
-#include <iostream>
 #include <iomanip>
 #include <sstream>
 using namespace std;
