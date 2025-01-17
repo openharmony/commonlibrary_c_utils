@@ -19,6 +19,7 @@
 #include "common_timer_errors.h"
 #include "utils_log.h"
 
+#include <vector>
 #include <sys/epoll.h>
 
 namespace OHOS {

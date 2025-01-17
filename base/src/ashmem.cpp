@@ -16,6 +16,7 @@
 #include "ashmem.h"
 
 #include <fcntl.h>
+#include <pthread.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
