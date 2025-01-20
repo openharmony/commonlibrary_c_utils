@@ -21,6 +21,21 @@
 
 namespace OHOS {
 
+void RefCounter::RefBaseDebugPrint([[maybe_unused]] int curCount,
+    [[maybe_unused]] const void* caller,
+    [[maybe_unused]] const void* objectId,
+    [[maybe_unused]] const char* operation,
+    [[maybe_unused]] const char* countType)
+{
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+    if (this->enableTrack) {
+        UTILS_LOGT(this->domainId_, "curCount: %{public}d, caller: %{public}p, "
+            "objectId: %{public}p, operation: %{public}s, countType: %{public}s, this: %{public}p", \
+            curCount, caller, objectId, operation, countType, (void*)this);
+    }
+#endif
+}
+
 WeakRefCounter::WeakRefCounter(RefCounter *counter, void *cookie)
     : atomicWeak_(0), refCounter_(counter), cookie_(cookie)
 {
@@ -118,12 +133,11 @@ RefTracker* RefTracker::PopTrace(const void* refCounterPtr)
 
 #ifdef DEBUG_REFBASE
 #ifdef PRINT_TRACK_AT_ONCE
-void RefCounter::PrintRefs(const void* objectId)
+void RefCounter::EnableTrackerWithDomainId(unsigned int domainId)
 {
     std::lock_guard<std::mutex> lock(trackerMutex);
-    UTILS_LOGI("%{public}p call %{public}p. strong: %{public}d weak: %{public}d " \
-        "refcnt: %{public}d", objectId, this, atomicStrong_.load(std::memory_order_relaxed),
-        atomicWeak_.load(std::memory_order_relaxed), atomicRefCount_.load(std::memory_order_relaxed));
+    this->domainId_ = domainId;
+    enableTrack = true;
 }
 #else
 void RefCounter::GetNewTrace(const void* objectId)
@@ -151,21 +165,19 @@ void RefCounter::PrintTracker()
 void RefCounter::EnableTracker()
 {
     std::lock_guard<std::mutex> lock(trackerMutex);
-#ifdef PRINT_TRACK_AT_ONCE
-    UTILS_LOGI("%{public}p start tracking", this);
-#endif
+#ifndef PRINT_TRACK_AT_ONCE
     enableTrack = true;
+#endif
 }
 #endif
+
 #endif
 
 void RefCounter::DebugRefBase([[maybe_unused]]const void* objectId)
 {
 #ifdef DEBUG_REFBASE
     if (enableTrack) {
-#ifdef PRINT_TRACK_AT_ONCE
-        PrintRefs(objectId);
-#else
+#ifndef PRINT_TRACK_AT_ONCE
         GetNewTrace(objectId);
 #endif
     }
@@ -184,13 +196,22 @@ int RefCounter::GetRefCount()
 
 void RefCounter::IncRefCount()
 {
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+    int curCount = atomicRefCount_.fetch_add(1, std::memory_order_relaxed);
+    RefBaseDebugPrint(curCount, __builtin_return_address(0), nullptr, "++", "atomicRefCount_");
+#else
     atomicRefCount_.fetch_add(1, std::memory_order_relaxed);
+#endif
 }
 
 void RefCounter::DecRefCount()
 {
     if (atomicRefCount_.load(std::memory_order_relaxed) > 0) {
-        if (atomicRefCount_.fetch_sub(1, std::memory_order_release) == 1) {
+        int curCount = atomicRefCount_.fetch_sub(1, std::memory_order_release);
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+        RefBaseDebugPrint(curCount, __builtin_return_address(0), nullptr, "++", "atomicRefCount_");
+#endif
+        if (curCount == 1) {
             delete (this);
         }
     }
@@ -232,9 +253,7 @@ RefCounter::~RefCounter()
 {
 #ifdef DEBUG_REFBASE
     if (enableTrack) {
-#ifdef PRINT_TRACK_AT_ONCE
-        UTILS_LOGI("%{public}p end tracking", this);
-#else
+#ifndef PRINT_TRACK_AT_ONCE
         PrintTracker();
 #endif
     }
@@ -247,8 +266,16 @@ int RefCounter::IncStrongRefCount(const void* objectId)
     int curCount = atomicStrong_.load(std::memory_order_relaxed);
     if (curCount >= 0) {
         curCount = atomicStrong_.fetch_add(1, std::memory_order_relaxed);
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+        RefBaseDebugPrint(curCount, __builtin_return_address(0), objectId, "++", "atomicStrong_");
+#endif
         if (curCount == INITIAL_PRIMARY_VALUE) {
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+            int newCurCount = atomicStrong_.fetch_sub(INITIAL_PRIMARY_VALUE, std::memory_order_release);
+            RefBaseDebugPrint(newCurCount, __builtin_return_address(0), objectId, "--", "atomicStrong_");
+#else
             atomicStrong_.fetch_sub(INITIAL_PRIMARY_VALUE, std::memory_order_release);
+#endif
         }
     }
 
@@ -266,6 +293,9 @@ int RefCounter::DecStrongRefCount(const void* objectId)
         // we should update the current count here.
         // it may be changed after last operation.
         curCount = atomicStrong_.fetch_sub(1, std::memory_order_release);
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+        RefBaseDebugPrint(curCount, __builtin_return_address(0), objectId, "--", "atomicStrong_");
+#endif
     }
 
     return curCount;
@@ -279,7 +309,11 @@ int RefCounter::GetStrongRefCount()
 int RefCounter::IncWeakRefCount(const void* objectId)
 {
     DebugRefBase(objectId);
-    return atomicWeak_.fetch_add(1, std::memory_order_relaxed);
+    int curCount = atomicWeak_.fetch_add(1, std::memory_order_relaxed);
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+    RefBaseDebugPrint(curCount, __builtin_return_address(0), objectId, "++", "atomicWeak_");
+#endif
+    return curCount;
 }
 
 int RefCounter::DecWeakRefCount(const void* objectId)
@@ -288,6 +322,9 @@ int RefCounter::DecWeakRefCount(const void* objectId)
     int curCount = GetWeakRefCount();
     if (curCount > 0) {
         curCount = atomicWeak_.fetch_sub(1, std::memory_order_release);
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+        RefBaseDebugPrint(curCount, __builtin_return_address(0), objectId, "--", "atomicWeak_");
+#endif
     }
 
     if (curCount != 1) {
@@ -326,7 +363,12 @@ int RefCounter::GetAttemptAcquire()
 
 void RefCounter::SetAttemptAcquire()
 {
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+    int curCount = atomicAttempt_.fetch_add(1, std::memory_order_relaxed);
+    RefBaseDebugPrint(curCount, __builtin_return_address(0), nullptr, "++", "atomicAttempt_");
+#else
     (void)atomicAttempt_.fetch_add(1, std::memory_order_relaxed);
+#endif
 }
 
 bool RefCounter::IsAttemptAcquireSet()
@@ -336,7 +378,12 @@ bool RefCounter::IsAttemptAcquireSet()
 
 void RefCounter::ClearAttemptAcquire()
 {
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+    int curCount = atomicAttempt_.fetch_sub(1, std::memory_order_relaxed);
+    RefBaseDebugPrint(curCount, __builtin_return_address(0), nullptr, "--", "atomicAttempt_");
+#else
     atomicAttempt_.fetch_sub(1, std::memory_order_relaxed);
+#endif
 }
 
 void RefCounter::ExtendObjectLifetime()
@@ -357,6 +404,7 @@ bool RefCounter::AttemptIncStrongRef(const void *objectId, int &outCount)
     // if the object already had strong references.just promoting it.
     while ((curCount > 0) && (curCount != INITIAL_PRIMARY_VALUE)) {
         if (atomicStrong_.compare_exchange_weak(curCount, curCount + 1, std::memory_order_relaxed)) {
+            RefBaseDebugPrint(curCount, __builtin_return_address(0), objectId, "++", "atomicStrong_");
             goto ATTEMPT_SUCCESS;
         }
         // someone else changed the counter.re-acquire the counter value.
@@ -367,6 +415,7 @@ bool RefCounter::AttemptIncStrongRef(const void *objectId, int &outCount)
         // this object has a "normal" life-time,
         while (curCount > 0) {
             if (atomicStrong_.compare_exchange_weak(curCount, curCount + 1, std::memory_order_relaxed)) {
+                RefBaseDebugPrint(curCount, __builtin_return_address(0), objectId, "++", "atomicStrong_");
                 goto ATTEMPT_SUCCESS;
             }
             curCount = atomicStrong_.load(std::memory_order_relaxed);
@@ -380,12 +429,18 @@ bool RefCounter::AttemptIncStrongRef(const void *objectId, int &outCount)
         }
 #endif
         curCount = atomicStrong_.fetch_add(1, std::memory_order_relaxed);
+        RefBaseDebugPrint(curCount, __builtin_return_address(0), objectId, "++", "atomicStrong_");
     }
 
 ATTEMPT_SUCCESS:
     if (curCount == INITIAL_PRIMARY_VALUE) {
         outCount = curCount;
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+        int newCurCount = atomicStrong_.fetch_sub(INITIAL_PRIMARY_VALUE, std::memory_order_release);
+        RefBaseDebugPrint(newCurCount, __builtin_return_address(0), objectId, "--", "atomicStrong_");
+#else
         atomicStrong_.fetch_sub(INITIAL_PRIMARY_VALUE, std::memory_order_release);
+#endif
         return true;
     }
 
@@ -404,6 +459,9 @@ bool RefCounter::AttemptIncStrong(const void *objectId)
     int curCount = GetStrongRefCount();
     while (curCount > 0) {
         if (atomicStrong_.compare_exchange_weak(curCount, curCount + 1, std::memory_order_relaxed)) {
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+            RefBaseDebugPrint(curCount, __builtin_return_address(0), objectId, "++", "atomicStrong_");
+#endif
             break;
         }
         // curCount has been updated.
@@ -692,5 +750,12 @@ void RefBase::EnableTracker()
 {
 }
 #endif
+
+void RefBase::EnableTrackerWithDomainId(unsigned int domainId)
+{
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+    refs_->EnableTrackerWithDomainId(domainId);
+#endif
+}
 
 }  // namespace OHOS
