@@ -257,9 +257,19 @@ public:
     void EnableTracker();
 #endif
 
+#if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
+    /**
+     * @brief Enables tracking with domainId. It is applicable to debugging only.
+     */
+    void EnableTrackerWithDomainId(unsigned int domainId);
+#endif
+
 private:
     void DebugRefBase(const void *objectId);
 
+    void RefBaseDebugPrint(int curCount, const void* caller, const void* objectId,
+        const char* operation, const char* countType);
+        
     std::atomic<int> atomicStrong_; // = (num of sptr) or Initial-value
     std::atomic<int> atomicWeak_; // = (num of sptr)+(num of WeakRefCounter)
     std::atomic<int> atomicRefCount_; // = (num of WeakRefCounter) + 1
@@ -278,7 +288,7 @@ private:
 #endif
     std::mutex trackerMutex;  // To ensure refTracker be thread-safe
 #ifdef PRINT_TRACK_AT_ONCE
-    void PrintRefs(const void* objectId);
+    unsigned int domainId_ = 0xD003D00;
 #else
     RefTracker* refTracker = nullptr;
     void GetNewTrace(const void* objectId);
@@ -594,6 +604,12 @@ public:
      * be implemented only if DEBUG_REFBASE, but not TRACK_ALL, is defined.
      */
     void EnableTracker();
+
+    /**
+     * @brief Enables tracking of the RefBase object with domainId. This function will
+     * be implemented only if DEBUG_REFBASE, but not TRACK_ALL, is defined.
+     */
+    void EnableTrackerWithDomainId(unsigned int domainId);
 
 #ifdef OHOS_PLATFORM
     virtual bool CanPromote();

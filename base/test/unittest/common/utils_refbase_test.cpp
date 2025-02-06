@@ -1157,12 +1157,58 @@ HWTEST_F(UtilsRefbaseTest, testRefbaseDebug002, TestSize.Level1)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
+/*
+ * @tc.name: testRefbaseWithDomainIdDebug001
+ * @tc.desc: Test for single thread. Tracker can be enabled after construction
+ *           of sptr.
+ */
+HWTEST_F(UtilsRefbaseTest, testRefbaseWithDomainIdDebug001, TestSize.Level1)
+{
+    sptr<RefBase> testObject1(new RefBase());
+    testObject1->EnableTrackerWithDomainId(0xD001651);
+    sptr<RefBase> testObject2(testObject1);
+    EXPECT_EQ(testObject2->GetSptrRefCount(), 2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<RefBase> testObject3(testObject2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<RefBase> testObject4(testObject3);
+    EXPECT_EQ(testObject4->GetWptrRefCount(), 3);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+}
+
+/*
+ * @tc.name: testRefbaseWithDomainIdDebug002
+ * @tc.desc: Test for single thread. Tracker can be enabled after construction
+ *           of wptr.
+ */
+HWTEST_F(UtilsRefbaseTest, testRefbaseWithDomainIdDebug002, TestSize.Level1)
+{
+    wptr<RefBase> testObject1(new RefBase());
+    testObject1->EnableTrackerWithDomainId(0xD001651);
+    sptr<RefBase> testObject2 = testObject1.promote();
+    EXPECT_EQ(testObject2->GetSptrRefCount(), 1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<RefBase> testObject3(testObject2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<RefBase> testObject4(testObject3);
+    EXPECT_EQ(testObject4->GetWptrRefCount(), 3);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+}
+
 // This is a class which can be tracked when implemented.
 class TestDebug : public RefBase {
 public:
     TestDebug()
     {
         EnableTracker();
+    }
+};
+
+class TestDebugWithDomainId : public RefBase {
+public:
+    TestDebugWithDomainId()
+    {
+        EnableTrackerWithDomainId(0xD001651);
     }
 };
 
@@ -1205,6 +1251,50 @@ HWTEST_F(UtilsRefbaseTest, testRefbaseDebug004, TestSize.Level1)
     wptr<TestDebug> testObject2(testObject1);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     wptr<TestDebug> testObject3(testObject2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    subThread.join();
+    EXPECT_EQ(testObject3->GetWptrRefCount(), 2);
+}
+
+/*
+ * @tc.name: testRefbaseWithDomainIdDebug003
+ * @tc.desc: Test for single thread. Tracker can be enabled with construction
+ *           of sptr.
+ */
+HWTEST_F(UtilsRefbaseTest, testRefbaseWithDomainIdDebug003, TestSize.Level1)
+{
+    sptr<TestDebugWithDomainId> testObject1(new TestDebugWithDomainId());
+    sptr<TestDebugWithDomainId> testObject2(testObject1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    sptr<TestDebugWithDomainId> testObject3;
+    EXPECT_EQ(testObject2->GetSptrRefCount(), 2);
+    testObject3 = testObject2;
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<TestDebugWithDomainId> testObject4(testObject3);
+    EXPECT_EQ(testObject4->GetWptrRefCount(), 4);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+}
+
+/*
+ * @tc.name: testRefbaseWithDomainIdDebug004
+ * @tc.desc: Test for mult-thread.
+ */
+HWTEST_F(UtilsRefbaseTest, testRefbaseWithDomainIdDebug004, TestSize.Level1)
+{
+    sptr<TestDebugWithDomainId> testObject1(new TestDebugWithDomainId());
+    std::thread subThread {[&testObject1]() {
+        sptr<TestDebugWithDomainId> subTestObject1(testObject1);
+        EXPECT_EQ(testObject1->GetSptrRefCount(), 2);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        wptr<TestDebugWithDomainId> subTestObject2(subTestObject1);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        wptr<TestDebugWithDomainId> subTestObject3(subTestObject2);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }};
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<TestDebugWithDomainId> testObject2(testObject1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    wptr<TestDebugWithDomainId> testObject3(testObject2);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     subThread.join();
     EXPECT_EQ(testObject3->GetWptrRefCount(), 2);
