@@ -134,9 +134,6 @@ int EventDemultiplexer::Polling(int timeout /* ms */)
                 eventQue.emplace_back(events);
             } else {
                 UTILS_LOGE("fd not found in eventHandlers_, fd=%{public}d, events=%{public}d", targetFd, events);
-                if (epoll_ctl(epollFd_, EPOLL_CTL_DEL, targetFd, nullptr) == -1) {
-                    UTILS_LOGE("failed to DEL %{public}d from epoll, errno: %{public}d", targetFd, errno);
-                }
             }
         }
     }
