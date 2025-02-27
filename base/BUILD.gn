@@ -173,6 +173,7 @@ ohos_shared_library("utils") {
         sanitize = {
           integer_overflow = true
         }
+        branch_protector_ret = "pac_ret"
       }
     }
 
