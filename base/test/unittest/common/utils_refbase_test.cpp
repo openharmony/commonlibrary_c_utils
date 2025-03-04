@@ -1299,5 +1299,19 @@ HWTEST_F(UtilsRefbaseTest, testRefbaseWithDomainIdDebug004, TestSize.Level1)
     subThread.join();
     EXPECT_EQ(testObject3->GetWptrRefCount(), 2);
 }
+
+/*
+ * @tc.name: testRefCounter001
+ * @tc.desc: Test for RefCounter.
+ */
+HWTEST_F(UtilsRefbaseTest, testRefCounter001, TestSize.Level1)
+{
+    RefCounter refCounterTest;
+#ifdef OHOS_PLATFORM
+    refCounterTest.RemoveCanPromote();
+    bool result = refCounterTest.IsCanPromoteValid();
+    EXPECT_EQ(result, false);
+#endif
+}
 }  // namespace
 }  // namespace OHOS
