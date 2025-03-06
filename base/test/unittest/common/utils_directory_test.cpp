@@ -582,5 +582,33 @@ HWTEST_F(UtilsDirectoryTest, testPathToRealPath006, TestSize.Level0)
     bool ret = PathToRealPath(path, realpath);
     EXPECT_EQ(ret, false);
 }
+
+/*
+ * @tc.name: testTransformFileName001
+ * @tc.desc: test transform the file name
+ */
+#if defined(IOS_PLATFORM) || defined(_WIN32)
+HWTEST_F(UtilsDirectoryTest, testTransformFileName001, TestSize.Level0)
+{
+    string srcName = "test";
+    string result = TransformFileName(srcName);
+    string cmpName = srcName;
+#ifdef _WIN32
+    cmpName = cmpName.append(".dll");
+#elif defined IOS_PLATFORM
+    cmpName = cmpName.append(".dylib");
+#endif
+    AssertEqual(result, cmpName, "result did not equal cmpName as expected.", state);
+
+    srcName = srcName.append(".app");
+    result = TransformFileName(srcName);
+#ifdef _WIN32
+    cmpName = cmpName.append(".dll");
+#elif defined IOS_PLATFORM
+    cmpName = cmpName.append(".dylib");
+#endif
+    EXPECT_EQ(result, cmpName);
+}
+#endif
 }  // namespace
 }  // namespace OHOS
