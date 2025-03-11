@@ -29,9 +29,8 @@ void RefCounter::RefBaseDebugPrint([[maybe_unused]] int curCount,
 {
 #if ((defined DEBUG_REFBASE) && (defined PRINT_TRACK_AT_ONCE))
     if (this->enableTrack) {
-        UTILS_LOGT(this->domainId_, "curCount: %{public}d, caller: %{public}p, "
-            "objectId: %{public}p, operation: %{public}s, countType: %{public}s, this: %{public}p", \
-            curCount, caller, objectId, operation, countType, (void*)this);
+        UTILS_LOGT(this->domainId_, "curCount: %{public}d, operation: %{public}s, countType: %{public}s",
+            curCount, operation, countType);
     }
 #endif
 }
@@ -117,9 +116,8 @@ RefTracker::RefTracker(RefTracker* exTracker, const void* id, int strong, int we
 
 void RefTracker::PrintTrace(const void* refCounterPtr)
 {
-    UTILS_LOGI("%{public}p call %{public}p. strong: %{public}d weak: %{public}d " \
-        "refcnt: %{public}d PID: %{public}d TID: %{public}d",
-        ptrID, refCounterPtr, strongRefCnt, weakRefCnt, refCnt, PID, TID);
+    UTILS_LOGI("strong: %{public}d weak: %{public}d, refcnt: %{public}d PID: %{public}d TID: %{public}d",
+        strongRefCnt, weakRefCnt, refCnt, PID, TID);
 }
 
 RefTracker* RefTracker::PopTrace(const void* refCounterPtr)
@@ -152,11 +150,11 @@ void RefCounter::PrintTracker()
 {
     std::lock_guard<std::mutex> lock(trackerMutex);
     if (refTracker) {
-        UTILS_LOGI("%{public}p start backtrace", this);
+        UTILS_LOGI("Start backtrace");
         while (refTracker) {
             refTracker = refTracker->PopTrace(this);
         }
-        UTILS_LOGI("%{public}p end backtrace", this);
+        UTILS_LOGI("End backtrace");
     }
 }
 #endif
@@ -578,7 +576,7 @@ void RefBase::IncStrongRef(const void *objectId)
     IncWeakRef(objectId);
     const int curCount = refs_->IncStrongRefCount(objectId);
     if (!refs_->IsLifeTimeExtended() && curCount == 0) {
-        UTILS_LOGF("%{public}p still incStrongRef after last strong ref", this);
+        UTILS_LOGF("RefBase object still incStrongRef after last strong ref");
     }
     if (curCount == INITIAL_PRIMARY_VALUE) {
         OnFirstStrongRef(objectId);
@@ -608,7 +606,7 @@ void RefBase::DecStrongRef(const void *objectId)
     RefCounter * const refs = refs_;
     const int curCount = refs->DecStrongRefCount(objectId);
     if (curCount <= 0) {
-        UTILS_LOGF("%{public}p call decStrongRef too many times", this);
+        UTILS_LOGF("RefBase object call decStrongRef too many times");
     }
     if (curCount == 1) {
         std::atomic_thread_fence(std::memory_order_acquire);
