@@ -43,8 +43,6 @@ IOEventHandler::~IOEventHandler()
 
 bool IOEventHandler::Start(IOEventReactor* reactor)
 {
-    UTILS_LOGD("%{public}s: Try add handler-%{public}p to reactor-%{public}p.", \
-               __FUNCTION__, reinterpret_cast<void*>(this), reinterpret_cast<void*>(reactor));
     ErrCode res = reactor->AddHandler(this);
     if (res != EVENT_SYS_ERR_OK) {
         UTILS_LOGE("%{public}s: Try add handler failed.", __FUNCTION__);
@@ -56,8 +54,6 @@ bool IOEventHandler::Start(IOEventReactor* reactor)
 
 bool IOEventHandler::Stop(IOEventReactor* reactor)
 {
-    UTILS_LOGD("%{public}s: Try remove handler-%{public}p from reactor-%{public}p.", \
-               __FUNCTION__, reinterpret_cast<void*>(this), reinterpret_cast<void*>(reactor));
     ErrCode res = reactor->RemoveHandler(this);
     if (res != EVENT_SYS_ERR_OK) {
         UTILS_LOGE("%{public}s: Try remove handler failed.", __FUNCTION__);
@@ -69,8 +65,6 @@ bool IOEventHandler::Stop(IOEventReactor* reactor)
 
 bool IOEventHandler::Update(IOEventReactor* reactor)
 {
-    UTILS_LOGD("%{public}s: Try update handler-%{public}p to reactor-%{public}p.", \
-               __FUNCTION__, reinterpret_cast<void*>(this), reinterpret_cast<void*>(reactor));
     ErrCode res = reactor->UpdateHandler(this);
     if (res != EVENT_SYS_ERR_OK) {
         UTILS_LOGE("%{public}s: Try update handler failed.", __FUNCTION__);
