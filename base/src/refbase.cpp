@@ -302,6 +302,11 @@ int RefCounter::GetWeakRefCount()
     return atomicWeak_.load(std::memory_order_relaxed);
 }
 
+int RefCounter::GetAttemptAcquire()
+{
+    return atomicAttempt_.load(std::memory_order_relaxed);
+}
+
 void RefCounter::SetAttemptAcquire()
 {
     (void)atomicAttempt_.fetch_add(1, std::memory_order_relaxed);
@@ -482,8 +487,17 @@ void RefBase::IncStrongRef(const void *objectId)
     if (curCount == INITIAL_PRIMARY_VALUE) {
         OnFirstStrongRef(objectId);
     }
+}
+
+void RefBase::CheckIsAttemptAcquireSet(const void *objectId)
+{
     if (refs_->IsAttemptAcquireSet()) {
         refs_->ClearAttemptAcquire();
+        const int attemptCount = refs_->GetAttemptAcquire();
+        if (attemptCount < 0) {
+            UTILS_LOGF("Multi-threads trigger illegal decstrong from %{public}d due to AttemptIncStrong in ipc",
+                attemptCount);
+        }
         refs_->DecStrongRefCount(objectId);
         refs_->DecWeakRefCount(objectId);
     }
