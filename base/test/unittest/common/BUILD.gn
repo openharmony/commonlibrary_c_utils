@@ -12,7 +12,7 @@
 # limitations under the License.
 import("//build/test.gni")
 
-module_output_path = "utils/base"
+module_output_path = "c_utils/base"
 
 ###############################################################################
 config("module_private_config") {
