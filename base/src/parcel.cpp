@@ -429,6 +429,10 @@ bool Parcel::WriteBufferAddTerminator(const void *data, size_t size, size_t type
 
         // Reserved for 32 bits
         const char terminator[] = {0, 0, 0, 0};
+        if (typeSize > sizeof(terminator)) {
+            UTILS_LOGE("invalid typeSize, typeSize: %{public}zu", typeSize);
+            return false;
+        }
         if (!WriteDataBytes(terminator, typeSize)) {
             return false;
         }
