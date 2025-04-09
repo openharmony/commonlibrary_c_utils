@@ -71,8 +71,9 @@ void EventReactor::RunLoop(int timeout) const
         return;
     }
 
+    std::vector<epoll_event> epollEvents(demultiplexer_->GetMaxEvents());
     while (loopReady_ && switch_) {
-        if (demultiplexer_->Polling(timeout) == EPOLL_CRITICAL_ERROR) {
+        if (demultiplexer_->Polling(timeout, epollEvents) == EPOLL_CRITICAL_ERROR) {
             UTILS_LOGD("polling critical error occure: %{public}d", timeout);
             break;
         }

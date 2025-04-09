@@ -19,9 +19,6 @@
 #include "common_timer_errors.h"
 #include "utils_log.h"
 
-#include <vector>
-#include <sys/epoll.h>
-
 namespace OHOS {
 namespace Utils {
 
@@ -106,9 +103,8 @@ uint32_t EventDemultiplexer::Update(int operation, EventHandler* handler)
     return TIMER_ERR_OK;
 }
 
-int EventDemultiplexer::Polling(int timeout /* ms */)
+int EventDemultiplexer::Polling(int timeout /* ms */, std::vector<epoll_event> &epollEvents)
 {
-    std::vector<struct epoll_event> epollEvents(maxEvents_);
     std::vector<std::shared_ptr<EventHandler>> taskQue;
     std::vector<uint32_t> eventQue;
 
@@ -156,6 +152,7 @@ int EventDemultiplexer::Polling(int timeout /* ms */)
 
     if (nfds == maxEvents_) {
         maxEvents_ *= HALF_OF_MAX_EVENT;
+        epollEvents.resize(maxEvents_);
     }
     return nfds;
 }

@@ -22,6 +22,8 @@
 #include <map>
 #include <queue>
 #include <tuple>
+#include <sys/epoll.h>
+#include <vector>
 
 namespace OHOS {
 namespace Utils {
@@ -38,9 +40,11 @@ public:
     uint32_t StartUp();
     void CleanUp();
 
-    int Polling(int timeout);
+    int Polling(int timeout, std::vector<epoll_event> &epollEvents);
 
     uint32_t UpdateEventHandler(EventHandler* handler);
+
+    int GetMaxEvents() { return maxEvents_; }
 
 private:
     uint32_t Update(int operation, EventHandler* handler);
