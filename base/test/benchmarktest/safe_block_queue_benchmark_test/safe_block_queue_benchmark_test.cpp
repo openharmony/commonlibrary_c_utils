@@ -137,10 +137,10 @@ auto GetTimeOfSleepTwentyMillisecond()
     return timeT;
 }
 
-static void QueuePushFullEquivalent(const int Equivalent, benchmark::State& state)
+static void QueuePushFullEquivalent(const int equivalent, benchmark::State& state)
 {
     for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
-        DemoThreadData::shareQueue.Push(Equivalent);
+        DemoThreadData::shareQueue.Push(equivalent);
     }
     AssertTrue((DemoThreadData::shareQueue.IsFull()), "shareQueue.IsFull() did not equal true.", state);
 }
