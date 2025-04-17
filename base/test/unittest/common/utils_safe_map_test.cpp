@@ -199,7 +199,7 @@ HWTEST_F(UtilsSafeMap, testUtilsNormalFeatureEraseAndClear001, TestSize.Level0)
  * @tc.name: testUtilsNormalFeatureIterate001
  * @tc.desc: Using Iterate to change the second parameter of SafeMap
  */
-void callback(const std::string str, int& value)
+void Callback(const std::string str, int& value)
 {
     value++;
 }
@@ -213,7 +213,7 @@ HWTEST_F(UtilsSafeMap, testUtilsNormalFeatureIterate001, TestSize.Level0)
     demoData.Insert("B", 2);
     demoData.Insert("C", 3);
     demoData.Insert("D", 4);
-    demoData.Iterate(callback);
+    demoData.Iterate(Callback);
 
     ASSERT_EQ(demoData.Size(), 4);
     ASSERT_EQ(demoData.ReadVal("A"), 2);

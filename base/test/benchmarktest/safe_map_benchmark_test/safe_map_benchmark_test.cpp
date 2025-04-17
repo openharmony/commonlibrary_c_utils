@@ -278,7 +278,7 @@ BENCHMARK_F(BenchmarkSafeMap, testUtilsNormalFeatureEraseAndClear001)(benchmark:
  * @tc.name: testUtilsNormalFeatureIterate001
  * @tc.desc: Using Iterate to change the second parameter of SafeMap
  */
-void callback(const std::string str, int& value)
+void Callback(const std::string str, int& value)
 {
     value++;
 }
@@ -294,7 +294,7 @@ BENCHMARK_F(BenchmarkSafeMap, testUtilsNormalFeatureIterate001)(benchmark::State
         demoData.Insert("B", INSERT_TWO);
         demoData.Insert("C", INSERT_THREE);
         demoData.Insert("D", INSERT_FOUR);
-        demoData.Iterate(callback);
+        demoData.Iterate(Callback);
 
         AssertEqual(demoData.Size(), INSERT_FOUR, "demoData.Size() did not equal INSERT_FOUR as expected.", state);
 
