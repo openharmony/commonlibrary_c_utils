@@ -26,11 +26,11 @@
 
 #include <sys/types.h>
 
-#ifndef IOS_PLATFORM
+#if !defined(IOS_PLATFORM) && !defined(WINDOWS_PLATFORM) && !defined(MAC_PLATFORM)
 #include <linux/types.h>
 #else
-    typedef u_int32_t __u32;
-    typedef u_int64_t __u64;
+    typedef uint32_t __u32;
+    typedef uint64_t __u64;
 #endif
 
 #ifdef BINDER_IPC_32BIT
