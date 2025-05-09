@@ -29,6 +29,12 @@ config("utils_config") {
   if (current_os == "ios") {
     defines += [ "IOS_PLATFORM" ]
   }
+  if (current_os == "win" || current_os == "mingw") {
+      defines += [ "WINDOWS_PLATFORM" ]
+  }
+  if (current_os == "mac") {
+      defines += [ "MAC_PLATFORM" ]
+  }
   if (is_emulator == true) {
     defines += [ "EMULATOR_PLATFORM" ]
   }
@@ -95,6 +101,15 @@ sources_utils = [
   "src/rwlock.cpp",
 ]
 
+if (current_os == "win" || current_os == "mingw" || current_os == "mac") {
+  sources_utils_win_and_mac = [
+    "src/parcel.cpp",
+    "src/refbase.cpp",
+    "src/string_ex.cpp",
+    "src/unicode_ex.cpp",
+  ]
+}
+
 if (current_os == "ios") {
   sources_utils_ios = [
     "src/directory_ex.cpp",
@@ -155,7 +170,14 @@ ohos_shared_library("utils") {
     "platformsdk",
     "sasdk",
   ]
-  if (current_os == "ios") {
+  if (current_os == "win" || current_os == "mingw" || current_os == "mac") {
+    sources = sources_utils_win_and_mac
+    public_configs = [ ":utils_config" ]
+    public_external_deps = [ "bounds_checking_function:libsec_shared" ]
+
+    subsystem_name = "commonlibrary"
+    part_name = "c_utils"
+  } else if (current_os == "ios") {
     sources = sources_utils_ios
     configs = [ ":utils_coverage_config" ]
     all_dependent_configs = [ ":utils_config" ]
@@ -210,7 +232,7 @@ ohos_shared_library("utils") {
 
 ########## modules for `c_utils` in rust ##########
 # rust compiler is not supportted on mac
-if (host_os == "linux" && host_cpu != "arm64" && !is_arkui_x) {
+if (host_os == "linux" && host_cpu != "arm64" && !is_arkui_x && current_os != "mac") {
   import("//build/templates/rust/rust_cxx.gni")  # used for templates rust_cxx()
   rust_cxx("cxx_rust_gen") {
     sources = [
@@ -243,7 +265,7 @@ if (host_os == "linux" && host_cpu != "arm64" && !is_arkui_x) {
   }
 }
 
-if (!is_arkui_x && !(host_os == "linux" && host_cpu == "arm64")) {
+if (!is_arkui_x && !(host_os == "linux" && host_cpu == "arm64") && current_os != "mac") {
   ohos_rust_shared_library("utils_rust") {
     if (host_os == "linux") {
       sources = [
