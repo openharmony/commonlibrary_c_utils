@@ -98,8 +98,17 @@ void TimerEventHandler::TimeOut()
     uint64_t expirations = 0;
     ssize_t n = ::read(GetHandle(), &expirations, sizeof(expirations));
     if (n != sizeof(expirations)) {
-        UTILS_LOGE("epoll_loop::on_timer() reads %{public}d bytes instead of 8, errno=%{public}d", static_cast<int>(n),
-            errno);
+        int erronRead = errno;
+        struct itimerspec current = {
+            .it_interval = {.tv_sec = -1, .tv_nsec = -1},
+            .it_value = {.tv_sec = -1, .tv_nsec = -1}
+        };
+        if (timerfd_gettime(GetHandle(), &current) == -1) {
+            UTILS_LOGE("timerfd_gettime failed, errno=%{public}d", errno);
+        }
+        UTILS_LOGE("epoll_loop::on_timer() reads %{public}d bytes instead of 8, timerFd=%{public}d, errno=%{public}d, "
+                   "Current timer value: %{public}lld sec, %{public}ld nsec", static_cast<int>(n), GetHandle(),
+                   erronRead, current.it_value.tv_sec, current.it_value.tv_nsec);
     }
     if (callback_) {
         callback_(GetHandle());
