@@ -43,18 +43,14 @@ if (host_os == "linux" && !is_asan && !is_arkui_x) {
   ohos_rust_unittest("rust_utils_file_test") {
     module_out_path = "c_utils/rust"
     sources = [ "rust_utils_file_test.rs" ]
-    deps = [
-      "//commonlibrary/c_utils/base:utils_rust",
-      "//third_party/rust/crates/cxx:lib",
-    ]
+    deps = [ "//commonlibrary/c_utils/base:utils_rust" ]
+    external_deps = [ "rust_cxx:lib" ]
   }
 
   ohos_rust_unittest("rust_utils_directory_test") {
     module_out_path = "c_utils/rust"
     sources = [ "rust_utils_directory_test.rs" ]
-    deps = [
-      "//commonlibrary/c_utils/base:utils_rust",
-      "//third_party/rust/crates/cxx:lib",
-    ]
+    deps = [ "//commonlibrary/c_utils/base:utils_rust" ]
+    external_deps = [ "rust_cxx:lib" ]
   }
 }
