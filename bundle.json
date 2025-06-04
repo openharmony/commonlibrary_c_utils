@@ -30,8 +30,7 @@
     "deps": {
       "components": [
         "hilog",
-        "googletest",
-        "benchmark"
+        "rust_cxx"
       ],
       "third_party": [
         "bounds_checking_function"
