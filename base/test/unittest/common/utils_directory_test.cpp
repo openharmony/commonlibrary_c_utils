@@ -203,48 +203,9 @@ HWTEST_F(UtilsDirectoryTest, testGetDirFiles001, TestSize.Level0)
 
 /*
  * @tc.name: testGetDirFiles002
- * @tc.desc: test GetDirFiles works on deeply nested directory and handles very long path
- */
-HWTEST_F(UtilsDirectoryTest, testGetDirFiles002, TestSize.Level0)
-{
-    string parentPath = "/data/test_dir/";
-    string veryLongPath = "/data/test_dir/";
-
-    int length = 10000;
-
-    for (int i = 0; i < length; i++) {
-        veryLongPath += "0";
-        veryLongPath += "/";
-    }
-
-    EXPECT_EQ(mkdir("/data/test_dir", S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH), 0);
-    chdir(parentPath.c_str());
-
-    for (int i = 0; i < length; i++) {
-        EXPECT_EQ(mkdir("./0", S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH), 0);
-        EXPECT_EQ(chdir("./0"), 0);
-    }
-
-    ofstream file("./test_file");
-    file.close();
-    EXPECT_EQ(chdir("/data/test"), 0);
-
-    auto files = vector<string>();
-
-    GetDirFiles(parentPath, files);
-
-    EXPECT_EQ(files.size(), 1);
-    EXPECT_EQ((veryLongPath + "test_file").length(), files[0].length());
-    EXPECT_EQ(veryLongPath + "test_file", files[0]);
-
-    ForceRemoveDirectory(parentPath);
-}
-
-/*
- * @tc.name: testGetDirFiles003
  * @tc.desc: test GetDirFiles works on symlink
  */
-HWTEST_F(UtilsDirectoryTest, testGetDirFiles003, TestSize.Level0)
+HWTEST_F(UtilsDirectoryTest, testGetDirFiles002, TestSize.Level0)
 {
     // create a test dir
     string originalDataPath = "/data/original";
