@@ -168,7 +168,7 @@ ohos_static_library("utilsbase_rtti") {
 
 ohos_shared_library("utils") {
   innerapi_tags = [
-    "chipsetsdk",
+    "chipsetsdk_sp",
     "platformsdk",
     "sasdk",
   ]
