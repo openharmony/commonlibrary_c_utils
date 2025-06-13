@@ -157,7 +157,7 @@ void StartThreads(std::thread (&threads)[THREAD_NUM],
 }
 
 template <size_t N>
-void joinAllThreads(std::thread (&threads)[N])
+void JoinAllThreads(std::thread (&threads)[N])
 {
     for (auto& t : threads) {
         if (t.joinable()) {
@@ -166,7 +166,7 @@ void joinAllThreads(std::thread (&threads)[N])
     }
 }
 
-void processSharedQueueTasks(DemoThreadData& data)
+void ProcessSharedQueueTasks(DemoThreadData& data)
 {
     while (!DemoThreadData::shareQueue.IsEmpty()) {
         data.GetAndOneTaskDone();
@@ -267,10 +267,10 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, testMutilthreadPutAndBlock001)(benc
         AssertTrue((demoDatas[0].joinStatus), "step 7: demoDatas[0].joinStatus did not equal true.", state);
 
         // recover state
-        joinAllThreads(threads);
+        JoinAllThreads(threads);
         joinThread.join();
 
-        processSharedQueueTasks(demoDatas[0]);
+        ProcessSharedQueueTasks(demoDatas[0]);
         demoDatas[0].joinStatus = false;
     }
     BENCHMARK_LOGD("SafeBlockQueueTracking testMutilthreadPutAndBlock001 end.");
@@ -318,8 +318,8 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, PutAndBlockInblankqueue001)(benchma
         AssertEqual(pushedIn, THREAD_NUM, "pushedIn did not equal THREAD_NUM as expected.", state);
         AssertEqual(getedOut, THREAD_NUM - QUEUE_SLOTS,
             "getedOut did not equal THREAD_NUM - QUEUE_SLOTS as expected.", state);
-        joinAllThreads(threads);
-        processSharedQueueTasks(demoDatas[0]);
+        JoinAllThreads(threads);
+        ProcessSharedQueueTasks(demoDatas[0]);
         std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_FOR_HUNDRED_MILLISECOND));
         AssertTrue((demoDatas[0].joinStatus), "step 3: demoDatas[0].joinStatus did not equal true.", state);
         demoDatas[0].joinStatus = false;
@@ -371,8 +371,8 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, testPutAndBlockInFullQueue001)(benc
             AssertEqual(unpushedIn, THREAD_NUM - (i + 1),
                 "unpushedIn did not equal THREAD_NUM - (i + 1) as expected.", state);
         }
-        joinAllThreads(threads);
-        processSharedQueueTasks(demoDatas[0]);
+        JoinAllThreads(threads);
+        ProcessSharedQueueTasks(demoDatas[0]);
         demoDatas[0].joinStatus = false;
         joinThread.join();
     }
@@ -418,8 +418,8 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, GetAndBlockInblankqueue001)(benchma
             AssertEqual(ungetedOut, THREAD_NUM - (i + 1),
                 "ungetedOut did not equal THREAD_NUM - (i + 1) as expected.", state);
         }
-        joinAllThreads(threads);
-        processSharedQueueTasks(demoDatas[0]);
+        JoinAllThreads(threads);
+        ProcessSharedQueueTasks(demoDatas[0]);
         AssertTrue((demoDatas[0].joinStatus), "demoDatas[0].joinStatus did not equal true as expected.", state);
         demoDatas[0].joinStatus = false;
         joinThread.join();
@@ -427,10 +427,10 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, GetAndBlockInblankqueue001)(benchma
     BENCHMARK_LOGD("SafeBlockQueueTracking GetAndBlockInblankqueue001 end.");
 }
 
-static void QueuePushFullEquivalent(const int Equivalent, benchmark::State& state)
+static void QueuePushFullEquivalent(const int equivalent, benchmark::State& state)
 {
     for (unsigned int i = 0; i < QUEUE_SLOTS; i++) {
-        DemoThreadData::shareQueue.Push(Equivalent);
+        DemoThreadData::shareQueue.Push(equivalent);
     }
     AssertTrue((DemoThreadData::shareQueue.IsFull()), "shareQueue.IsFull() did not equal true.", state);
 }
@@ -485,8 +485,8 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, GetAndBlockInfullqueue001)(benchmar
         AssertEqual(getedOut, THREAD_NUM, "getedOut did not equal THREAD_NUM as expected.", state);
         AssertEqual(ungetedOut, static_cast<unsigned int>(0),
             "ungetedOut did not equal static_cast<unsigned int>(0) as expected.", state);
-        joinAllThreads(threads);
-        processSharedQueueTasks(demoDatas[0]);
+        JoinAllThreads(threads);
+        ProcessSharedQueueTasks(demoDatas[0]);
         demoDatas[0].joinStatus = false;
         joinThread.join();
         joinThread2.join();
@@ -536,7 +536,7 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, GetAndBlockInnotfullqueue001)(bench
         AssertEqual(getedOut, THREAD_NUM, "getedOut did not equal THREAD_NUM as expected.", state);
         AssertEqual(ungetedOut, static_cast<unsigned int>(0),
             "ungetedOut did not equal static_cast<unsigned int>(0) as expected.", state);
-        joinAllThreads(threads);
+        JoinAllThreads(threads);
         AssertTrue((demoDatas[0].joinStatus), "step 3: demoDatas[0].joinStatus did not equal true.", state);
         demoDatas[0].joinStatus = false;
         joinThread.join();
@@ -586,8 +586,8 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, PutAndBlockInnotfullqueue001)(bench
         AssertEqual(unputedin, static_cast<unsigned int>(0),
             "unputedin did not equal static_cast<unsigned int>(0) as expected.", state);
         AssertFalse((demoDatas[0].joinStatus), "step 4: demoDatas[0].joinStatus did not equal false.", state);
-        joinAllThreads(threads);
-        processSharedQueueTasks(demoDatas[0]);
+        JoinAllThreads(threads);
+        ProcessSharedQueueTasks(demoDatas[0]);
         std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_FOR_HUNDRED_MILLISECOND));
         AssertTrue((demoDatas[0].joinStatus), "step 5: demoDatas[0].joinStatus did not equal true.", state);
         joinThread.join();
@@ -637,7 +637,7 @@ BENCHMARK_F(BenchmarkSafeBlockQueueTracking, testMutilthreadConcurrentGetAndPopI
         for (auto& inThread : threadsin) {
             inThread.join();
         }
-        processSharedQueueTasks(demoDatas[0]);
+        ProcessSharedQueueTasks(demoDatas[0]);
         joinThread.join();
         AssertTrue((demoDatas[0].joinStatus), "step 3: demoDatas[0].joinStatus did not equal true.", state);
         demoDatas[0].joinStatus = false;

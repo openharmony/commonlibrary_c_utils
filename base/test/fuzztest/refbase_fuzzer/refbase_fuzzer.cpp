@@ -354,7 +354,7 @@ public:
 
     void OnLastWeakRef(const void *objectIda) override
     {
-       FUZZ_LOGI("OnLastWeakRef is called"); 
+        FUZZ_LOGI("OnLastWeakRef is called");
     }
 };
 
