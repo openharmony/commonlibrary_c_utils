@@ -277,7 +277,14 @@ if (host_os == "linux" && host_cpu != "arm64" && !is_arkui_x && current_os != "m
       "${target_gen_dir}",
     ]
     deps = [ ":cxx_rust_gen" ]
-    external_deps = [ "rust_cxx:cxx_cppdeps" ]
+
+    if (defined(global_parts_info) &&
+        !defined(global_parts_info.third_party_rust_cxx)) {
+      deps += [ "//third_party/rust/crates/cxx:cxx_cppdeps" ]
+    } else {
+      external_deps = [ "rust_cxx:cxx_cppdeps" ]
+    }
+
     public_external_deps = [ "bounds_checking_function:libsec_shared" ]
     subsystem_name = "commonlibrary"
     part_name = "c_utils"
@@ -294,7 +301,14 @@ if (!is_arkui_x && !(host_os == "linux" && host_cpu == "arm64") && current_os !=
         "src/rust/lib.rs",
       ]
       deps = [ ":utils_static_cxx_rust" ]
-      external_deps = [ "rust_cxx:lib" ]
+
+      if (defined(global_parts_info) &&
+          !defined(global_parts_info.third_party_rust_cxx)) {
+        deps += [ "//third_party/rust/crates/cxx:lib" ]
+      } else {
+        external_deps = [ "rust_cxx:lib" ]
+      }
+
       crate_root = "src/rust/lib.rs"
       crate_name = "utils_rust"
       crate_type = "dylib"
