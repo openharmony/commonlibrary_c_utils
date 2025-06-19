@@ -34,14 +34,14 @@ if (host_os == "linux" && !is_asan && !is_arkui_x) {
   }
 
   ohos_rust_unittest("rust_utils_ashmem_test") {
-    module_out_path = "c_utils/rust"
+    module_out_path = "c_utils/c_utils/rust"
     sources = [ "rust_utils_ashmem_test.rs" ]
     configs = [ ":module_private_config" ]
     deps = [ "//commonlibrary/c_utils/base:utils_rust" ]
   }
 
   ohos_rust_unittest("rust_utils_file_test") {
-    module_out_path = "c_utils/rust"
+    module_out_path = "c_utils/c_utils/rust"
     sources = [ "rust_utils_file_test.rs" ]
     deps = [ "//commonlibrary/c_utils/base:utils_rust" ]
 
@@ -54,7 +54,7 @@ if (host_os == "linux" && !is_asan && !is_arkui_x) {
   }
 
   ohos_rust_unittest("rust_utils_directory_test") {
-    module_out_path = "c_utils/rust"
+    module_out_path = "c_utils/c_utils/rust"
     sources = [ "rust_utils_directory_test.rs" ]
     deps = [ "//commonlibrary/c_utils/base:utils_rust" ]
 
