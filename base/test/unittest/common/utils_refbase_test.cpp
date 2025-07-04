@@ -35,6 +35,7 @@ static int g_sptrCount = 0;
 static int g_wptrCount = 0;
 static int g_refbaseflag = 0;
 static int g_freeFlag = 0;
+static int g_onLastWeakRefFlag = 0;
 
 class UtilsRefbaseTest : public testing::Test {
 public:
@@ -67,6 +68,7 @@ public:
 
     void OnLastWeakRef(const void *objectIda) override
     {
+        g_onLastWeakRefFlag = 1;
     }
 
     void SetRefPtr()
@@ -482,6 +484,19 @@ HWTEST_F(UtilsRefbaseTest, testRefbaseAcquire001, TestSize.Level0)
     }
 
     EXPECT_EQ(g_freeFlag, 1);
+}
+
+/*
+ * @tc.name: testRefbaseOnLastWeakRef001
+ * @tc.desc: Refbase
+ */
+HWTEST_F(UtilsRefbaseTest, testRefbaseOnLastWeakRef001, TestSize.Level0)
+{
+    RefBaseTest* testobject = new RefBaseTest();
+    g_onLastWeakRefFlag = 0;
+
+    testobject->OnLastWeakRef(this);
+    EXPECT_EQ(g_onLastWeakRefFlag, 1);
 }
 
 /*
