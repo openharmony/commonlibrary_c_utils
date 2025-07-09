@@ -32,10 +32,10 @@ config("utils_config") {
     defines += [ "IOS_PLATFORM" ]
   }
   if (current_os == "win" || current_os == "mingw") {
-      defines += [ "WINDOWS_PLATFORM" ]
+    defines += [ "WINDOWS_PLATFORM" ]
   }
   if (current_os == "mac") {
-      defines += [ "MAC_PLATFORM" ]
+    defines += [ "MAC_PLATFORM" ]
   }
   if (is_emulator == true) {
     defines += [ "EMULATOR_PLATFORM" ]
@@ -253,7 +253,8 @@ ohos_shared_library("utils") {
 
 ########## modules for `c_utils` in rust ##########
 # rust compiler is not supportted on mac
-if (host_os == "linux" && host_cpu != "arm64" && !is_arkui_x && current_os != "mac") {
+if (host_os == "linux" && host_cpu != "arm64" && !is_arkui_x &&
+    current_os != "mac") {
   import("//build/templates/rust/rust_cxx.gni")  # used for templates rust_cxx()
   rust_cxx("cxx_rust_gen") {
     sources = [
@@ -278,12 +279,7 @@ if (host_os == "linux" && host_cpu != "arm64" && !is_arkui_x && current_os != "m
     ]
     deps = [ ":cxx_rust_gen" ]
 
-    if (defined(global_parts_info) &&
-        !defined(global_parts_info.third_party_rust_cxx)) {
-      deps += [ "//third_party/rust/crates/cxx:cxx_cppdeps" ]
-    } else {
-      external_deps = [ "rust_cxx:cxx_cppdeps" ]
-    }
+    external_deps = [ "rust_cxx:cxx_cppdeps" ]
 
     public_external_deps = [ "bounds_checking_function:libsec_shared" ]
     subsystem_name = "commonlibrary"
@@ -302,12 +298,7 @@ if (!is_arkui_x && !(host_os == "linux" && host_cpu == "arm64") && current_os !=
       ]
       deps = [ ":utils_static_cxx_rust" ]
 
-      if (defined(global_parts_info) &&
-          !defined(global_parts_info.third_party_rust_cxx)) {
-        deps += [ "//third_party/rust/crates/cxx:lib" ]
-      } else {
-        external_deps = [ "rust_cxx:lib" ]
-      }
+      external_deps = [ "rust_cxx:lib" ]
 
       crate_root = "src/rust/lib.rs"
       crate_name = "utils_rust"
