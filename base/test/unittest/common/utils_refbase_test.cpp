@@ -497,6 +497,21 @@ HWTEST_F(UtilsRefbaseTest, testRefbaseOnLastWeakRef001, TestSize.Level0)
 
     testobject->OnLastWeakRef(this);
     EXPECT_EQ(g_onLastWeakRefFlag, 1);
+    delete testobject;
+}
+
+/*
+ * @tc.name: testRefbaseOnLastWeakRef002
+ * @tc.desc: Refbase
+ */
+HWTEST_F(UtilsRefbaseTest, testRefbaseOnLastWeakRef002, TestSize.Level0)
+{
+    RefBase* testobject = new RefBase();
+    g_onLastWeakRefFlag = 0;
+
+    testobject->OnLastWeakRef(this);
+    EXPECT_EQ(g_onLastWeakRefFlag, 0);
+    delete testobject;
 }
 
 /*
