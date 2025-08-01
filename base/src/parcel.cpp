@@ -284,7 +284,7 @@ bool Parcel::CheckOffsets()
         }
         objCount++;
     }
-    UTILS_LOGW("CheckOffsets Invalid obj: obj not found.");
+    UTILS_LOGD("CheckOffsets Invalid obj: obj not found.");
     return false;
 }
 
