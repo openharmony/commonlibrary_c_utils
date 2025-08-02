@@ -28,6 +28,7 @@ if (host_os == "linux" && !is_asan && !is_arkui_x) {
     if (!use_clang_coverage) {
       deps += [
         ":rust_utils_ashmem_test",
+        ":rust_utils_directory_test",
         ":rust_utils_file_test",
       ]
     }
