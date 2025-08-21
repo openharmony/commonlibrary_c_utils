@@ -182,7 +182,6 @@ ohos_shared_library("utils") {
   } else if (current_os == "ios") {
     sources = sources_utils_ios
     configs = [ ":utils_coverage_config" ]
-    all_dependent_configs = [ ":utils_config" ]
     public_configs = [ ":utils_config" ]
     public_external_deps = [ "bounds_checking_function:libsec_shared" ]
 
@@ -213,7 +212,6 @@ ohos_shared_library("utils") {
     if (c_utils_parcel_object_check) {
       configs += [ ":parcel_object_check" ]
     }
-    all_dependent_configs = [ ":utils_config" ]
     public_configs = [ ":utils_config" ]
     if (current_os != "android" && current_os != "ios") {
       defines = [ "CONFIG_HILOG" ]
