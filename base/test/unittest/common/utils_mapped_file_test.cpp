@@ -119,35 +119,6 @@ void ReCreateFile(std::string& filename, const std::string& content)
     ASSERT_TRUE(CreateTestFile(filename, content));
 }
 
-void TestFileStatusAndRead(MappedFile& mf,
-                           const std::string& filename,
-                           const std::string& content,
-                           struct stat* stb)
-{
-    ASSERT_NE(stb, nullptr);
-    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
-
-    // check status after mapping
-    ASSERT_TRUE(mf.IsMapped());
-    ASSERT_TRUE(mf.IsNormed());
-
-    // check size
-    stat(filename.c_str(), stb);
-    ASSERT_TRUE(stb->st_size == mf.Size() || mf.PageSize() == mf.Size());
-
-    // read from Mapped File
-    std::string readout;
-    char* cur = mf.Begin();
-    for (; cur <= mf.End(); cur++) {
-        readout.push_back(*cur);
-    }
-    EXPECT_EQ(readout, content);
-
-    // write to the extended region
-    *(cur) = 'E';
-    EXPECT_EQ((*cur), 'E');
-}
-
 void TestFileReadAndWrite(const MappedFile& mf, const std::string& content)
 {
     // read from mapped file
@@ -673,23 +644,38 @@ HWTEST_F(UtilsMappedFileTest, testReMap004, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
-    struct stat stb = {0};
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status after mapping
-    // check size
-    // read from Mapped File
-    // write to the extended region
-    TestFileStatusAndRead(mf, filename, content, &stb);
+    ASSERT_TRUE(mf.IsMapped());
+    ASSERT_TRUE(mf.IsNormed());
 
-    // 4. Remap to extend region
+    // 4. check size
+    struct stat stb = {0};
+    stat(filename.c_str(), &stb);
+    ASSERT_TRUE(stb.st_size == mf.Size() || mf.PageSize() == mf.Size());
+
+    // 5. read from Mapped File
+    std::string readout;
+    char* cur = mf.Begin();
+    for (; cur <= mf.End(); cur++) {
+        readout.push_back(*cur);
+    }
+    EXPECT_EQ(readout, content);
+
+    // 6. Remap to extend region
     ASSERT_EQ(mf.Resize(mf.Size() + 10), MAPPED_FILE_ERR_OK);
-    // 5. check status after remapping
+    // 7. check status after remapping
     EXPECT_TRUE(mf.IsMapped());
     EXPECT_TRUE(mf.IsNormed());
 
-    // 6. check size after remapping
+    // 8. check size after remapping
     stat(filename.c_str(), &stb);
     EXPECT_TRUE(stb.st_size < mf.Size());
+
+    // 9. write to the extended region
+    *(cur) = 'E';
+    EXPECT_EQ((*cur), 'E');
 
     std::string res;
     LoadStringFromFile(filename, res);
@@ -712,23 +698,38 @@ HWTEST_F(UtilsMappedFileTest, testReMap005, TestSize.Level0)
 
     // 2. map file
     MappedFile mf(filename);
-    struct stat stb = {0};
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
 
     // 3. check status after mapping
-    // check size
-    // read from Mapped File
-    // write to the extended region
-    TestFileStatusAndRead(mf, filename, content, &stb);
+    ASSERT_TRUE(mf.IsNormed());
+    ASSERT_TRUE(mf.IsMapped());
 
-    // 4. remap to extend region
+    // 4. check size
+    struct stat stb = {0};
+    stat(filename.c_str(), &stb);
+    ASSERT_TRUE(mf.PageSize() == mf.Size() || stb.st_size == mf.Size());
+
+    // 5. read from Mapped File
+    std::string readout;
+    char* cur = mf.Begin();
+    for (; cur <= mf.End(); cur++) {
+        readout.push_back(*cur);
+    }
+    EXPECT_EQ(content, readout);
+
+    // 6. remap to extend region
     ASSERT_EQ(mf.Resize(mf.Size() + 10, true), MAPPED_FILE_ERR_OK);
     // check status after remapping
     EXPECT_TRUE(mf.IsMapped());
     EXPECT_TRUE(mf.IsNormed());
 
-    // 5. check size after remapping
+    // 7. check size after remapping
     stat(filename.c_str(), &stb);
     EXPECT_TRUE(stb.st_size == mf.Size()); // File size will sync to that of the mapped region.
+
+    // 8. write to the extended region
+    *(cur) = 'E';
+    EXPECT_EQ((*cur), 'E');
 
     std::string res;
     LoadStringFromFile(filename, res);
