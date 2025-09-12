@@ -164,6 +164,10 @@ ErrCode IOEventReactor::RemoveHandler(IOEventHandler* target)
 
 bool IOEventReactor::HasHandler(IOEventHandler* target)
 {
+    if (target->fd_ >= ioHandlers_.size()) {
+        return false;
+    }
+    
     for (IOEventHandler* cur = ioHandlers_[target->fd_].head.get(); cur != nullptr; cur = cur->next_) {
         if (cur == target) {
             return true;
