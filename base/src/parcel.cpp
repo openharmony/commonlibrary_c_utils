@@ -803,6 +803,13 @@ T Parcel::Read()
     return Read<T>(lvalue) ? lvalue : 0;
 }
 
+/**
+ * Note: ParseFrom assigns the given pointer to the internal member `data_`.
+ * The Parcel object takes ownership of this memory, and it will be freed
+ * automatically when the Parcel is destroyed. Do not manually free or reuse
+ * the original pointer after calling ParseFrom, otherwise double-free or
+ * use-after-free errors may occur.
+ */
 bool Parcel::ParseFrom(uintptr_t data, size_t size)
 {
     if (data_ != nullptr) {
