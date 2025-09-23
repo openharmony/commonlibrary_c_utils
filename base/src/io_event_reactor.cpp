@@ -20,6 +20,7 @@
 
 namespace OHOS {
 namespace Utils {
+constexpr int MAX_FD = 40000;
 
 IOEventReactor::IOEventReactor()
     :loopReady_(false), enabled_(false), count_(0), ioHandlers_(INIT_FD_NUMS), backend_(new IOEventEpoll()) {}
@@ -74,7 +75,9 @@ ErrCode IOEventReactor::AddHandler(IOEventHandler* target)
         return EVENT_SYS_ERR_NOT_FOUND;
     }
 
-    if (target->fd_ == -1) {
+    // If fd_ is -1, it is uninitialized, if less than -1, it is invalid.
+    // If fd_ is greater than INT32_MAX / 4, it is invalid.
+    if (target->fd_ < 0 || target->fd_ > MAX_FD) {
         UTILS_LOGE("%{public}s: Failed, Bad fd.", __FUNCTION__);
         return EVENT_SYS_ERR_BADF;
     }
@@ -110,7 +113,9 @@ ErrCode IOEventReactor::UpdateHandler(IOEventHandler* target)
         return EVENT_SYS_ERR_NOT_FOUND;
     }
 
-    if (target->fd_ == -1) {
+    // If fd_ is -1, it is uninitialized, if less than -1, it is invalid.
+    // If fd_ is greater than INT32_MAX / 4, it is invalid.
+    if (target->fd_ < 0 || target->fd_ > MAX_FD) {
         UTILS_LOGE("%{public}s: Failed, Bad fd.", __FUNCTION__);
         return EVENT_SYS_ERR_BADF;
     }
@@ -136,7 +141,9 @@ ErrCode IOEventReactor::RemoveHandler(IOEventHandler* target)
         return EVENT_SYS_ERR_NOT_FOUND;
     }
 
-    if (target->fd_ == -1) {
+    // If fd_ is -1, it is uninitialized, if less than -1, it is invalid.
+    // If fd_ is greater than INT32_MAX / 4, it is invalid.
+    if (target->fd_ < 0 || target->fd_ > MAX_FD) {
         UTILS_LOGE("%{public}s: Failed, Bad fd.", __FUNCTION__);
         return EVENT_SYS_ERR_BADF;
     }
@@ -164,7 +171,7 @@ ErrCode IOEventReactor::RemoveHandler(IOEventHandler* target)
 
 bool IOEventReactor::HasHandler(IOEventHandler* target)
 {
-    if (target->fd_ >= ioHandlers_.size()) {
+    if (target->fd_ < 0 || target->fd_ >= ioHandlers_.size()) {
         return false;
     }
     
@@ -183,7 +190,9 @@ ErrCode IOEventReactor::FindHandler(IOEventHandler* target)
         return EVENT_SYS_ERR_NOT_FOUND;
     }
 
-    if (target->fd_ == -1) {
+    // If fd_ is -1, it is uninitialized, if less than -1, it is invalid.
+    // If fd_ is greater than INT32_MAX / 4, it is invalid.
+    if (target->fd_ < 0 || target->fd_ > MAX_FD) {
         UTILS_LOGD("%{public}s: Failed, Bad fd.", __FUNCTION__);
         return EVENT_SYS_ERR_BADF;
     }
