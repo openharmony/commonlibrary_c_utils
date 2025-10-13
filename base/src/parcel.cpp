@@ -16,6 +16,29 @@
 #include "parcel.h"
 #include "securec.h"
 #include "utils_log.h"
+#include <cstdint>
+#include <cstddef>
+
+// -------- ARM32 unaligned read guard -------------------------------------
+#if defined(__arm__) && !defined(__aarch64__)
+static const size_t ARM32_ADDR_ALIGN = 4;
+
+static inline bool IsAligned(const void* p)
+{
+    // align is expected to be a power of two (e.g., 1,2,4,8)
+    uintptr_t ptr = reinterpret_cast<uintptr_t>(p);
+    return (ptr & (ARM32_ADDR_ALIGN - 1U)) == 0U;
+}
+
+#define RETURN_IF_NOTALIGNED_ON_ARM32(ptr, SZ)                                          \
+    do { if ((SZ) > 1U && !IsAligned((ptr))) {                                          \
+        UTILS_LOGE("Parcel ARM32 unaligned access: addr=%{public}p, size=%{public}zu",  \
+             (ptr), (size_t)(SZ));                                                      \
+        return false;                                                                   \
+        }                                                                               \
+    } while (0)
+#endif
+// ---------------------------------------------------------------------------
 
 namespace OHOS {
 
@@ -535,11 +558,19 @@ bool Parcel::WriteUint64(uint64_t value)
 
 bool Parcel::WriteFloat(float value)
 {
+#if defined(__arm__) && !defined(__aarch64__)
+    const void* wp = static_cast<const void*>(data_+ writeCursor_);
+    RETURN_IF_NOTALIGNED_ON_ARM32(wp, alignof(float));
+#endif
     return Write<float>(value);
 }
 
 bool Parcel::WriteDouble(double value)
 {
+#if defined(__arm__) && !defined(__aarch64__)
+    const void* wp = static_cast<const void*>(data_+ writeCursor_);
+    RETURN_IF_NOTALIGNED_ON_ARM32(wp, alignof(double));
+#endif
     return Write<double>(value);
 }
 
@@ -999,11 +1030,19 @@ uint64_t Parcel::ReadUint64()
 
 float Parcel::ReadFloat()
 {
+#if defined(__arm__) && !defined(__aarch64__)
+    const void* rp = static_cast<const void*>(data_+ readCursor_);
+    RETURN_IF_NOTALIGNED_ON_ARM32(rp, alignof(float));
+#endif
     return Read<float>();
 }
 
 double Parcel::ReadDouble()
 {
+#if defined(__arm__) && !defined(__aarch64__)
+    const void* rp = static_cast<const void*>(data_+ readCursor_);
+    RETURN_IF_NOTALIGNED_ON_ARM32(rp, alignof(double));
+#endif
     return Read<double>();
 }
 
@@ -1086,11 +1125,19 @@ bool Parcel::ReadUint64(uint64_t &value)
 
 bool Parcel::ReadFloat(float &value)
 {
+#if defined(__arm__) && !defined(__aarch64__)
+    const void* rp = static_cast<const void*>(data_+ readCursor_);
+    RETURN_IF_NOTALIGNED_ON_ARM32(rp, alignof(float));
+#endif
     return Read<float>(value);
 }
 
 bool Parcel::ReadDouble(double &value)
 {
+#if defined(__arm__) && !defined(__aarch64__)
+    const void* rp = static_cast<const void*>(data_+ readCursor_);
+    RETURN_IF_NOTALIGNED_ON_ARM32(rp, alignof(double));
+#endif
     return Read<double>(value);
 }
 
