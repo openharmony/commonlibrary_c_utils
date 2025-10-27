@@ -43,6 +43,9 @@ config("utils_config") {
   if (current_os == "ohos") {
     defines += [ "OHOS_PLATFORM" ]
   }
+  if (is_arkui_x) {
+    defines += [ "IS_ARKUI_X_TARGET" ]
+  }
 }
 
 config("utils_coverage_config") {

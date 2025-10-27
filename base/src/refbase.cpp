@@ -230,7 +230,8 @@ bool RefCounter::IsRefPtrValid()
     return callback_ != nullptr;
 }
 
-#ifdef OHOS_PLATFORM
+// Exclude ArkUI-X cross-platform sdk product
+#ifndef IS_ARKUI_X_TARGET
 void RefCounter::SetCanPromote(const CanPromote &canPromote)
 {
     canPromote_ = canPromote;
@@ -421,7 +422,8 @@ bool RefCounter::AttemptIncStrongRef(const void *objectId, int &outCount)
     }
 
     if (IsLifeTimeExtended()) {
-#ifdef OHOS_PLATFORM
+// Exclude ArkUI-X cross-platform sdk product
+#ifndef IS_ARKUI_X_TARGET
         if (!IsCanPromoteValid() || !canPromote_()) {
             return false;
         }
@@ -474,7 +476,8 @@ RefBase::RefBase() : refs_(new RefCounter())
 {
     refs_->IncRefCount();
     refs_->SetCallback([this] { this->RefPtrCallback(); });
-#ifdef OHOS_PLATFORM
+// Exclude ArkUI-X cross-platform sdk product
+#ifndef IS_ARKUI_X_TARGET
     refs_->SetCanPromote([this] { return this->CanPromote(); });
 #endif
 }
@@ -485,13 +488,15 @@ RefBase::RefBase(const RefBase &)
     if (refs_ != nullptr) {
         refs_->IncRefCount();
         refs_->SetCallback([this] { this->RefPtrCallback(); });
-#ifdef OHOS_PLATFORM
+// Exclude ArkUI-X cross-platform sdk product
+#ifndef IS_ARKUI_X_TARGET
         refs_->SetCanPromote([this] { return this->CanPromote(); });
 #endif
     }
 }
 
-#ifdef OHOS_PLATFORM
+// Exclude ArkUI-X cross-platform sdk product
+#ifndef IS_ARKUI_X_TARGET
 bool RefBase::CanPromote()
 {
     return true;
@@ -520,7 +525,8 @@ RefBase &RefBase::operator=(const RefBase &)
     if (refs_ != nullptr) {
         refs_->IncRefCount();
         refs_->SetCallback([this] { this->RefPtrCallback(); });
-#ifdef OHOS_PLATFORM
+// Exclude ArkUI-X cross-platform sdk product
+#ifndef IS_ARKUI_X_TARGET
         refs_->SetCanPromote([this] { return this->CanPromote(); });
 #endif
     }
