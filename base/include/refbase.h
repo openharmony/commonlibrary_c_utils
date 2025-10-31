@@ -240,8 +240,7 @@ public:
      */
     void ExtendObjectLifetime();
 
-// Exclude ArkUI-X cross-platform sdk product
-#ifndef IS_ARKUI_X_TARGET
+#ifdef OHOS_PLATFORM
     using CanPromote = std::function<bool()>;
 
     void SetCanPromote(const CanPromote& canPromote);
@@ -278,8 +277,7 @@ private:
     std::atomic<int> atomicAttempt_; // Number of attempts
     RefPtrCallback callback_ = nullptr; // Callback function to deallocate the corresponding RefBase object
     static constexpr unsigned int FLAG_EXTEND_LIFE_TIME = 0x00000002; // Extended life-time bit to be set via logic-OR
-// Exclude ArkUI-X cross-platform sdk product
-#ifndef IS_ARKUI_X_TARGET
+#ifdef OHOS_PLATFORM
     CanPromote canPromote_ = nullptr;
 #endif
 #ifdef DEBUG_REFBASE
@@ -613,8 +611,7 @@ public:
      */
     void EnableTrackerWithDomainId(unsigned int domainId);
 
-// Exclude ArkUI-X cross-platform sdk product
-#ifndef IS_ARKUI_X_TARGET
+#ifdef OHOS_PLATFORM
     virtual bool CanPromote();
 #endif
 
