@@ -1337,8 +1337,7 @@ HWTEST_F(UtilsRefbaseTest, testRefbaseWithDomainIdDebug004, TestSize.Level1)
 HWTEST_F(UtilsRefbaseTest, testRefCounter001, TestSize.Level1)
 {
     RefCounter *refCounterTest = new RefCounter();
-// Exclude ArkUI-X cross-platform sdk product
-#ifndef IS_ARKUI_X_TARGET
+#ifdef OHOS_PLATFORM
     refCounterTest->RemoveCanPromote();
     bool result = refCounterTest->IsCanPromoteValid();
     EXPECT_EQ(result, false);
