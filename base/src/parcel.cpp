@@ -159,7 +159,7 @@ bool Parcel::EnsureWritableCapacity(size_t desireCapacity)
     size_t minNewCapacity = desireCapacity + writeCursor_;
     size_t newCapacity = CalcNewCapacity(minNewCapacity);
     if ((newCapacity <= dataCapacity_) || (newCapacity < minNewCapacity)) {
-        UTILS_LOGD("Failed to ensure parcel capacity, newCapacity = %{public}zu, dataCapacity_ = %{public}zu, "
+        UTILS_LOGW("Failed to ensure parcel capacity, newCapacity = %{public}zu, dataCapacity_ = %{public}zu, "
                    "minNewCapacity = %{public}zu",
                    newCapacity, dataCapacity_, minNewCapacity);
         return false;
