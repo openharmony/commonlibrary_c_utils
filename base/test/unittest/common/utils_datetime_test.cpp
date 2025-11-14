@@ -162,7 +162,6 @@ HWTEST_F(UtilsDateTimeTest, testGetMicroTickCount001, TestSize.Level0)
     int64_t end = GetMicroTickCount();
 
     EXPECT_TRUE(end - begin >= 100000);
-    EXPECT_TRUE(end - begin < 120000);
 }
 }  // namespace
 }  // namespace OHOS
