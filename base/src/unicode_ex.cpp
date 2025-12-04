@@ -238,16 +238,16 @@ uint32_t Utf8ToUtf32CodePoint(const char* src, size_t length)
         case UTF8_LENGTH_1:
             return src[UTF8_FIRST_BYTE_INDEX];
         case UTF8_LENGTH_2:
-            unicode = src[UTF8_FIRST_BYTE_INDEX] & 0x1f;
+            unicode = static_cast<unsigned char>(src[UTF8_FIRST_BYTE_INDEX]) & 0x1f;
             Utf8ShiftAndMask(&unicode, src[UTF8_SECOND_BYTE_INDEX]);
             return unicode;
         case UTF8_LENGTH_3:
-            unicode = src[UTF8_FIRST_BYTE_INDEX] & 0x0f;
+            unicode = static_cast<unsigned char>(src[UTF8_FIRST_BYTE_INDEX]) & 0x0f;
             Utf8ShiftAndMask(&unicode, src[UTF8_SECOND_BYTE_INDEX]);
             Utf8ShiftAndMask(&unicode, src[UTF8_THIRD_BYTE_INDEX]);
             return unicode;
         case UTF8_LENGTH_4:
-            unicode = src[UTF8_FIRST_BYTE_INDEX] & 0x07;
+            unicode = static_cast<unsigned char>(src[UTF8_FIRST_BYTE_INDEX]) & 0x07;
             Utf8ShiftAndMask(&unicode, src[UTF8_SECOND_BYTE_INDEX]);
             Utf8ShiftAndMask(&unicode, src[UTF8_THIRD_BYTE_INDEX]);
             Utf8ShiftAndMask(&unicode, src[UTF8_FORTH_BYTE_INDEX]);
