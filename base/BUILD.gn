@@ -123,6 +123,26 @@ if (current_os == "ios") {
 }
 
 ohos_static_library("utilsbase") {
+  visibility = [
+    ":*",
+    "//applications/standard/contacts_data:contactsdataability",
+    "//base/hiviewdfx/faultloggerd/*",
+    "//base/notification/eventhandler/frameworks/eventhandler/test/*",
+    "//base/startup/init/interfaces/innerkits:libbegetutil_static",
+    "//base/update/updater/services/script/*",
+    "//foundation/ability/ability_runtime/interfaces/inner_api/mission_manager/*",
+    "//foundation/ability/form_fwk/test/unittest/fms_form_systemload_listener_test/*",
+    "//foundation/CastEngine/castengine_wifi_display/services/codec:sharing_codec",
+    "//foundation/communication/dsoftbus/components/nstackx_enhanced/*",
+    "//foundation/filemanagement/file_api/interfaces/test/unittest/*",
+    "//foundation/graphic/graphic_2d/rosen/modules/*",
+    "//foundation/multimedia/image_framework/*",
+    "//foundation/multimedia/media_foundation/engine/*",
+    "//foundation/multimodalinput/input/*",
+    "//third_party/sqlite/*",
+    "//out/*",
+  ]
+
   if (current_os == "ios") {
     sources = sources_utils_ios
     configs = [ ":utils_coverage_config" ]
