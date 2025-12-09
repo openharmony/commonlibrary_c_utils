@@ -245,7 +245,7 @@ bool IsAsciiString(const string& str)
 {
     size_t strLen = str.length();
     for (size_t i = 0; i < strLen; ++i) {
-        if ((str[i] & 0x80) != 0) {
+        if ((static_cast<unsigned char>(str[i]) & 0x80) != 0) {
             return false;
         }
     }
