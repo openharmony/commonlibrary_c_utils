@@ -13,6 +13,14 @@
 import("//build/ohos.gni")
 import("//build/test.gni")
 
+declare_args() {
+  utils_rust_test_enable = true
+  if (defined(global_parts_info) &&
+  !defined(global_parts_info.thirdparty_rust_cxx)) {
+    utils_rust_test_enable = false
+  }
+}
+
 if (host_os == "linux" && !is_asan && !is_arkui_x) {
   config("module_private_config") {
     visibility = [ ":*" ]
@@ -25,7 +33,7 @@ if (host_os == "linux" && !is_asan && !is_arkui_x) {
     testonly = true
     deps = []
 
-    if (!use_clang_coverage) {
+    if (!use_clang_coverage && utils_rust_test_enable) {
       deps += [
         ":rust_utils_ashmem_test",
         ":rust_utils_directory_test",
@@ -34,25 +42,27 @@ if (host_os == "linux" && !is_asan && !is_arkui_x) {
     }
   }
 
-  ohos_rust_unittest("rust_utils_ashmem_test") {
-    module_out_path = "c_utils/c_utils/rust"
-    sources = [ "rust_utils_ashmem_test.rs" ]
-    configs = [ ":module_private_config" ]
-    deps = [ "//commonlibrary/c_utils/base:utils_rust" ]
-  }
+  if (utils_rust_test_enable) {
+    ohos_rust_unittest("rust_utils_ashmem_test") {
+      module_out_path = "c_utils/c_utils/rust"
+      sources = [ "rust_utils_ashmem_test.rs" ]
+      configs = [ ":module_private_config" ]
+      deps = [ "//commonlibrary/c_utils/base:utils_rust" ]
+    }
 
-  ohos_rust_unittest("rust_utils_file_test") {
-    module_out_path = "c_utils/c_utils/rust"
-    sources = [ "rust_utils_file_test.rs" ]
-    deps = [ "//commonlibrary/c_utils/base:utils_rust" ]
-    external_deps = [ "rust_cxx:lib" ]
-  }
+    ohos_rust_unittest("rust_utils_file_test") {
+      module_out_path = "c_utils/c_utils/rust"
+      sources = [ "rust_utils_file_test.rs" ]
+      deps = [ "//commonlibrary/c_utils/base:utils_rust" ]
+      external_deps = [ "rust_cxx:lib" ]
+    }
 
-  ohos_rust_unittest("rust_utils_directory_test") {
-    module_out_path = "c_utils/c_utils/rust"
-    sources = [ "rust_utils_directory_test.rs" ]
-    deps = [ "//commonlibrary/c_utils/base:utils_rust" ]
+    ohos_rust_unittest("rust_utils_directory_test") {
+      module_out_path = "c_utils/c_utils/rust"
+      sources = [ "rust_utils_directory_test.rs" ]
+      deps = [ "//commonlibrary/c_utils/base:utils_rust" ]
 
-    external_deps = [ "rust_cxx:lib" ]
+      external_deps = [ "rust_cxx:lib" ]
+    }
   }
 }
