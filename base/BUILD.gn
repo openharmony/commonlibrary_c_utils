@@ -142,6 +142,15 @@ ohos_static_library("utilsbase") {
     "//third_party/sqlite/*",
     "//out/*",
   ]
+  if (is_arkui_x) {
+    visibility += [
+      "//foundation/appframework/*",
+      "//foundation/distributeddatamgr/preferences/interfaces/inner_api:native_preferences",
+      "//foundation/distributeddatamgr/udmf/*",
+      "//foundation/graphic/graphics_effect:utils",
+      "//plugins/*",
+    ]
+  }
 
   if (current_os == "ios") {
     sources = sources_utils_ios
