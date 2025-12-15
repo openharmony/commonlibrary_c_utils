@@ -147,7 +147,7 @@ ohos_static_library("utilsbase") {
       "//foundation/appframework/*",
       "//foundation/distributeddatamgr/preferences/interfaces/inner_api:native_preferences",
       "//foundation/distributeddatamgr/udmf/*",
-     "//foundation/graphic/graphics_effect:utils",
+      "//foundation/graphic/graphics_effect:utils",
       "//plugins/*",
     ]
   }
