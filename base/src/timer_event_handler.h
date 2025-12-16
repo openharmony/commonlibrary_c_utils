@@ -18,6 +18,8 @@
 #include <functional>
 #include <memory>
 #include <cstdint>
+#include <ctime>
+#include <sys/timerfd.h>
 #include "event_handler.h"
 
 namespace OHOS {
@@ -49,9 +51,19 @@ private:
     void TimeOut();
 
 private:
+    struct TimerInitInfo {
+        bool valid {false};
+        timespec startTime {0, 0};
+        struct itimerspec timerSpec {{0, 0}, {0, 0}};
+        int timerFd {INVALID_TIMER_FD};
+        uint32_t interval {0};
+        bool once {false};
+    };
+
     bool           once_;
     uint32_t       interval_;
     TimerCallback  callback_;
+    TimerInitInfo  initInfo_;
 };
 
 } // namespace Utils

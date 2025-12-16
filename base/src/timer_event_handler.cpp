@@ -19,6 +19,7 @@
 #include "utils_log.h"
 
 #include <sys/timerfd.h>
+#include <unistd.h>
 
 namespace OHOS {
 namespace Utils {
@@ -32,7 +33,8 @@ TimerEventHandler::TimerEventHandler(EventReactor* p, uint32_t timeout /* ms */,
     : EventHandler(timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC), p),
       once_(once),
       interval_(timeout),
-      callback_()
+      callback_(),
+      initInfo_()
 {
 }
 
@@ -79,6 +81,14 @@ uint32_t TimerEventHandler::Initialize()
         return TIMER_ERR_DEAL_FAILED;
     }
 
+    // save initialization information for debugging
+    initInfo_.valid = true;
+    initInfo_.startTime = now;
+    initInfo_.timerSpec = newValue;
+    initInfo_.timerFd = GetHandle();
+    initInfo_.interval = interval_;
+    initInfo_.once = once_;
+
     SetReadCallback([this] { this->TimeOut(); });
     EnableRead();
     return TIMER_ERR_OK;
@@ -96,9 +106,10 @@ void TimerEventHandler::TimeOut()
         return;
     }
     uint64_t expirations = 0;
+    int errnoRead = 0;
     ssize_t n = ::read(GetHandle(), &expirations, sizeof(expirations));
     if (n != sizeof(expirations)) {
-        int erronRead = errno;
+        errnoRead = errno;
         struct itimerspec current = {
             .it_interval = {.tv_sec = -1, .tv_nsec = -1},
             .it_value = {.tv_sec = -1, .tv_nsec = -1}
@@ -106,9 +117,26 @@ void TimerEventHandler::TimeOut()
         if (timerfd_gettime(GetHandle(), &current) == -1) {
             UTILS_LOGE("timerfd_gettime failed, errno=%{public}d", errno);
         }
+        timespec now {0, 0};
+        clock_gettime(CLOCK_MONOTONIC, &now);
         UTILS_LOGE("epoll_loop::on_timer() reads %{public}d bytes instead of 8, timerFd=%{public}d, errno=%{public}d, "
-                   "Current timer value: %{public}lld sec, %{public}ld nsec", static_cast<int>(n), GetHandle(),
-                   erronRead, static_cast<long long>(current.it_value.tv_sec), current.it_value.tv_nsec);
+                   "Time now %{public}lld sec %{public}ld nanosec, "
+                   "Current timer value: %{public}lld sec, %{public}ld nsec.",
+                   static_cast<int>(n), GetHandle(), errnoRead,
+                   static_cast<long long>(now.tv_sec), now.tv_nsec,
+                   static_cast<long long>(current.it_value.tv_sec), current.it_value.tv_nsec);
+        if (initInfo_.valid) {
+            UTILS_LOGE("Timer init info: timerFd=%{public}d, interval=%{public}u ms, once=%{public}s, "
+                       "start %{public}lld sec %{public}ld nanosec, "
+                       "it_value %{public}lld sec %{public}ld nanosec, "
+                       "it_interval %{public}lld sec %{public}ld nanosec",
+                       initInfo_.timerFd, initInfo_.interval, initInfo_.once ? "true" : "false",
+                       static_cast<long long>(initInfo_.startTime.tv_sec), initInfo_.startTime.tv_nsec,
+                       static_cast<long long>(initInfo_.timerSpec.it_value.tv_sec),
+                       initInfo_.timerSpec.it_value.tv_nsec,
+                       static_cast<long long>(initInfo_.timerSpec.it_interval.tv_sec),
+                       initInfo_.timerSpec.it_interval.tv_nsec);
+        }
     }
     if (callback_) {
         callback_(GetHandle());
