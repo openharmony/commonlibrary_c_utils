@@ -18,6 +18,7 @@
 
 #include "nocopyable.h"
 #include <mutex>
+#include <atomic>
 #include <memory>
 
 namespace OHOS {
@@ -122,12 +123,15 @@ std::mutex DelayedSingleton<T>::mutex_;
 template<typename T>
 std::shared_ptr<T> DelayedSingleton<T>::GetInstance()
 {
+    std::shared_ptr<T> ptr = atomic_load(&instance_);
+    if (ptr != nullptr) {
+        return ptr;
+    }
+
+    std::lock_guard<std::mutex> lock(mutex_);
     if (instance_ == nullptr) {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (instance_ == nullptr) {
-            std::shared_ptr<T> temp(new (std::nothrow) T);
-            instance_ = temp;
-        }
+        std::shared_ptr<T> temp(new (std::nothrow) T);
+        instance_ = temp;
     }
 
     return instance_;
@@ -137,10 +141,8 @@ template<typename T>
 void DelayedSingleton<T>::DestroyInstance()
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (instance_ != nullptr) {
-        instance_.reset();
-        instance_ = nullptr;
-    }
+
+    atomic_store(&instance_, std::shared_ptr<T>(nullptr));
 }
 
 /**
