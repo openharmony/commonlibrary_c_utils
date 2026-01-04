@@ -156,7 +156,7 @@ sptr<Ashmem> Ashmem::CreateAshmem(const char *name, int32_t size)
 
     int fd = AshmemCreate(name, size);
     if (fd < 0) {
-        UTILS_LOGE("%{public}s: Failed to exec AshmemCreate, fd= %{public}d", __func__, size);
+        UTILS_LOGE("%{public}s: Failed to exec AshmemCreate, fd= %{public}d", __func__, fd);
         return nullptr;
     }
 
