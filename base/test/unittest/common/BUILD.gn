@@ -35,7 +35,10 @@ ohos_unittest("UtilsStringTest") {
 
   deps = [ "//commonlibrary/c_utils/base:utils" ]
 
-  external_deps = [ "googletest:gtest_main" ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "googletest:gtest_main",
+  ]
 }
 
 ##############################unittest##########################################
@@ -71,7 +74,10 @@ ohos_unittest("UtilsParcelTest") {
 
   deps = [ "//commonlibrary/c_utils/base:utils" ]
 
-  external_deps = [ "googletest:gtest_main" ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "googletest:gtest_main",
+  ]
 }
 
 ##############################unittest##########################################
@@ -84,6 +90,7 @@ ohos_unittest("UtilsAshmemTest") {
   deps = [ "//commonlibrary/c_utils/base:utils" ]
 
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "googletest:gtest_main",
     "hilog:libhilog",
   ]
