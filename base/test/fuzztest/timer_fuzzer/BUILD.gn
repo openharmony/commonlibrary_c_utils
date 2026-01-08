@@ -25,6 +25,7 @@ ohos_fuzztest("TimerFuzzTest") {
   ]
   defines = [ "DEBUG_FUZZ" ]
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "hilog:libhilog_base",
   ]
