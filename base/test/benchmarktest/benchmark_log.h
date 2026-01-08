@@ -16,7 +16,7 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include "hilog_base/log_base.h"
+#include <log_base.h>
 
 constexpr LogType BENCHMARK_LOG_TYPE = LOG_CORE;
 constexpr unsigned int BENCHMARK_LOG_DOMAIN = 0xD003D00;

@@ -31,6 +31,5 @@ ohos_benchmarktest("EventTest") {
   external_deps = [
     "benchmark:benchmark",
     "c_utils:utils",
-    "hilog:libhilog_base",
   ]
 }

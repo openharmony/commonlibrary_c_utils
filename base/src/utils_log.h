@@ -16,7 +16,7 @@
 #define UTILS_BASE_LOG_H
 
 #ifdef CONFIG_HILOG
-#include "hilog_base/log_base.h"
+#include <log_base.h>
 constexpr LogType UTILS_LOG_TYPE = LOG_CORE;
 constexpr unsigned int UTILS_LOG_DOMAIN = 0xD003D00;
 constexpr const char *UTILS_LOG_TAG = "utils_base";

@@ -29,6 +29,5 @@ ohos_benchmarktest("UniqueFdTest") {
   external_deps = [
     "benchmark:benchmark",
     "c_utils:utils",
-    "hilog:libhilog_base",
   ]
 }

@@ -17,7 +17,7 @@
 #define FUZZ_LOG_H
 
 #ifdef DEBUG_FUZZ
-#include "hilog_base/log_base.h"
+#include <log_base.h>
 constexpr LogType FUZZ_LOG_TYPE = LOG_CORE;
 constexpr unsigned int FUZZ_LOG_DOMAIN = 0xD003D00;
 constexpr const char *FUZZ_LOG_TAG = "fuzz_test";

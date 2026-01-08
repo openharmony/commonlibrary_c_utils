@@ -24,10 +24,7 @@ ohos_fuzztest("AshmemFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   defines = [ "DEBUG_FUZZ" ]
-  external_deps = [
-    "c_utils:utils",
-    "hilog:libhilog_base",
-  ]
+  external_deps = [ "c_utils:utils" ]
   sources = [ "ashmem_fuzzer.cpp" ]
 }
 ###############################################################################
