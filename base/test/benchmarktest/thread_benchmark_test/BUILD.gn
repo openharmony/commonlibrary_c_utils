@@ -29,6 +29,5 @@ ohos_benchmarktest("ThreadTest") {
   external_deps = [
     "benchmark:benchmark",
     "c_utils:utils",
-    "hilog:libhilog_base",
   ]
 }
