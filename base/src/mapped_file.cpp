@@ -168,6 +168,14 @@ bool MappedFile::OpenFile()
     if (isNewFile_) {
         if (!NormalizePath()) {
             UTILS_LOGE("%{public}s normalize path failed. %{public}s", __FUNCTION__, strerror(errno));
+            if (close(fd) == -1) {
+                UTILS_LOGW("%{public}s: NormalizePath Failed. Cannot close the file: %{public}s.", \
+                           __FUNCTION__, strerror(errno));
+            }
+            if (unlink(path_.c_str()) == -1) {
+                UTILS_LOGW("%{public}s: NormalizePath Failed. Cannot unlink the file: %{public}s.", \
+                           __FUNCTION__, strerror(errno));
+            }
             return false;
         }
         if (ftruncate(fd, EndOffset() + 1) == -1) {
