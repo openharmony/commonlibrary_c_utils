@@ -32,8 +32,7 @@ static inline bool IsAligned(const void* p)
 
 #define RETURN_IF_NOTALIGNED_ON_ARM32(ptr, SZ)                                          \
     do { if ((SZ) > 1U && !IsAligned((ptr))) {                                          \
-        UTILS_LOGE("Parcel ARM32 unaligned access: addr=%{public}p, size=%{public}zu",  \
-             (ptr), (size_t)(SZ));                                                      \
+        UTILS_LOGE("Parcel ARM32 unaligned access: size=%{public}zu", (size_t)(SZ));    \
         return false;                                                                   \
         }                                                                               \
     } while (0)
