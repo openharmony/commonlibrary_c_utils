@@ -327,6 +327,7 @@ bool ForceRemoveDirectoryInternal(DIR *dir)
 {
     bool ret = true;
     int rootFd = dirfd(dir);
+    uint64_t fdSanTag = 0xD003D00;
     if (rootFd < 0) {
         UTILS_LOGE("BMS: Failed to get dirfd, fd: %{public}d: %{public}s ", rootFd, strerror(errno));
         return false;
@@ -346,6 +347,7 @@ bool ForceRemoveDirectoryInternal(DIR *dir)
 
         if (ptr->d_type == DT_DIR) {
             int subFd = openat(rootFd, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+            fdsan_exchange_owner_tag(subFd, 0, fdSanTag);
             if (subFd < 0) {
                 UTILS_LOGE("BMS: Failed in subFd openat: %{public}s, errno: %{public}s ", name, strerror(errno));
                 ret = false;
@@ -353,7 +355,7 @@ bool ForceRemoveDirectoryInternal(DIR *dir)
             }
             DIR *subDir = fdopendir(subFd);
             if (subDir == nullptr) {
-                close(subFd);
+                fdsan_close_with_tag(subFd, fdSanTag);
                 UTILS_LOGE("BMS: Failed in fdopendir: %{public}s", strerror(errno));
                 ret = false;
                 continue;
