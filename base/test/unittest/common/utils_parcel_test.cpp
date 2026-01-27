@@ -1453,6 +1453,9 @@ HWTEST_F(UtilsParcelTest, test_parcel_Data_Structure_002, TestSize.Level0)
     result = parcel.WriteBufferAddTerminator(static_cast<const void *>(str.data()), str.length(), sizeof(char));
     EXPECT_EQ(true, result);
 
+    result = parcel.WriteBufferAddTerminator(static_cast<const void *>(str.data()), str.length(), 0);
+    EXPECT_EQ(false, result);
+
     Parcel recvParcel(nullptr);
     void *buffer = nullptr;
     size_t size = parcel.GetDataSize();
@@ -2367,6 +2370,17 @@ HWTEST_F(UtilsParcelTest, test_VectorDataPadding_004, TestSize.Level0)
     for (int i = 0; i < val1.size(); i++) {
         EXPECT_EQ(val1[i], val6[i]);
     }
+}
+
+HWTEST_F(UtilsParcelTest, test_InjectOffsets_001, TestSize.Level0)
+{
+    Parcel parcel(nullptr);
+    binder_size_t nullPtr = 0; // Represents nullptr
+    size_t offsetSize = 5;
+    parcel.InjectOffsets(nullPtr, offsetSize);
+
+    offsetSize = 0;
+    parcel.InjectOffsets(nullPtr, offsetSize);
 }
 
 #ifdef __aarch64__
