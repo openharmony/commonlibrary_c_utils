@@ -21,9 +21,6 @@ config("module_private_config") {
   include_dirs = [ "../../../include" ]
 
   cflags = [ "-Wno-implicit-const-int-float-conversion" ]
-
-  # library path
-  lib_dirs = [ "libs" ]
 }
 
 ##############################unittest##########################################
@@ -245,6 +242,18 @@ ohos_unittest("UtilsSemaphoreTest") {
 }
 
 ##############################unittest##########################################
+ohos_unittest("UtilsThreadSafetyAnalysisTest") {
+  module_out_path = module_output_path
+  sources = [ "utils_thread_safety_analysis_test.cpp" ]
+
+  configs = [ ":module_private_config" ]
+
+  deps = [ "//commonlibrary/c_utils/base:utils" ]
+
+  external_deps = [ "googletest:gtest_main" ]
+}
+
+##############################unittest##########################################
 ohos_unittest("UtilsSingletonTest") {
   module_out_path = module_output_path
   sources = [ "utils_singleton_test.cpp" ]
@@ -331,6 +340,7 @@ group("unittest") {
     ":UtilsStringTest",
     ":UtilsThreadPoolTest",
     ":UtilsThreadTest",
+    ":UtilsThreadSafetyAnalysisTest",
     ":UtilsTimerTest",
     ":UtilsUniqueFdTest",
   ]
