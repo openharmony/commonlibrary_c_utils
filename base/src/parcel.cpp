@@ -312,7 +312,7 @@ bool Parcel::CheckOffsets()
 
 void Parcel::InjectOffsets(binder_size_t offsets, size_t offsetSize)
 {
-    if (offsetSize <= 0) {
+    if (offsetSize <= 0 || offsets == 0) {
         return;
     }
 
@@ -432,7 +432,7 @@ bool Parcel::WriteBuffer(const void *data, size_t size)
 
 bool Parcel::WriteBufferAddTerminator(const void *data, size_t size, size_t typeSize)
 {
-    if (data == nullptr || size < typeSize) {
+    if (data == nullptr || typeSize == 0 || size < typeSize) {
         return false;
     }
 

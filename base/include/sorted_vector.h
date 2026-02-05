@@ -317,6 +317,10 @@ SortedVector<TYPE, AllowDuplicate>::SortedVector(const SortedVector<TYPE, true>&
 template <class TYPE, bool AllowDuplicate>
 SortedVector<TYPE, AllowDuplicate>& SortedVector<TYPE, AllowDuplicate>::operator=(const SortedVector<TYPE, false>& rhs)
 {
+    if (static_cast<const void*>(this) == static_cast<const void*>(&rhs)) {
+        return *this;
+    }
+
     // this class: AllowDuplicate or Not AllowDuplicate same type
     vec_.clear();
     std::copy(rhs.Begin(), rhs.End(), std::back_inserter(vec_));
@@ -327,6 +331,10 @@ SortedVector<TYPE, AllowDuplicate>& SortedVector<TYPE, AllowDuplicate>::operator
 template <class TYPE, bool AllowDuplicate>
 SortedVector<TYPE, AllowDuplicate>& SortedVector<TYPE, AllowDuplicate>::operator=(const SortedVector<TYPE, true>& rhs)
 {
+    if (static_cast<const void*>(this) == static_cast<const void*>(&rhs)) {
+        return *this;
+    }
+
     vec_.clear();
 
     if (AllowDuplicate) {
