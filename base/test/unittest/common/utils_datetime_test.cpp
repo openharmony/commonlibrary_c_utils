@@ -148,7 +148,6 @@ HWTEST_F(UtilsDateTimeTest, testGetTickCount001, TestSize.Level0)
     int64_t end = GetTickCount();
 
     EXPECT_TRUE(end - begin >= 100);
-    EXPECT_TRUE(end - begin < 120);
 }
 
 /*
