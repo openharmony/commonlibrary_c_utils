@@ -20,8 +20,6 @@
 #include <memory>
 #include <cstdint>
 #include <map>
-#include <queue>
-#include <tuple>
 #include <sys/epoll.h>
 #include <vector>
 
@@ -55,7 +53,6 @@ private:
     int maxEvents_;
     std::recursive_mutex mutex_;
     std::map<int, std::shared_ptr<EventHandler>> eventHandlers_; // guard by mutex_
-    std::queue<std::tuple<int, int, int>> epollCtlErrQueue_;
 };
 
 }
