@@ -146,6 +146,7 @@ ohos_static_library("utilsbase") {
     visibility += [
       "//foundation/appframework/*",
       "//foundation/distributeddatamgr/preferences/interfaces/inner_api:native_preferences",
+      "//foundation/distributeddatamgr/relational_store/interfaces/inner_api/rdb:native_rdb",
       "//foundation/distributeddatamgr/udmf/*",
       "//foundation/graphic/graphics_effect:utils",
       "//plugins/*",
