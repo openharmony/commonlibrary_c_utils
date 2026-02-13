@@ -792,7 +792,6 @@ void KeepAPageAndReachBottom(off_t& endOff, const off_t orig, MappedFile& mf, be
 
 static void Remapping(MappedFile& mf, off_t& endOff, off_t& curSize, benchmark::State& state)
 {
-    // 7. this turn will trigger a remapping
     endOff = mf.EndOffset();
     AssertEqual(mf.TurnNext(), MAPPED_FILE_ERR_OK,
         "mf.TurnNext() did not equal MAPPED_FILE_ERR_OK as expected.", state);

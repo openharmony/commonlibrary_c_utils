@@ -28,11 +28,9 @@ static const int EPOLL_INVALID_FD = -1;
 static const int INTERRUPTED_SYS_CALL = 4;
 static const int EPOLL_ERROR_BADF = 9;
 static const int EPOLL_ERROR_EINVAL = 22;
-static const int QUEUE_MAX_SIZE = 10;
 
 EventDemultiplexer::EventDemultiplexer()
-    : epollFd_(epoll_create1(EPOLL_CLOEXEC)), maxEvents_(EPOLL_MAX_EVENS_INIT), mutex_(), eventHandlers_(),
-    epollCtlErrQueue_()
+    : epollFd_(epoll_create1(EPOLL_CLOEXEC)), maxEvents_(EPOLL_MAX_EVENS_INIT), mutex_(), eventHandlers_()
 {
 }
 
@@ -92,12 +90,8 @@ uint32_t EventDemultiplexer::Update(int operation, EventHandler* handler)
     event.data.fd = handler->GetHandle();
 
     if (epoll_ctl(epollFd_, operation, handler->GetHandle(), &event) != 0) {
-        UTILS_LOGE("epoll_ctl %{public}d  operation %{public}d on handle %{public}d failed, errno %{public}d",
-            epollFd_, operation, handler->GetHandle(), errno);
-
-        if (epollCtlErrQueue_.size() < QUEUE_MAX_SIZE) {
-            epollCtlErrQueue_.push(std::make_tuple(operation, errno, handler->GetHandle()));
-        }
+        UTILS_LOGD("epoll_ctl %{public}d  operation %{public}d on handle %{public}d failed",
+            epollFd_, operation, handler->GetHandle());
         return TIMER_ERR_DEAL_FAILED;
     }
     return TIMER_ERR_OK;
@@ -136,12 +130,6 @@ int EventDemultiplexer::Polling(int timeout /* ms */, std::vector<epoll_event> &
                 eventQue.emplace_back(events);
             } else {
                 UTILS_LOGE("fd not found in eventHandlers_, fd=%{public}d, events=%{public}d", targetFd, events);
-                
-                while (!epollCtlErrQueue_.empty()) {
-                    auto [operation, errnoNum, fd] = epollCtlErrQueue_.front();
-                    UTILS_LOGE("epoll_ctl: %{public}d, errno: %{public}d, handle: %{public}d", operation, errnoNum, fd);
-                    epollCtlErrQueue_.pop();
-                }
             }
         }
     }
