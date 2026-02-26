@@ -69,6 +69,7 @@
               "string_ex.h",
               "thread_ex.h",
               "thread_pool.h",
+              "thread_safety_analysis_macros.h",
               "timer.h",
               "unique_fd.h"
             ],
@@ -102,6 +103,7 @@
               "string_ex.h",
               "thread_ex.h",
               "thread_pool.h",
+              "thread_safety_analysis_macros.h",
               "timer.h",
               "unique_fd.h"
             ],
