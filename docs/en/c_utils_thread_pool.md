@@ -30,7 +30,7 @@ Inherits from OHOS::NoCopyable
 1. Examples can be seen in base/test/unittest/common/utils_thread_pool_test.cpp
 2. Running unit test：
 
-- Start developer test framework：[Developer Test - Using Test Framework](https://gitee.com/openharmony/testfwk_developer_test#using-test-framework)
+- Start developer test framework：[Developer Test - Using Test Framework](https://gitcode.com/openharmony/testfwk_developer_test#using-test-framework)
 
 - Run this command in the test framework to run the tests of `thread_pool.h`
 

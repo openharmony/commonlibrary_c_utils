@@ -60,7 +60,7 @@ commonlibrary/c_utils/base/test
 ```
 
 Test
-├── developer_test                # test framework(git clone https://gitee.com/openharmony/testfwk_developer_test.git)
+├── developer_test                # test framework(git clone https://gitcode.com/openharmony/testfwk_developer_test.git)
 │   ├── aw
 │   ├── config
 │   │   ├── framework_config.xml  #config the benchmark timeout field to "900"
@@ -74,7 +74,7 @@ Test
 │   ├── start.bat                 # Windwos 
 │   └── start.sh                  # Linux
 ├── testcase                      # cp -r /out/rk3568/tests/benchmark/ XXX/testcase/
-└── xdevice                       # (git clone https://gitee.com/openharmony/testfwk_xdevice.git)
+└── xdevice                       # (git clone https://gitcode.com/openharmony/testfwk_xdevice.git)
 
 ```
 ## Execute test cases(windows)

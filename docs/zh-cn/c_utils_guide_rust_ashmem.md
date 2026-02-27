@@ -1,7 +1,7 @@
 # Rust侧-匿名共享内存(Ashmem, Anonymous Shared Memory)
 
 ## 概述
-提供Rust侧对应c_utils中[使用匿名共享内存(Ashmem, Anonymous Shared Memory)](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-ashmem.md)的相关接口。
+提供Rust侧对应c_utils中[使用匿名共享内存(Ashmem, Anonymous Shared Memory)](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-ashmem.md)的相关接口。
 其在Rust侧构成utils_rust包(Crate)中的ashmem模块，包括Rust侧对匿名共享内存进行操作的各接口方法。
 
 ## 涉及子模块
@@ -90,7 +90,7 @@
 
 - 测试用例代码参见 base/test/unittest/rust/utils_rust_ashmem_test.rs
 
-- 使用开发者自测试框架，使用方法参见：[开发自测试执行框架-测试用例执行](https://gitee.com/openharmony/testfwk_developer_test#%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B%E6%89%A7%E8%A1%8C)
+- 使用开发者自测试框架，使用方法参见：[开发自测试执行框架-测试用例执行](https://gitcode.com/openharmony/testfwk_developer_test#%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B%E6%89%A7%E8%A1%8C)
 
 - 使用以下具体命令以运行`utils_rust::ashmem`对应测试用例
 
@@ -100,4 +100,4 @@ run -t UT -tp utils -ts utils_rust_ashmem_test
 
 ## 常见问题
 
-请参考[使用匿名共享内存(Ashmem, Anonymous Shared Memory)](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-ashmem.md)
+请参考[使用匿名共享内存(Ashmem, Anonymous Shared Memory)](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-ashmem.md)
