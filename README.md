@@ -61,8 +61,8 @@ ohos_shared_library("xxxxx") {
 ```
 ## Coding Directions
 
-### [Timer](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/en/c_utils_timer.md)
-### [Thread Pool](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/en/c_utils_thread_pool.md)
+### [Timer](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/en/c_utils_timer.md)
+### [Thread Pool](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/en/c_utils_thread_pool.md)
 
 ## Changelog
 **2023/01/31**
@@ -73,10 +73,10 @@ ohos_shared_library("xxxxx") {
 **2022/10/10**
 1. Move this repository from utils/native to commonlibrary/c_utils.
 2. Switch component name from utils_base to c_utils.
-3. Securec is not in this repository any more. Please use [third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function).
+3. Securec is not in this repository any more. Please use [third_party_bounds_checking_function](https://gitcode.com/openharmony/third_party_bounds_checking_function).
 ## Repositories Involved<a name="section1249817110914"></a>
 
-**[commonlibrary\_c\_utils](https://gitee.com/openharmony/commonlibrary_c_utils)**
+**[commonlibrary\_c\_utils](https://gitcode.com/openharmony/commonlibrary_c_utils)**
 
-[commonlibrary\_utils\_lite](https://gitee.com/openharmony/commonlibrary_utils_lite)
+[commonlibrary\_utils\_lite](https://gitcode.com/openharmony/commonlibrary_utils_lite)
 

@@ -2,7 +2,7 @@
 
 ## 概述
 
-提供Rust侧对应c_utils中[文件与目录](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-directory.md)的接口。其在Rust侧构成utils_rust包(Crate)中的directory_ex模块，包括删除文件，获取文件后缀名和更改文件权限等函数。
+提供Rust侧对应c_utils中[文件与目录](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-directory.md)的接口。其在Rust侧构成utils_rust包(Crate)中的directory_ex模块，包括删除文件，获取文件后缀名和更改文件权限等函数。
 
 ## 涉及子模块
 ### utils_rust::directory_ex::ffi
@@ -40,7 +40,7 @@
 
 - 测试用例代码参见 base/test/unittest/rust/utils_rust_directory_test.rs
 
-- 使用开发者自测试框架，使用方法参见：[开发自测试执行框架-测试用例执行](https://gitee.com/openharmony/testfwk_developer_test#%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B%E6%89%A7%E8%A1%8C)
+- 使用开发者自测试框架，使用方法参见：[开发自测试执行框架-测试用例执行](https://gitcode.com/openharmony/testfwk_developer_test#%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B%E6%89%A7%E8%A1%8C)
 
 - 使用以下具体命令以运行`utils_rust::directory_ex`对应测试用例
 

@@ -70,35 +70,35 @@ ohos_shared_library("xxxxx") {
 
 ## 使用说明
 
-### [Rust-匿名共享内存](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_rust_ashmem.md)
-### [Rust-文件与目录](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_rust_directory.md)
-### [Rust-读写文件](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_rust_file.md)
+### [Rust-匿名共享内存](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_rust_ashmem.md)
+### [Rust-文件与目录](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_rust_directory.md)
+### [Rust-读写文件](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_rust_file.md)
 
-### [使用匿名共享内存](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-ashmem.md)
-### [使用智能指针管理动态分配内存对象](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-refbase.md)
-### [使用Parcel作为数据容器](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-parcel.md)
-### [定时器](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_timer.md)
-### [文件映射](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_mapped_file.md)
-### [事件处理系统](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_event.md)
-### [读写锁](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-rwlock.md)
-### [增强信号量功能](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-semaphore.md)
-### [强化线程能力](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-thread.md)
-### [线程池](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_thread_pool.md)
+### [使用匿名共享内存](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-ashmem.md)
+### [使用智能指针管理动态分配内存对象](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-refbase.md)
+### [使用Parcel作为数据容器](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-parcel.md)
+### [定时器](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_timer.md)
+### [文件映射](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_mapped_file.md)
+### [事件处理系统](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_guide_event.md)
+### [读写锁](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-rwlock.md)
+### [增强信号量功能](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-semaphore.md)
+### [强化线程能力](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-thread.md)
+### [线程池](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c_utils_thread_pool.md)
 
 
-### [线程安全Map](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-safeMap.md)
-### [有序Vector](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-sortedVector.md)
-### [线程安全阻塞队列](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-safe_block_queue.md)
-### [线程安全栈与队列](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-safe_queue.md)
+### [线程安全Map](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-safeMap.md)
+### [有序Vector](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-sortedVector.md)
+### [线程安全阻塞队列](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-safe_block_queue.md)
+### [线程安全栈与队列](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-safe_queue.md)
 
-### [单例模式](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-singleton.md)
-### [观察者模式](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-observer.md)
+### [单例模式](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-singleton.md)
+### [观察者模式](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-observer.md)
 
-### [日期与时间](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-datetime.md)
-### [文件与目录](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-directory.md)
-### [字符串处理](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-string.md)
-### [读写文件](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-file.md)
-### [管理、传递文件描述符](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-uniquefd.md)
+### [日期与时间](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-datetime.md)
+### [文件与目录](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-directory.md)
+### [字符串处理](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-string.md)
+### [读写文件](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-file.md)
+### [管理、传递文件描述符](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-uniquefd.md)
 
 ## Changelog
 **2023/06/14**
@@ -114,10 +114,10 @@ ohos_shared_library("xxxxx") {
 **2022/10/10**
 1. 路径变更。由utils/native移动至commonlibrary/c_utils；
 2. 部件名变更。由utils_base变更为c_utils；
-3. 不再提供安全C库能力。请使用[third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function)。
+3. 不再提供安全C库能力。请使用[third_party_bounds_checking_function](https://gitcode.com/openharmony/third_party_bounds_checking_function)。
 ## 相关仓<a name="section1249817110914"></a>
 
-**[commonlibrary\_c\_utils](https://gitee.com/openharmony/commonlibrary_c_utils)**
+**[commonlibrary\_c\_utils](https://gitcode.com/openharmony/commonlibrary_c_utils)**
 
-[commonlibrary\_utils\_lite](https://gitee.com/openharmony/commonlibrary_utils_lite)
+[commonlibrary\_utils\_lite](https://gitcode.com/openharmony/commonlibrary_utils_lite)
 

@@ -62,7 +62,7 @@ commonlibrary/c_utils/base/test
 ```
 
 Test
-├── developer_test                 # 开发者自测试框架 git clone https://gitee.com/openharmony/testfwk_developer_test.git
+├── developer_test                 # 开发者自测试框架 git clone https://gitcode.com/openharmony/testfwk_developer_test.git
 │   ├── aw
 │   ├── config  # 测试框架配置
 │   │   ├── framework_config.xml   #配置benchmark timeout字段为"900"
@@ -75,7 +75,7 @@ Test
 │   ├── start.bat                  # Windows
 │   └── start.sh                   # Linux
 ├── testcase                       # cp -r /out/rk3568/tests/benchmark/ XXX/testcase/
-└── xdevice                        # git clone https://gitee.com/openharmony/testfwk_xdevice.git
+└── xdevice                        # git clone https://gitcode.com/openharmony/testfwk_xdevice.git
 
 ```
 ## 执行测试用例(windows)

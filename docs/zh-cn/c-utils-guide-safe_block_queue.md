@@ -180,7 +180,7 @@ int main()
 
 - 测试用例代码参见base/test/unittest/common/utils_safe_block_queue_test.cpp 和 base/test/unittest/common/utils_safe_block_queue_tracking.cpp
 
-- 使用开发者自测试框架，使用方法参见：[开发自测试执行框架-测试用例执行](https://gitee.com/openharmony/testfwk_developer_test#%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B%E6%89%A7%E8%A1%8C)
+- 使用开发者自测试框架，使用方法参见：[开发自测试执行框架-测试用例执行](https://gitcode.com/openharmony/testfwk_developer_test#%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B%E6%89%A7%E8%A1%8C)
 
 - 使用以下具体命令以运行`safe_block_queue.h`对应测试用例
 ```bash

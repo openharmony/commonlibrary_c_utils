@@ -1,7 +1,7 @@
 # 读写文件
 
 ## 概述
-提供Rust侧对应c_utils中[读写文件](https://gitee.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-file.md)的接口。其在Rust侧构成utils_rust包(Crate)中的file_ex模块，包括对文件内容的读写以及对指定字符串的查找功能。
+提供Rust侧对应c_utils中[读写文件](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/docs/zh-cn/c-utils-guide-file.md)的接口。其在Rust侧构成utils_rust包(Crate)中的file_ex模块，包括对文件内容的读写以及对指定字符串的查找功能。
 ## 涉及子模块
 
 ### utils_rust::file_ex::ffi
@@ -31,7 +31,7 @@
 
 - 测试用例代码参见 base/test/unittest/rust/utils_rust_file_test.cpp
 
-- 使用开发者自测试框架，使用方法参见：[开发自测试执行框架-测试用例执行](https://gitee.com/openharmony/testfwk_developer_test#%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B%E6%89%A7%E8%A1%8C)
+- 使用开发者自测试框架，使用方法参见：[开发自测试执行框架-测试用例执行](https://gitcode.com/openharmony/testfwk_developer_test#%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B%E6%89%A7%E8%A1%8C)
 
 - 使用以下具体命令以运行`utils_rust::file_ex`对应测试用例
 
