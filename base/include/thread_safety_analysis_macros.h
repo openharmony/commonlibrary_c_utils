@@ -33,7 +33,9 @@ extern "C" {
 #define CAPABILITY(x)           THREAD_ANNOTATION_ATTRIBUTE__(capability(x))
 
 // Marks a lockable class that is reentrant (recursive lock allowed).
-#define REENTRANT_CAPABILITY    THREAD_ANNOTATION_ATTRIBUTE__(reentrant_capability)
+// Note: Supported by clang 18.0.0 or later.
+// Present OpenHarmony build toolchain does not support this macro.
+// #define REENTRANT_CAPABILITY    THREAD_ANNOTATION_ATTRIBUTE__(reentrant_capability)
 
 // Marks an RAII class (e.g., lock guard) that acquires a capability in its constructor
 // and releases it in its destructor.
