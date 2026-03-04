@@ -22,9 +22,10 @@ using namespace testing::ext;
 namespace OHOS {
 namespace {
 
-// 参考 LLVM 官方线程安全分析文档中的示例，为 Mutex 和 MutexLocker
-// 定义带注解的接口，同时在这里加一点简单的状态字段，方便 UT 验证
-// 这些宏在编译及运行期的行为（运行期只关心不被宏改变语义）。
+// Based on the examples from the LLVM thread safety analysis documentation,
+// this file defines annotated interfaces for Mutex and MutexLocker, and adds
+// simple state fields to make it easy for unit tests to verify that the
+// annotations do not change runtime behaviour while still compiling correctly.
 
 // Defines an annotated interface for mutexes.
 class CAPABILITY("mutex") Mutex {
@@ -266,7 +267,55 @@ public:
     }
 };
 
-// 一个带注解的数据结构，演示 GUARDED_BY / REQUIRES / REQUIRES_SHARED。
+// Demonstrates PT_GUARDED_BY: the data pointed to by ptr_ is protected by mu_.
+class DataWithPtrGuardedBy {
+public:
+    DataWithPtrGuardedBy() : storage_(0), ptr_(&storage_) {}
+
+    void SetValue(int v) REQUIRES(mu_)
+    {
+        *ptr_ = v;
+    }
+
+    int GetValue() REQUIRES_SHARED(mu_)
+    {
+        return *ptr_;
+    }
+
+    Mutex &GetMutex() RETURN_CAPABILITY(mu_)
+    {
+        return mu_;
+    }
+
+private:
+    Mutex mu_;
+    int storage_;
+    int *ptr_ PT_GUARDED_BY(mu_);
+};
+
+// Lock ordering: four mutexes in a chain (mu1 before mu2 before mu3 before mu4)
+// to demonstrate ACQUIRED_BEFORE without extern variables. Declared in reverse
+// order so each ACQUIRED_BEFORE references an already-declared member.
+struct LockOrderingDemo {
+    Mutex mu4;
+    Mutex mu3 ACQUIRED_BEFORE(mu4);
+    Mutex mu2 ACQUIRED_BEFORE(mu3);
+    Mutex mu1 ACQUIRED_BEFORE(mu2);
+};
+
+// Lock ordering using ACQUIRED_AFTER: a mirror of the above chain. Each mutex
+// must be acquired after the one that follows it (mu4 first, then mu3, mu2, mu1).
+// Members are again declared so that each ACQUIRED_AFTER references an
+// already-declared member.
+struct LockOrderingAfterDemo {
+    Mutex mu4;
+    Mutex mu3 ACQUIRED_AFTER(mu4);
+    Mutex mu2 ACQUIRED_AFTER(mu3);
+    Mutex mu1 ACQUIRED_AFTER(mu2);
+};
+
+// Example of an annotated data structure demonstrating GUARDED_BY /
+// REQUIRES / REQUIRES_SHARED combined together.
 class AnnotatedCounter {
 public:
     AnnotatedCounter() : value_(0) {}
@@ -283,7 +332,7 @@ public:
 
     void UnsafeIncrement() NO_THREAD_SAFETY_ANALYSIS
     {
-        // 显式关闭分析，避免假阳性。
+        // Explicitly disable analysis to suppress potential false positives.
         ++value_;
     }
 
@@ -334,12 +383,13 @@ HWTEST_F(UtilsThreadSafetyAnalysisTest, MutexBasicOperations, TestSize.Level0)
     mu.ReaderUnlock();
     EXPECT_FALSE(mu.IsLocked());
 
-    // TryLock should fail when already locked.
+    // TryLock should fail when the mutex is already locked.
     bool locked = mu.TryLock();
     EXPECT_TRUE(locked);
     EXPECT_TRUE(mu.IsLocked());
 
-    // 第二次 TryLock 预期失败，此时不能假定已经持有锁，因此不调用 GenericUnlock。
+    // The second TryLock is expected to fail; in that case we cannot assume
+    // the lock is held again, so we must not call GenericUnlock for it.
     bool lockedAgain = mu.TryLock();
     EXPECT_FALSE(lockedAgain);
 
@@ -348,7 +398,7 @@ HWTEST_F(UtilsThreadSafetyAnalysisTest, MutexBasicOperations, TestSize.Level0)
     }
     EXPECT_FALSE(mu.IsLocked());
 
-    // Try shared lock when unlocked.
+    // Try shared lock when currently unlocked.
     bool sharedLocked = mu.ReaderTryLock();
     EXPECT_TRUE(sharedLocked);
     EXPECT_TRUE(mu.IsLocked());
@@ -370,7 +420,8 @@ HWTEST_F(UtilsThreadSafetyAnalysisTest, MutexLockerRaiiAndTags, TestSize.Level0)
 {
     Mutex mu;
 
-    // 普通构造 + 析构自动解锁。
+    // Default constructor acquires the lock and the destructor releases it
+    // automatically (RAII behaviour).
     {
         MutexLocker locker(&mu);
         EXPECT_TRUE(mu.IsLocked());
@@ -378,17 +429,20 @@ HWTEST_F(UtilsThreadSafetyAnalysisTest, MutexLockerRaiiAndTags, TestSize.Level0)
     }
     EXPECT_FALSE(mu.IsLocked());
 
-    // adopt_lock：假定外部已经加锁，并在析构时负责解锁。
+    // adopt_lock: assume the mutex was already locked by the caller, and let
+    // the MutexLocker destructor be responsible for unlocking it.
     mu.Lock();
     {
         MutexLocker locker(&mu, ADOPT_LOCK);
         EXPECT_TRUE(mu.IsLocked());
         EXPECT_TRUE(locker.IsLocked());
     }
-    // adopt_lock 析构后应释放锁。
+    // After the adopt_lock-based locker is destroyed, the mutex should be
+    // released.
     EXPECT_FALSE(mu.IsLocked());
 
-    // defer_lock：构造时不加锁，调用 Lock 之后才加锁。
+    // defer_lock: do not lock in the constructor; the mutex is only locked
+    // when Lock() is explicitly called.
     {
         MutexLocker locker(&mu, DEFER_LOCK);
         EXPECT_FALSE(mu.IsLocked());
@@ -399,7 +453,7 @@ HWTEST_F(UtilsThreadSafetyAnalysisTest, MutexLockerRaiiAndTags, TestSize.Level0)
     }
     EXPECT_FALSE(mu.IsLocked());
 
-    // shared_lock：构造时以共享模式加锁。
+    // shared_lock: acquire the mutex in shared (reader) mode in the constructor.
     {
         MutexLocker locker(&mu, SHARED_LOCK);
         EXPECT_TRUE(mu.IsLocked());
@@ -408,7 +462,7 @@ HWTEST_F(UtilsThreadSafetyAnalysisTest, MutexLockerRaiiAndTags, TestSize.Level0)
     }
     EXPECT_FALSE(mu.IsLocked());
 
-    // ReaderLock / ReaderUnlock。
+    // ReaderLock / ReaderUnlock helpers used with a deferred locker.
     {
         MutexLocker locker = MutexLocker::DeferLock(&mu);
         EXPECT_FALSE(mu.IsLocked());
@@ -440,12 +494,112 @@ HWTEST_F(UtilsThreadSafetyAnalysisTest, AnnotatedCounterWithGuardedBy, TestSize.
         EXPECT_EQ(counter.Get(), 2);
     }
 
-    // UnsafeIncrement 关闭分析，但运行期仍然正常。
+    // UnsafeIncrement disables analysis, but runtime behaviour should remain
+    // correct.
     counter.UnsafeIncrement();
     {
         MutexLocker locker(&counter.GetMutex());
         EXPECT_EQ(counter.Get(), 3);
     }
+}
+
+/*
+ * @tc.name: PtGuardedByAccess
+ * @tc.desc: Verify PT_GUARDED_BY annotation: data pointed to by the pointer
+ *           is protected by the given mutex. Accesses through the pointer
+ *           must hold the lock.
+ * @tc.type: FUNC
+ * @tc.level: Level0
+ */
+HWTEST_F(UtilsThreadSafetyAnalysisTest, PtGuardedByAccess, TestSize.Level0)
+{
+    DataWithPtrGuardedBy data;
+
+    {
+        MutexLocker locker(&data.GetMutex());
+        data.SetValue(42);
+        EXPECT_EQ(data.GetValue(), 42);
+    }
+
+    {
+        MutexLocker locker(&data.GetMutex());
+        data.SetValue(100);
+        EXPECT_EQ(data.GetValue(), 100);
+    }
+}
+
+/*
+ * @tc.name: AcquiredBeforeOrder
+ * @tc.desc: Verify ACQUIRED_BEFORE lock ordering using four mutexes
+ *           (mu1 before mu2 before mu3 before mu4). Locks must be acquired
+ *           in the declared order.
+ * @tc.type: FUNC
+ * @tc.level: Level0
+ */
+HWTEST_F(UtilsThreadSafetyAnalysisTest, AcquiredBeforeOrder, TestSize.Level0)
+{
+    LockOrderingDemo order;
+
+    EXPECT_FALSE(order.mu1.IsLocked());
+    EXPECT_FALSE(order.mu2.IsLocked());
+    EXPECT_FALSE(order.mu3.IsLocked());
+    EXPECT_FALSE(order.mu4.IsLocked());
+
+    // Correct order: mu1 -> mu2 -> mu3 -> mu4.
+    order.mu1.Lock();
+    order.mu2.Lock();
+    order.mu3.Lock();
+    order.mu4.Lock();
+    EXPECT_TRUE(order.mu1.IsLocked());
+    EXPECT_TRUE(order.mu2.IsLocked());
+    EXPECT_TRUE(order.mu3.IsLocked());
+    EXPECT_TRUE(order.mu4.IsLocked());
+
+    order.mu4.Unlock();
+    order.mu3.Unlock();
+    order.mu2.Unlock();
+    order.mu1.Unlock();
+    EXPECT_FALSE(order.mu1.IsLocked());
+    EXPECT_FALSE(order.mu2.IsLocked());
+    EXPECT_FALSE(order.mu3.IsLocked());
+    EXPECT_FALSE(order.mu4.IsLocked());
+}
+
+/*
+ * @tc.name: AcquiredAfterOrder
+ * @tc.desc: Verify ACQUIRED_AFTER lock ordering using four mutexes mirrored
+ *           from the ACQUIRED_BEFORE chain. Locks must be acquired from mu4
+ *           to mu1 to satisfy the \"acquired after\" constraints.
+ * @tc.type: FUNC
+ * @tc.level: Level0
+ */
+HWTEST_F(UtilsThreadSafetyAnalysisTest, AcquiredAfterOrder, TestSize.Level0)
+{
+    LockOrderingAfterDemo order;
+
+    EXPECT_FALSE(order.mu1.IsLocked());
+    EXPECT_FALSE(order.mu2.IsLocked());
+    EXPECT_FALSE(order.mu3.IsLocked());
+    EXPECT_FALSE(order.mu4.IsLocked());
+
+    // Correct order w.r.t ACQUIRED_AFTER: mu4 -> mu3 -> mu2 -> mu1.
+    order.mu4.Lock();
+    order.mu3.Lock();
+    order.mu2.Lock();
+    order.mu1.Lock();
+    EXPECT_TRUE(order.mu1.IsLocked());
+    EXPECT_TRUE(order.mu2.IsLocked());
+    EXPECT_TRUE(order.mu3.IsLocked());
+    EXPECT_TRUE(order.mu4.IsLocked());
+
+    order.mu1.Unlock();
+    order.mu2.Unlock();
+    order.mu3.Unlock();
+    order.mu4.Unlock();
+    EXPECT_FALSE(order.mu1.IsLocked());
+    EXPECT_FALSE(order.mu2.IsLocked());
+    EXPECT_FALSE(order.mu3.IsLocked());
+    EXPECT_FALSE(order.mu4.IsLocked());
 }
 
 } // namespace
