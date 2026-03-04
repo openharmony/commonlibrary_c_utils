@@ -108,8 +108,8 @@ void TimerEventHandler::TimeOut()
     uint64_t expirations = 0;
     int errnoRead = 0;
     ssize_t n = ::read(GetHandle(), &expirations, sizeof(expirations));
+    errnoRead = errno;
     if (n != sizeof(expirations)) {
-        errnoRead = errno;
         struct itimerspec current = {
             .it_interval = {.tv_sec = -1, .tv_nsec = -1},
             .it_value = {.tv_sec = -1, .tv_nsec = -1}
@@ -137,6 +137,11 @@ void TimerEventHandler::TimeOut()
                        static_cast<long long>(initInfo_.timerSpec.it_interval.tv_sec),
                        initInfo_.timerSpec.it_interval.tv_nsec);
         }
+    }
+    if (errnoRead == EAGAIN) {
+        UTILS_LOGE("Read timerFd=%{public}d results in errno=%{public}d, "
+                   "Skip user's callback.", GetHandle(), errnoRead);
+        return;
     }
     if (callback_) {
         callback_(GetHandle());
