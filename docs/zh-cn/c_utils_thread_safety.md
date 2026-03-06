@@ -5,8 +5,9 @@
 ### 简介
 提供基于 clang 的编译期线程安全分析（Thread Safety Analysis，TSA）注解宏。这些宏用于标注互斥锁、受保护数据、函数的前置/后置条件等，帮助编译器在编译阶段发现数据竞争和锁使用错误。在非 clang 编译器下，这些宏会被展开为空操作，以保持兼容性。
 
-
-`#include <thread_safety_analysis_macros.h>`
+```
+#include "thread_safety_analysis_macros.h"
+```
 
 
 ## 涉及功能
@@ -83,10 +84,10 @@ public:
 
 class SCOPED_CAPABILITY MutexLocker {
 public:
-    MutexLocker(Mutex *mu) ACQUIRE(mu) : mut_(mu) { mu->Lock(); }
-    ~MutexLocker() RELEASE() { if (mut_) mut_->Unlock(); }
+    MutexLocker(Mutex *mu) ACQUIRE(mu) : mu_(mu) { mu->Lock(); }
+    ~MutexLocker() RELEASE() { if (mu_) mu_->Unlock(); }
 private:
-    Mutex *mut_;
+    Mutex *mu_;
 };
 ```
 
@@ -113,7 +114,7 @@ private:
 #include <vector>
 
 std::mutex mut;
-std::vector<int> data{0,1} GUAREDE_BY(mut);
+std::vector<int> data{0,1} GUARDED_BY(mut);
 
 // access with capabilities, no warning.
 {
@@ -127,24 +128,128 @@ std::vector<int> data{0,1} GUAREDE_BY(mut);
 }
 ```
 
-编译：`clang++ test.cpp -Wthread-safety -stdlib=libc++ -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS -I base/include/ -o a.out`
+编译：`clang++ test.cpp -Wthread-safety -stdlib=libc++ -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS -I base/include/ -o a.out`。注：`-I base/include`为示例路径，实际路径需要根据项目调整，OH构建系统中包含TSA头文件需要在组件`BUILD.gn`中增加：
+```gn
+external_deps += [ c_utils:utils ]
+```
 
 ### 4. 测试用例
-- 正确用法示例：base/test/unittest/common/utils_thread_safety_analysis_test.cpp
+- 正确用法示例：[base/test/unittest/common/utils_thread_safety_analysis_test.cpp](https://gitcode.com/openharmony/commonlibrary_c_utils/blob/master/base/test/unittest/common/utils_thread_safety_analysis_test.cpp)。
+
+测试用例编写简介：
+
+1. 定义具有capability的互斥锁类：
+```cpp
+// Use CAPABILITY macro to asign capability
+class CAPABILITY("mutex") Mutex {
+public:
+    // Declare methods a mutuable exclusive lock should have.
+    void Lock() ACQUIRE();
+
+    // Acquire/lock this mutex for read operations.
+    void ReaderLock() ACQUIRE_SHARED();
+
+    // Release/unlock an exclusive mutex.
+    void Unlock() RELEASE();
+
+    // Release/unlock a shared mutex.
+    void ReaderUnlock() RELEASE_SHARED();
+
+    // Generic unlock, can unlock exclusive and shared mutexes.
+    void GenericUnlock() RELEASE_GENERIC();
+
+    // Try to acquire the mutex.  Returns true on success, and false on failure.
+    bool TryLock() TRY_ACQUIRE(true);
+
+    // Try to acquire the mutex for read operations.
+    bool ReaderTryLock() TRY_ACQUIRE_SHARED(true);
+
+    // Assert that this mutex is currently held by the calling thread.
+    void AssertHeld() ASSERT_CAPABILITY(this) {}
+
+    // Assert that this mutex is currently held for read operations.
+    void AssertReaderHeld() ASSERT_SHARED_CAPABILITY(this) {}
+
+    // For negative capabilities.
+    const Mutex& operator!() const;
+
+    bool IsLocked() const;
+
+    bool IsSharedLocked() const;
+
+private:
+    bool locked_;
+    bool sharedLocked_;
+};
+```
+
+2. 使用`HWTEST_F`测试框架写具体用例：
+```cpp
+HWTEST_F(UtilsThreadSafetyAnalysisTest, MutexBasicOperations, TestSize.Level0)
+{
+    Mutex mu;
+
+    EXPECT_FALSE(mu.IsLocked());
+
+    // Exclusive lock / unlock.
+    mu.Lock();
+    EXPECT_TRUE(mu.IsLocked());
+    EXPECT_FALSE(mu.IsSharedLocked());
+
+    mu.Unlock();
+    EXPECT_FALSE(mu.IsLocked());
+
+    // Shared lock / unlock.
+    mu.ReaderLock();
+    EXPECT_TRUE(mu.IsLocked());
+    EXPECT_TRUE(mu.IsSharedLocked());
+
+    mu.ReaderUnlock();
+    EXPECT_FALSE(mu.IsLocked());
+
+    // TryLock should fail when the mutex is already locked.
+    bool locked = mu.TryLock();
+    EXPECT_TRUE(locked);
+    EXPECT_TRUE(mu.IsLocked());
+
+    // The second TryLock is expected to fail; in that case we cannot assume
+    // the lock is held again, so we must not call GenericUnlock for it.
+    bool lockedAgain = mu.TryLock();
+    EXPECT_FALSE(lockedAgain);
+
+    if (locked) {
+        mu.GenericUnlock();
+    }
+    EXPECT_FALSE(mu.IsLocked());
+
+    // Try shared lock when currently unlocked.
+    bool sharedLocked = mu.ReaderTryLock();
+    EXPECT_TRUE(sharedLocked);
+    EXPECT_TRUE(mu.IsLocked());
+    EXPECT_TRUE(mu.IsSharedLocked());
+    if (sharedLocked) {
+        mu.GenericUnlock();
+    }
+    EXPECT_FALSE(mu.IsLocked());
+}
+```
+TSA检测宏比较特殊：上述测试用例实质上测试了`Mutex`类的持锁、解锁功能，而TSA宏在编译期发挥作用，即用例编译器成功即发挥检测作用且代码正确使用TSA宏。
 
 ### 5. 编译与运行
-- 使用 clang 编译时，需启用 `-Wthread-safety` 才能进行线程安全分析
+- 使用 clang 编译时，需启用 `-Wthread-safety` 才能进行线程安全分析，详见[如何启用分析](#如何启用分析)。
 
 ## 常见问题
 
-详细信息参考[LLVM官方文档](https://clang.llvm.org/docs/ThreadSafetyAnalysis.html)
+详细信息参考[LLVM官方文档](https://clang.llvm.org/docs/ThreadSafetyAnalysis.html)。
 
 1. **应用于`std::mutex, std::lock_guard`**：需要应用于标准库互斥锁，需要添加编译选项宏`-D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS`，且使用`libc++`而非`libstdc++`。但注意：该编译选项宏会使能clang编译器对所有使用标注库互斥锁、lock_guard代码进行线程安全性检测，可能引入新的告警。
 
 2. **编译器支持**：线程安全分析仅在 clang 下生效。在 GCC、MSVC 等编译器下，这些宏会展开为空，不会报错，但也不会进行静态检查。
 
-3. **如何启用分析**：使用 clang 时需添加编译选项 `-Wthread-safety`（包含了 `-Wthread-safety-analysis, -Wthread-safety-attributes, -Wthread-safety-precise, -Wthread-safety-reference`，也可单独开启此四个安全检测宏）或 `-Wthread-safety-pointer`（检测受保护变量的指针、指向受保护数据的指针），否则注解不会触发诊断（OH构建系统已默认开启）。OH构建系统默认提升thread-safety warning为error，可以使用`-Wno-error=thread-safety`降级为warning。
+3. <a name="如何启用分析"></a>**如何启用分析**：使用 clang 时需添加编译选项 `-Wthread-safety`（包含了 `-Wthread-safety-analysis, -Wthread-safety-attributes, -Wthread-safety-precise, -Wthread-safety-reference`，也可单独开启此四个安全检测宏）或 `-Wthread-safety-pointer`（检测受保护变量的指针、指向受保护数据的指针），否则注解不会触发诊断（OH构建系统已默认开启）。OH构建系统默认提升thread-safety warning为error，可以使用`-Wno-error=thread-safety`降级为warning。
 
 4. **NO_THREAD_SAFETY_ANALYSIS 的用法**：当分析器产生误报，或某些复杂的锁逻辑无法被正确推导时，可对相应函数使用 `NO_THREAD_SAFETY_ANALYSIS` 跳过分析。应谨慎使用，避免掩盖真实问题。
 
 5. **SCOPED_CAPABILITY 与 RAII**：用于锁守卫等 RAII 类型时，构造函数应使用 `ACQUIRE` 或 `ACQUIRE_SHARED` 标注加锁操作，析构函数使用 `RELEASE` 或 `RELEASE_GENERIC` 标注解锁操作。
+
+6. **REENTRANT_CAPABILITY**支持情况：当前OpenHarmony构建工具链的clang版本还不支持`REENTRANT_CAPABILITY`，请等待升级。
