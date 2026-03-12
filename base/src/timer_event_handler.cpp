@@ -137,11 +137,11 @@ void TimerEventHandler::TimeOut()
                        static_cast<long long>(initInfo_.timerSpec.it_interval.tv_sec),
                        initInfo_.timerSpec.it_interval.tv_nsec);
         }
-    }
-    if (errnoRead == EAGAIN) {
-        UTILS_LOGE("Read timerFd=%{public}d results in errno=%{public}d, "
-                   "Skip user's callback.", GetHandle(), errnoRead);
-        return;
+        if (errnoRead == EAGAIN) {
+            UTILS_LOGE("Read timerFd=%{public}d results in n=%{public}ld, errno=%{public}d, "
+                       "Skip user's callback.", GetHandle(), static_cast<long>(n), errnoRead);
+            return;
+        }
     }
     if (callback_) {
         callback_(GetHandle());
