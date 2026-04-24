@@ -274,6 +274,7 @@ ohos_shared_library("utils") {
         enable_enhanced_opt) {
       ldflags += [ "-Wl,--aarch64-inline-plt" ]
     }
+    version_script = "utils.versionscript"
     if (defined(build_ext_path)) {
       ldflags += [ 
         "-Wl,--emit-relocs", 
