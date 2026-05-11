@@ -129,12 +129,12 @@ std::shared_ptr<T> DelayedSingleton<T>::GetInstance()
     }
 
     std::lock_guard<std::mutex> lock(mutex_);
-    if (instance_ == nullptr) {
+    if (atomic_load(&instance_) == nullptr) {
         std::shared_ptr<T> temp(new (std::nothrow) T);
-        instance_ = temp;
+        atomic_store(&instance_, temp);
     }
 
-    return instance_;
+    return atomic_load(&instance_);
 }
 
 template<typename T>
