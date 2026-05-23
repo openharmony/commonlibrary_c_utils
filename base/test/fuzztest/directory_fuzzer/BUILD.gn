@@ -24,7 +24,7 @@ ohos_fuzztest("DirectoryFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   defines = [ "DEBUG_FUZZ" ]
-  external_deps = [ "c_utils:utils" ]
+  deps = [ "//commonlibrary/c_utils/base:utils" ]
   sources = [ "directory_fuzzer.cpp" ]
 }
 ###############################################################################
