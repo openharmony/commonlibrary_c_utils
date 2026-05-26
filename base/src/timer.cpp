@@ -18,6 +18,7 @@
 
 #include "common_timer_errors.h"
 #include <sys/prctl.h>
+#include <atomic>
 #include "timer_event_handler.h" /* for INVALID_TIMER_FD */
 #include "utils_log.h"
 namespace OHOS {
