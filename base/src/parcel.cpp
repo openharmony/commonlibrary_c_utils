@@ -18,6 +18,7 @@
 #include "utils_log.h"
 #include <cstdint>
 #include <cstddef>
+#include <climits>
 
 // -------- ARM32 unaligned read guard -------------------------------------
 #if defined(__arm__) && !defined(__aarch64__)

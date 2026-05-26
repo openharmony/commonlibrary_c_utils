@@ -18,7 +18,6 @@ group("fuzztest") {
   deps = []
   deps += [
     # deps file
-    "ashmem_fuzzer:AshmemFuzzTest",
     "directory_fuzzer:DirectoryFuzzTest",
     "parcel_fuzzer:ParcelFuzzTest",
     "refbase_fuzzer:RefbaseFuzzTest",
@@ -26,5 +25,8 @@ group("fuzztest") {
     "thread_fuzzer:ThreadFuzzTest",
     "timer_fuzzer:TimerFuzzTest",
   ]
+  if (!is_host_product) {
+    deps += [ "ashmem_fuzzer:AshmemFuzzTest" ]
+  }
 }
 ###############################################################################

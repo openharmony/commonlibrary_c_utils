@@ -17,6 +17,7 @@
 #include "common_event_sys_errors.h"
 #include "io_event_epoll.h"
 #include "io_event_reactor.h"
+#include <climits>
 
 namespace OHOS {
 namespace Utils {
