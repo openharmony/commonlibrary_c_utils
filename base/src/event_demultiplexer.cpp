@@ -14,6 +14,7 @@
  */
 
 #include "event_demultiplexer.h"
+#include <strings.h>
 #include "event_reactor.h"
 #include "event_handler.h"
 #include "common_timer_errors.h"
@@ -139,6 +140,9 @@ int EventDemultiplexer::Polling(int timeout /* ms */, std::vector<epoll_event> &
                 
                 while (!epollCtlErrQueue_.empty()) {
                     auto [operation, errnoNum, fd] = epollCtlErrQueue_.front();
+                    (void)operation;
+                    (void)errnoNum;
+                    (void)fd;
                     UTILS_LOGE("epoll_ctl: %{public}d, errno: %{public}d, handle: %{public}d", operation, errnoNum, fd);
                     epollCtlErrQueue_.pop();
                 }

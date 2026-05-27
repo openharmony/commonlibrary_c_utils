@@ -17,6 +17,7 @@
 #include <iostream>
 #include <cstdio>
 #include <sys/prctl.h>
+#include <sys/resource.h>
 using namespace testing::ext;
 using namespace std;
 

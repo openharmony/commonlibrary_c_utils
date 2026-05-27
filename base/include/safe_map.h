@@ -18,6 +18,7 @@
 
 #include <map>
 #include <mutex>
+#include <functional>
 
 namespace OHOS {
 

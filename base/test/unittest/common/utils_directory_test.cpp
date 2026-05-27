@@ -21,6 +21,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <vector>
+#include <climits>
 
 using namespace testing::ext;
 using namespace std;
