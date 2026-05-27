@@ -11,31 +11,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-group("benchmarktest") {
-  testonly = true
-  deps = []
-  deps += [
-    # deps file
-    "ashemem_benchmark_test:AshememTest",
-    "datatime_benchmark_test:DatatimeTest",
-    "directory_benchmark_test:DirectoryTest",
-    "event_benchmark_test:EventTest",
-    "file_benchmark_test:FileTest",
-    "mapped_benchmark_test:MappedTest",
-    "observer_benchmark_test:ObserverTest",
-    "parcel_benchmark_test:ParcelTest",
-    "refbase_benchmark_test:RefbaseTest",
-    "rwlock_benchmark_test:RwlockTest",
-    "safe_block_queue_benchmark_test:SafeBlockQueueTest",
-    "safe_block_queue_tracking_benchmark_test:SafeBlockQueueTrackingTest",
-    "safe_map_benchmark_test:SafeMapTest",
-    "safe_queue_benchmark_test:SafeQueueTest",
-    "singleton_benchmark_test:SingletonTest",
-    "sorted_vector_benchmark_test:SortedVectorTest",
-    "string_benchmark_test:StringTest",
-    "thread_benchmark_test:ThreadTest",
-    "thread_pool_benchmark_test:ThreadPoolTest",
-    "timer_benchmark_test:TimerTest",
-    "unique_fd_benchmark_test:UniqueFdTest",
-  ]
+if (!is_host_product) {
+  group("benchmarktest") {
+    testonly = true
+    deps = []
+    deps += [
+      # deps file
+      "ashemem_benchmark_test:AshememTest",
+      "datatime_benchmark_test:DatatimeTest",
+      "directory_benchmark_test:DirectoryTest",
+      "event_benchmark_test:EventTest",
+      "file_benchmark_test:FileTest",
+      "mapped_benchmark_test:MappedTest",
+      "observer_benchmark_test:ObserverTest",
+      "parcel_benchmark_test:ParcelTest",
+      "refbase_benchmark_test:RefbaseTest",
+      "rwlock_benchmark_test:RwlockTest",
+      "safe_block_queue_benchmark_test:SafeBlockQueueTest",
+      "safe_block_queue_tracking_benchmark_test:SafeBlockQueueTrackingTest",
+      "safe_map_benchmark_test:SafeMapTest",
+      "safe_queue_benchmark_test:SafeQueueTest",
+      "singleton_benchmark_test:SingletonTest",
+      "sorted_vector_benchmark_test:SortedVectorTest",
+      "string_benchmark_test:StringTest",
+      "thread_benchmark_test:ThreadTest",
+      "thread_pool_benchmark_test:ThreadPoolTest",
+      "timer_benchmark_test:TimerTest",
+      "unique_fd_benchmark_test:UniqueFdTest",
+    ]
+  }
+} else {
+  group("benchmarktest") {
+  }
 }

@@ -17,6 +17,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <stack>
+#include <climits>
 #include "securec.h"
 #include "unistd.h"
 #include "utils_log.h"

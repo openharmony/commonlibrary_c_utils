@@ -18,6 +18,8 @@
 #include "utils_log.h"
 #include <iomanip>
 #include <sstream>
+#include <climits>
+#include <algorithm>
 using namespace std;
 
 namespace OHOS {
