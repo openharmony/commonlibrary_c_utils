@@ -44,6 +44,7 @@ pub mod ffi {
     #[allow(dead_code)]
     unsafe extern "C++" {
         include!("commonlibrary/c_utils/base/include/directory_ex.h");
+        include!("commonlibrary/c_utils/base/src/directory_ex_inner.h");
         /// Get the full absolute path to the current program.
         pub fn RustGetCurrentProcFullFileName() -> String;
 
@@ -84,8 +85,11 @@ pub mod ffi {
         /// Remove the file specified by fileName.
         pub fn RemoveFile(fileName: &CxxString) -> bool;
 
-        /// Get the folder size(bytes).
+        /// Get the logical folder size(bytes).
         pub fn GetFolderSize(path: &CxxString) -> u64;
+
+        /// Get the actual folder disk usage(bytes).
+        pub fn GetFolderDiskUsage(path: &CxxString) -> u64;
 
         /// Change the file authority.
         pub fn ChangeModeFile(fileName: &CxxString, mode: &u32) -> bool;
