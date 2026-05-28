@@ -134,7 +134,10 @@ bool ForceRemoveDirectoryBMS(const std::string& path);
 bool RemoveFile(const std::string& fileName);
 
 /**
- * @brief Obtains the folder size, in bytes.
+ * @brief Obtains the logical folder size, in bytes.
+ *
+ * This function sums the st_size of files in the folder recursively. It does
+ * not represent the actual disk space allocated by the file system.
  */
 uint64_t GetFolderSize(const std::string& path);
 
