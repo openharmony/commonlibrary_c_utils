@@ -15,6 +15,7 @@
 
 #include <benchmark/benchmark.h>
 #include "directory_ex.h"
+#include "directory_ex_inner.h"
 #include <fcntl.h>
 #include <algorithm>
 #include <iostream>
@@ -26,7 +27,6 @@ using namespace std;
 
 namespace OHOS {
 namespace {
-
 class BenchmarkDirectoryTest : public benchmark::Fixture {
 public:
     void SetUp(const ::benchmark::State& state) override
@@ -379,6 +379,35 @@ BENCHMARK_F(BenchmarkDirectoryTest, testGetFolderSize001)(benchmark::State& stat
         AssertEqual(ret, true, "ret did not equal true as expected.", state);
     }
     BENCHMARK_LOGD("DirectoryTest testGetFolderSize001 end.");
+}
+
+/*
+ * @tc.name: testGetFolderDiskUsage001
+ * @tc.desc: benchmark GetFolderDiskUsage with deep directory tree and many files
+ */
+BENCHMARK_F(BenchmarkDirectoryTest, testGetFolderDiskUsage001)(benchmark::State& state)
+{
+    BENCHMARK_LOGD("DirectoryTest testGetFolderDiskUsage001 start.");
+    string dirpath = "/data/test_folder_disk_usage_benchmark/";
+    string file = dirpath + "test.txt";
+    ForceRemoveDirectory(dirpath);
+    bool ret = ForceCreateDirectory(dirpath);
+    benchmark::DoNotOptimize(ret);
+
+    ofstream out(file);
+    if (out.is_open()) {
+        out << "This is a line.\n";
+        out << "This is another line.\n";
+        out.close();
+    }
+    while (state.KeepRunning()) {
+        uint64_t resultSize = GetFolderDiskUsage(dirpath);
+        benchmark::DoNotOptimize(resultSize);
+        AssertUnequal(resultSize, static_cast<uint64_t>(0),
+            "resultSize was 0, expected allocated disk usage for benchmark scene.", state);
+    }
+    ForceRemoveDirectory(dirpath);
+    BENCHMARK_LOGD("DirectoryTest testGetFolderDiskUsage001 end.");
 }
 
 /*
