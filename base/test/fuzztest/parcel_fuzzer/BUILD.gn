@@ -24,9 +24,9 @@ ohos_fuzztest("ParcelFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   defines = [ "DEBUG_FUZZ" ]
+  deps = [ "//commonlibrary/c_utils/base:utils" ]
   external_deps = [
     "bounds_checking_function:libsec_shared",
-    "c_utils:utils",
   ]
   sources = [ "parcel_fuzzer.cpp" ]
 }
