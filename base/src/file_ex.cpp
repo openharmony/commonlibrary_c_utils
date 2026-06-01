@@ -16,6 +16,8 @@
 #include "file_ex.h"
 #include <fstream>
 #include <unistd.h>
+#include <climits>
+#include <algorithm>
 #include "directory_ex.h"
 #include "utils_log.h"
 
@@ -328,7 +330,7 @@ bool SaveBufferToFile(const string& filePath, const vector<char>& content, bool 
     }
 
     // if the file is not exist,create it first!
-    uint32_t mode = truncated ? (ios::out | ios::binary | ios::trunc) : (ios::out | ios::binary | ios::app);
+    ios::openmode mode = truncated ? (ios::out | ios::binary | ios::trunc) : (ios::out | ios::binary | ios::app);
     ofstream file;
     file.open(filePath.c_str(), mode);
     if (!file.is_open()) {

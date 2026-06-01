@@ -13,18 +13,20 @@
 import("//build/test.gni")
 
 ##############################fuzztest##########################################
-ohos_fuzztest("AshmemFuzzTest") {
-  module_out_path = "c_utils/c_utils"
-  fuzz_config_file = "."
-  include_dirs = [ "../" ]
-  cflags = [
-    "-g",
-    "-O0",
-    "-Wno-unused-variable",
-    "-fno-omit-frame-pointer",
-  ]
-  defines = [ "DEBUG_FUZZ" ]
-  deps = [ "//commonlibrary/c_utils/base:utils" ]
-  sources = [ "ashmem_fuzzer.cpp" ]
+if (!is_host_product) {
+  ohos_fuzztest("AshmemFuzzTest") {
+    module_out_path = "c_utils/c_utils"
+    fuzz_config_file = "."
+    include_dirs = [ "../" ]
+    cflags = [
+      "-g",
+      "-O0",
+      "-Wno-unused-variable",
+      "-fno-omit-frame-pointer",
+    ]
+    defines = [ "DEBUG_FUZZ" ]
+    deps = [ "//commonlibrary/c_utils/base:utils" ]
+    sources = [ "ashmem_fuzzer.cpp" ]
+  }
 }
 ###############################################################################

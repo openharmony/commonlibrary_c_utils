@@ -21,6 +21,7 @@
 #include <memory>
 #include <mutex>
 #include <list>
+#include <functional>
 
 namespace OHOS {
 namespace Utils {

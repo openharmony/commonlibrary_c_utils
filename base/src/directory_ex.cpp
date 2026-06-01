@@ -14,16 +14,91 @@
  */
 
 #include "directory_ex.h"
+#include "directory_ex_inner.h"
+#include <algorithm>
 #include <dirent.h>
 #include <fcntl.h>
+#include <set>
 #include <stack>
+#include <climits>
+#include <utility>
 #include "securec.h"
 #include "unistd.h"
 #include "utils_log.h"
 using namespace std;
 
 namespace OHOS {
+namespace {
+constexpr uint64_t STAT_BLOCK_SIZE = 512;
 
+using FileId = pair<dev_t, ino_t>;
+
+uint64_t GetDiskUsageSize(const struct stat& fileStat)
+{
+    if (fileStat.st_blocks <= 0) {
+        return 0;
+    }
+    return static_cast<uint64_t>(fileStat.st_blocks) * STAT_BLOCK_SIZE;
+}
+
+uint64_t TraverseDirectoryDiskUsage(DIR *rootDir, const struct stat& rootStat)
+{
+    uint64_t totalSize = 0;
+    set<FileId> visited;
+    auto addDiskUsage = [&visited, &totalSize](const struct stat& fileStat) -> bool {
+        if (!S_ISDIR(fileStat.st_mode) && fileStat.st_nlink > 1) {
+            FileId fileId(fileStat.st_dev, fileStat.st_ino);
+            if (!visited.insert(fileId).second) {
+                return false;
+            }
+        }
+        totalSize += GetDiskUsageSize(fileStat);
+        return true;
+    };
+    addDiskUsage(rootStat);
+    stack<DIR *> traverseStack;
+    traverseStack.push(rootDir);
+    while (!traverseStack.empty()) {
+        DIR *topNode = traverseStack.top();
+        dirent *ptr = readdir(topNode);
+        if (ptr == nullptr) {
+            closedir(topNode);
+            traverseStack.pop();
+            continue;
+        }
+        string name = ptr->d_name;
+        if (name == "." || name == "..") {
+            continue;
+        }
+        int currentFd = dirfd(topNode);
+        if (currentFd < 0) {
+            UTILS_LOGD("Failed to get dirfd, fd: %{public}d: %{public}s ", currentFd, strerror(errno));
+            continue;
+        }
+        struct stat entryStat = {0};
+        if (fstatat(currentFd, name.c_str(), &entryStat, AT_SYMLINK_NOFOLLOW) != 0) {
+            UTILS_LOGD("Failed to fstatat: %{public}s: %{public}s ", name.c_str(), strerror(errno));
+            continue;
+        }
+        if (!addDiskUsage(entryStat) || !S_ISDIR(entryStat.st_mode)) {
+            continue;
+        }
+        int subFd = openat(currentFd, name.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+        if (subFd < 0) {
+            UTILS_LOGD("Failed in subFd openat: %{public}s ", name.c_str());
+            continue;
+        }
+        DIR *subDir = fdopendir(subFd);
+        if (subDir == nullptr) {
+            close(subFd);
+            UTILS_LOGD("Failed in fdopendir: %{public}s", strerror(errno));
+            continue;
+        }
+        traverseStack.push(subDir);
+    }
+    return totalSize;
+}
+}
 #ifdef UTILS_CXX_RUST
 rust::String RustGetCurrentProcFullFileName()
 {
@@ -433,6 +508,34 @@ uint64_t GetFolderSize(const string& path)
     }
 
     return totalSize;
+}
+
+uint64_t GetFolderDiskUsage(const string& path)
+{
+    struct stat statbuf = {0};
+    if (lstat(path.c_str(), &statbuf) != 0) {
+        UTILS_LOGD("Failed to lstat root path: %{public}s: %{public}s ", path.c_str(), strerror(errno));
+        return 0;
+    }
+
+    if (!S_ISDIR(statbuf.st_mode)) {
+        return GetDiskUsageSize(statbuf);
+    }
+
+    int rootFd = open(path.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    if (rootFd < 0) {
+        UTILS_LOGD("Failed to open dir: %{public}s: %{public}s ", path.c_str(), strerror(errno));
+        return 0;
+    }
+
+    DIR *rootDir = fdopendir(rootFd);
+    if (rootDir == nullptr) {
+        close(rootFd);
+        UTILS_LOGD("Failed in fdopendir: %{public}s", strerror(errno));
+        return 0;
+    }
+
+    return TraverseDirectoryDiskUsage(rootDir, statbuf);
 }
 
 // inner function, and param is legitimate

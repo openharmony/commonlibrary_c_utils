@@ -18,7 +18,10 @@ module_output_path = "c_utils/c_utils/base"
 config("module_private_config") {
   visibility = [ ":*" ]
 
-  include_dirs = [ "../../../include" ]
+  include_dirs = [
+    "../../../include",
+    "../../../src",
+  ]
 
   cflags = [ "-Wno-implicit-const-int-float-conversion" ]
 }
@@ -78,19 +81,21 @@ ohos_unittest("UtilsParcelTest") {
 }
 
 ##############################unittest##########################################
-ohos_unittest("UtilsAshmemTest") {
-  module_out_path = module_output_path
-  sources = [ "utils_ashmem_test.cpp" ]
+if (!is_host_product) {
+  ohos_unittest("UtilsAshmemTest") {
+    module_out_path = module_output_path
+    sources = [ "utils_ashmem_test.cpp" ]
 
-  configs = [ ":module_private_config" ]
+    configs = [ ":module_private_config" ]
 
-  deps = [ "//commonlibrary/c_utils/base:utils" ]
+    deps = [ "//commonlibrary/c_utils/base:utils" ]
 
-  external_deps = [
-    "bounds_checking_function:libsec_shared",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-  ]
+    external_deps = [
+      "bounds_checking_function:libsec_shared",
+      "googletest:gtest_main",
+      "hilog:libhilog",
+    ]
+  }
 }
 
 ##############################unittest##########################################
@@ -321,7 +326,6 @@ group("unittest") {
 
   deps += [
     # deps file
-    ":UtilsAshmemTest",
     ":UtilsDateTimeTest",
     ":UtilsDirectoryTest",
     ":UtilsEventTest",
@@ -344,5 +348,8 @@ group("unittest") {
     ":UtilsTimerTest",
     ":UtilsUniqueFdTest",
   ]
+  if (!is_host_product) {
+    deps += [ ":UtilsAshmemTest" ]
+  }
 }
 ###############################################################################

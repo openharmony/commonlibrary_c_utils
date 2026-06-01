@@ -24,6 +24,8 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include <functional>
+#include <memory>
 
 namespace OHOS {
 namespace Utils {

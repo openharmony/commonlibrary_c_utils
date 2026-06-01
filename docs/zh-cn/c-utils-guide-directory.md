@@ -21,7 +21,8 @@
 |bool    |**ForceCreateDirectory**(const std::string& path)<br> 强制创建带有子目录的目录。   |
 |bool    |**ForceRemoveDirectory**(const std::string& path)<br>强制删除包含子目录和文档的目录。   |
 |bool    |**RemoveFile**(const std::string& fileName)<br>删除文件。   |
-|uint64_t    |**GetFolderSize**(const std::string& path)<br> 获取文件夹大小（字节）。   |
+|uint64_t    |**GetFolderSize**(const std::string& path)<br> 获取文件夹逻辑大小（字节），递归累计文件的`st_size`，不代表文件系统实际分配空间。   |
+|uint64_t    |**GetFolderDiskUsage**(const std::string& path)<br> 获取文件夹真实磁盘占用（字节），按文件系统已分配块统计，包含目录自身占用；符号链接不跟随目标，但统计链接对象自身占用；仅对链接计数大于 1 的非目录文件按物理文件去重，语义与默认 `du` 接近。   |
 |bool   |**ChangeModeFile**(const std::string& fileName, const mode_t& mode)<br> 更改输入文档的权限。   |
 |bool   |**ChangeModeDirectory**(const std::string& path, const mode_t& mode)<br>更改输入目录的权限，包括子目录。   |
 |bool   |**PathToRealPath**(const std::string& path, std::string& realPath)<br> 从路径获取真实路径。   |
