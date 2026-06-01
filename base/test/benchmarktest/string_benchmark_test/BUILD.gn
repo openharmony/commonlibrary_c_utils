@@ -26,8 +26,9 @@ ohos_benchmarktest("StringTest") {
   ]
   sources = [ "string_benchmark_test.cpp" ]
 
+  deps = [ "//commonlibrary/c_utils/base:utils" ]
+
   external_deps = [
     "benchmark:benchmark",
-    "c_utils:utils",
   ]
 }

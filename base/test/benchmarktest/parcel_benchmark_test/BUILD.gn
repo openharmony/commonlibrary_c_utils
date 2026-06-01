@@ -26,9 +26,10 @@ ohos_benchmarktest("ParcelTest") {
   ]
   sources = [ "parcel_benchmark_test.cpp" ]
 
+  deps = [ "//commonlibrary/c_utils/base:utils" ]
+
   external_deps = [
     "benchmark:benchmark",
     "bounds_checking_function:libsec_shared",
-    "c_utils:utils",
   ]
 }
