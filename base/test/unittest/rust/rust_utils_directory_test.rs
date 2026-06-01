@@ -191,6 +191,31 @@ fn test_get_folder_size_001()
 }
 
 #[test]
+fn test_get_folder_disk_usage_001()
+{
+    let_cxx_string!(dirpath = "/data/test_folder_disk_usage_rust/");
+    let mut ret = directory_ex::ffi::ForceCreateDirectory(&dirpath);
+    assert!(ret);
+    fs::write("/data/test_folder_disk_usage_rust/test.txt", "This is a line.\nThis is another line.\n").unwrap();
+
+    let disk_usage = directory_ex::ffi::GetFolderDiskUsage(&dirpath);
+    let logical_size = directory_ex::ffi::GetFolderSize(&dirpath);
+    assert!(disk_usage >= logical_size);
+    assert_eq!(logical_size, 38);
+
+    ret = directory_ex::ffi::ForceRemoveDirectory(&dirpath);
+    assert!(ret);
+}
+
+#[test]
+fn test_get_folder_disk_usage_002()
+{
+    let_cxx_string!(dirpath = "");
+    let disk_usage = directory_ex::ffi::GetFolderDiskUsage(&dirpath);
+    assert_eq!(disk_usage, 0);
+}
+
+#[test]
 fn test_change_mode_file_001()
 {
     let_cxx_string!(dirpath = "/data/test/utils_directory_tmp/test.txt");

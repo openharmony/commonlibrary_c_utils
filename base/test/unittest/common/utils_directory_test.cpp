@@ -14,19 +14,27 @@
  */
 
 #include "directory_ex.h"
+#include "directory_ex_inner.h"
 #include <gtest/gtest.h>
 #include <fcntl.h>
 #include <algorithm>
+#include <cstdlib>
+#include <cstdio>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <sys/mount.h>
 #include <unistd.h>
 #include <vector>
+#include <climits>
 
 using namespace testing::ext;
 using namespace std;
 
 namespace OHOS {
 namespace {
+constexpr uint64_t STAT_BLOCK_SIZE = 512;
+
 class UtilsDirectoryTest : public testing::Test {
 public :
     static void SetUpTestCase(void);
@@ -51,6 +59,44 @@ void UtilsDirectoryTest::TearDown(void)
 {
 }
 
+uint64_t GetDiskUsage(const string& path)
+{
+    struct stat statbuf = {0};
+    if (lstat(path.c_str(), &statbuf) != 0 || statbuf.st_blocks <= 0) {
+        return 0;
+    }
+    return static_cast<uint64_t>(statbuf.st_blocks) * STAT_BLOCK_SIZE;
+}
+
+uint64_t GetDiskUsage(const vector<string>& paths)
+{
+    uint64_t totalSize = 0;
+    for (const auto& path : paths) {
+        totalSize += GetDiskUsage(path);
+    }
+    return totalSize;
+}
+
+uint64_t GetDuSummarizeSize(const string& path)
+{
+    string command = "du -s '" + path + "' 2>/dev/null";
+    FILE *pipe = popen(command.c_str(), "r");
+    if (pipe == nullptr) {
+        return 0;
+    }
+
+    char buffer[256] = {0};
+    string output;
+    if (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        output = buffer;
+    }
+    pclose(pipe);
+
+    istringstream stream(output);
+    uint64_t size = 0;
+    stream >> size;
+    return size;
+}
 /*
  * @tc.name: testGetCurrentProcFullFileName001
  * @tc.desc: get the directory of directorytest
@@ -474,6 +520,315 @@ HWTEST_F(UtilsDirectoryTest, testGetFolderSize001, TestSize.Level0)
 
     ret = ForceRemoveDirectory(dirpath);
     EXPECT_EQ(ret, true);
+}
+
+/*
+ * @tc.name: testGetFolderDiskUsage001
+ * @tc.desc: test actual disk usage with files and directories
+ */
+HWTEST_F(UtilsDirectoryTest, testGetFolderDiskUsage001, TestSize.Level0)
+{
+    string dirpath = "/data/test_folder_disk_usage/";
+    string subdir = dirpath + "subdir";
+    string file = dirpath + "test.txt";
+    string sparseFile = subdir + "/sparse.txt";
+    EXPECT_EQ(ForceCreateDirectory(subdir), true);
+
+    ofstream out(file);
+    if (out.is_open()) {
+        out << "This is a line.\n";
+        out << "This is another line.\n";
+        out.close();
+    }
+    FILE *fp = fopen(sparseFile.c_str(), "w");
+    ASSERT_NE(fp, nullptr);
+    EXPECT_EQ(ftruncate(fileno(fp), 1024 * 1024), 0);
+    EXPECT_EQ(fclose(fp), 0);
+
+    uint64_t resultSize = GetFolderDiskUsage(dirpath);
+    vector<string> expectedFiles = { ExcludeTrailingPathDelimiter(dirpath), subdir, file, sparseFile };
+    uint64_t expectedSize = GetDiskUsage(expectedFiles);
+    EXPECT_EQ(resultSize, expectedSize);
+    EXPECT_EQ(GetFolderSize(dirpath), static_cast<uint64_t>(38 + 1024 * 1024));
+
+    EXPECT_EQ(ForceRemoveDirectory(dirpath), true);
+}
+
+/*
+ * @tc.name: testGetFolderDiskUsage002
+ * @tc.desc: test symbolic link disk usage without following target
+ */
+HWTEST_F(UtilsDirectoryTest, testGetFolderDiskUsage002, TestSize.Level0)
+{
+    string dirpath = "/data/test_folder_disk_usage_symlink/";
+    string targetDir = "/data/test_folder_disk_usage_target/";
+    string targetFile = targetDir + "target.txt";
+    string linkFile = dirpath + "link.txt";
+    string rootLink = "/data/test_folder_disk_usage_root_link";
+    EXPECT_EQ(ForceCreateDirectory(dirpath), true);
+    EXPECT_EQ(ForceCreateDirectory(targetDir), true);
+
+    FILE *fp = fopen(targetFile.c_str(), "w");
+    ASSERT_NE(fp, nullptr);
+    EXPECT_EQ(ftruncate(fileno(fp), 1024 * 1024), 0);
+    EXPECT_EQ(fclose(fp), 0);
+    EXPECT_EQ(symlink(targetFile.c_str(), linkFile.c_str()), 0);
+
+    uint64_t expectedSize = GetDiskUsage(vector<string> { ExcludeTrailingPathDelimiter(dirpath), linkFile });
+    EXPECT_EQ(GetFolderDiskUsage(dirpath), expectedSize);
+
+    EXPECT_EQ(symlink(targetDir.c_str(), rootLink.c_str()), 0);
+    EXPECT_EQ(GetFolderDiskUsage(rootLink), GetDiskUsage(rootLink));
+
+    EXPECT_EQ(RemoveFile(rootLink), true);
+    EXPECT_EQ(ForceRemoveDirectory(dirpath), true);
+    EXPECT_EQ(ForceRemoveDirectory(targetDir), true);
+}
+
+/*
+ * @tc.name: testGetFolderDiskUsage003
+ * @tc.desc: test hard links are counted once
+ */
+HWTEST_F(UtilsDirectoryTest, testGetFolderDiskUsage003, TestSize.Level0)
+{
+    string dirpath = "/data/test_folder_disk_usage_hardlink/";
+    string file = dirpath + "test.txt";
+    string hardLink = dirpath + "hardlink.txt";
+    EXPECT_EQ(ForceCreateDirectory(dirpath), true);
+
+    ofstream out(file);
+    if (out.is_open()) {
+        out << "This is a line.\n";
+        out.close();
+    }
+    ASSERT_EQ(link(file.c_str(), hardLink.c_str()), 0);
+
+    uint64_t expectedSize = GetDiskUsage(vector<string> { ExcludeTrailingPathDelimiter(dirpath), file });
+    EXPECT_EQ(GetFolderDiskUsage(dirpath), expectedSize);
+
+    EXPECT_EQ(ForceRemoveDirectory(dirpath), true);
+}
+
+/*
+ * @tc.name: testGetFolderDiskUsage004
+ * @tc.desc: test invalid paths return zero and file paths return self usage
+ */
+HWTEST_F(UtilsDirectoryTest, testGetFolderDiskUsage004, TestSize.Level0)
+{
+    string dirpath = "/data/test_folder_disk_usage_invalid/";
+    string file = dirpath + "test.txt";
+    EXPECT_EQ(ForceCreateDirectory(dirpath), true);
+    ofstream out(file);
+    out.close();
+
+    EXPECT_EQ(GetFolderDiskUsage(""), static_cast<uint64_t>(0));
+    EXPECT_EQ(GetFolderDiskUsage("/data/test_folder_disk_usage_not_exist/"), static_cast<uint64_t>(0));
+    EXPECT_EQ(GetFolderDiskUsage(file), GetDiskUsage(file));
+
+    EXPECT_EQ(ForceRemoveDirectory(dirpath), true);
+}
+
+/*
+ * @tc.name: testGetFolderDiskUsage008
+ * @tc.desc: test GetFolderDiskUsage matches du for a regular file path
+ */
+HWTEST_F(UtilsDirectoryTest, testGetFolderDiskUsage008, TestSize.Level0)
+{
+    string dirpath = "/data/test_folder_disk_usage_regular_file/";
+    string file = dirpath + "regular.txt";
+    EXPECT_EQ(ForceCreateDirectory(dirpath), true);
+
+    ofstream out(file);
+    ASSERT_EQ(out.is_open(), true);
+    out << "test content for regular file path\n";
+    out.close();
+
+    uint64_t apiResult = GetFolderDiskUsage(file);
+    uint64_t expectedSize = GetDiskUsage(file);
+    uint64_t du512Blocks = 0;
+    string duCmd = "du -s -K " + file + " 2>/dev/null";
+    FILE *fp = popen(duCmd.c_str(), "r");
+    ASSERT_NE(fp, nullptr);
+    char buf[128] = {0};
+    if (fgets(buf, sizeof(buf), fp) != nullptr) {
+        du512Blocks = strtoull(buf, nullptr, 10);
+    }
+    pclose(fp);
+
+    EXPECT_EQ(apiResult, expectedSize);
+    EXPECT_EQ(apiResult, du512Blocks * STAT_BLOCK_SIZE);
+
+    EXPECT_EQ(ForceRemoveDirectory(dirpath), true);
+}
+
+/*
+ * @tc.name: testGetFolderDiskUsage009
+ * @tc.desc: test GetFolderDiskUsage matches du for deep directory tree with many files
+ */
+HWTEST_F(UtilsDirectoryTest, testGetFolderDiskUsage009, TestSize.Level0)
+{
+    string dirpath = "/data/test_folder_disk_usage_deep/";
+    string currentDir = ExcludeTrailingPathDelimiter(dirpath);
+    constexpr uint32_t depth = 8;
+    constexpr uint32_t filesPerLevel = 16;
+    EXPECT_EQ(ForceCreateDirectory(dirpath), true);
+
+    for (uint32_t level = 0; level < depth; ++level) {
+        currentDir += "/level_" + to_string(level);
+        EXPECT_EQ(ForceCreateDirectory(currentDir), true);
+
+        for (uint32_t fileIndex = 0; fileIndex < filesPerLevel; ++fileIndex) {
+            string filePath = currentDir + "/file_" + to_string(fileIndex) + ".txt";
+            ofstream out(filePath);
+            ASSERT_EQ(out.is_open(), true);
+            out << "deep directory disk usage test level " << level
+                << " file " << fileIndex << '\n';
+            out.close();
+        }
+    }
+
+    uint64_t apiResult = GetFolderDiskUsage(dirpath);
+    uint64_t du512Blocks = 0;
+    string duCmd = "du -s -K " + dirpath + " 2>/dev/null";
+    FILE *fp = popen(duCmd.c_str(), "r");
+    ASSERT_NE(fp, nullptr);
+    char buf[128] = {0};
+    if (fgets(buf, sizeof(buf), fp) != nullptr) {
+        du512Blocks = strtoull(buf, nullptr, 10);
+    }
+    pclose(fp);
+
+    EXPECT_NE(apiResult, static_cast<uint64_t>(0));
+    EXPECT_EQ(apiResult, du512Blocks * STAT_BLOCK_SIZE);
+    EXPECT_EQ(ForceRemoveDirectory(dirpath), true);
+}
+
+/*
+ * @tc.name: testGetFolderDiskUsage005
+ * @tc.desc: test GetFolderDiskUsage matches toybox du default block semantics
+ */
+HWTEST_F(UtilsDirectoryTest, testGetFolderDiskUsage005, TestSize.Level0)
+{
+    string dirpath = "/data/test_folder_disk_usage_du_default/";
+    string subdir = dirpath + "subdir";
+    string regularFile = dirpath + "regular.txt";
+    string sparseFile = subdir + "/sparse.bin";
+    string hardLink = dirpath + "regular_hardlink.txt";
+    string symlinkFile = dirpath + "sparse_symlink.bin";
+    EXPECT_EQ(ForceCreateDirectory(subdir), true);
+
+    ofstream regularOut(regularFile);
+    ASSERT_EQ(regularOut.is_open(), true);
+    regularOut << "du default semantics test\n";
+    regularOut.close();
+
+    FILE *sparseFp = fopen(sparseFile.c_str(), "w");
+    ASSERT_NE(sparseFp, nullptr);
+    EXPECT_EQ(ftruncate(fileno(sparseFp), 1024 * 1024), 0);
+    EXPECT_EQ(fclose(sparseFp), 0);
+
+    ASSERT_EQ(link(regularFile.c_str(), hardLink.c_str()), 0);
+    ASSERT_EQ(symlink(sparseFile.c_str(), symlinkFile.c_str()), 0);
+
+    uint64_t resultSize = GetFolderDiskUsage(dirpath);
+    uint64_t duSize = GetDuSummarizeSize(ExcludeTrailingPathDelimiter(dirpath));
+    constexpr uint64_t duBlockSize = 1024;
+    uint64_t expectedDuBlocks = (resultSize + duBlockSize - 1) / duBlockSize;
+    EXPECT_EQ(expectedDuBlocks, duSize);
+
+    EXPECT_EQ(ForceRemoveDirectory(dirpath), true);
+}
+
+/*
+ * @tc.name: testGetFolderDiskUsage006
+ * @tc.desc: test GetFolderDiskUsage matches du for bind-mounted directories
+ */
+HWTEST_F(UtilsDirectoryTest, testGetFolderDiskUsage006, TestSize.Level0)
+{
+    string testRoot = "/data/test_folder_disk_usage_bindmount/";
+    string originalDir = testRoot + "original";
+    string mirrorDir = testRoot + "mirror";
+    string file1 = originalDir + "/file1";
+    EXPECT_EQ(ForceCreateDirectory(originalDir), true);
+    EXPECT_EQ(ForceCreateDirectory(mirrorDir), true);
+
+    ofstream out(file1);
+    ASSERT_EQ(out.is_open(), true);
+    out << "test content for bind mount\n";
+    out.close();
+
+    int mountRet = mount(originalDir.c_str(), mirrorDir.c_str(), nullptr, MS_BIND, nullptr);
+    if (mountRet != 0) {
+        ForceRemoveDirectory(testRoot);
+        GTEST_SKIP() << "Cannot set up bind mount (requires root): " << strerror(errno);
+        return;
+    }
+
+    uint64_t apiResult = GetFolderDiskUsage(testRoot);
+    uint64_t du512Blocks = 0;
+    string duCmd = "du -s -K " + testRoot + " 2>/dev/null";
+    FILE *fp = popen(duCmd.c_str(), "r");
+    ASSERT_NE(fp, nullptr);
+    char buf[128] = {0};
+    if (fgets(buf, sizeof(buf), fp) != nullptr) {
+        du512Blocks = strtoull(buf, nullptr, 10);
+    }
+    pclose(fp);
+
+    uint64_t bindExpected = GetDiskUsage(vector<string> {
+        ExcludeTrailingPathDelimiter(testRoot),
+        ExcludeTrailingPathDelimiter(originalDir),
+        ExcludeTrailingPathDelimiter(mirrorDir),
+        file1,
+        mirrorDir + "/file1",
+    });
+
+    EXPECT_EQ(apiResult, bindExpected);
+    EXPECT_EQ(apiResult, du512Blocks * STAT_BLOCK_SIZE);
+
+    EXPECT_EQ(umount(mirrorDir.c_str()), 0);
+    if (!ForceRemoveDirectory(testRoot)) {
+        string cleanupCmd = "rm -rf " + testRoot;
+        system(cleanupCmd.c_str());
+    }
+    EXPECT_EQ(access(testRoot.c_str(), F_OK), -1);
+}
+
+/*
+ * @tc.name: testGetFolderDiskUsage007
+ * @tc.desc: test GetFolderDiskUsage does not follow a root directory symlink
+ */
+HWTEST_F(UtilsDirectoryTest, testGetFolderDiskUsage007, TestSize.Level0)
+{
+    string targetDir = "/data/test_folder_disk_usage_symlink_root_target/";
+    string targetFile = targetDir + "file1";
+    string rootLink = "/data/test_folder_disk_usage_symlink_root_link";
+    EXPECT_EQ(ForceCreateDirectory(targetDir), true);
+
+    ofstream out(targetFile);
+    ASSERT_EQ(out.is_open(), true);
+    out << "test content for symlink root\n";
+    out.close();
+
+    ASSERT_EQ(symlink(targetDir.c_str(), rootLink.c_str()), 0);
+
+    uint64_t apiResult = GetFolderDiskUsage(rootLink);
+    uint64_t expectedSize = GetDiskUsage(rootLink);
+    uint64_t du512Blocks = 0;
+    string duCmd = "du -s -K " + rootLink + " 2>/dev/null";
+    FILE *fp = popen(duCmd.c_str(), "r");
+    ASSERT_NE(fp, nullptr);
+    char buf[128] = {0};
+    if (fgets(buf, sizeof(buf), fp) != nullptr) {
+        du512Blocks = strtoull(buf, nullptr, 10);
+    }
+    pclose(fp);
+
+    EXPECT_EQ(apiResult, expectedSize);
+    EXPECT_EQ(apiResult, du512Blocks * STAT_BLOCK_SIZE);
+
+    EXPECT_EQ(RemoveFile(rootLink), true);
+    EXPECT_EQ(ForceRemoveDirectory(targetDir), true);
 }
 
 /*

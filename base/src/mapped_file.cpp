@@ -15,6 +15,7 @@
 #include "mapped_file.h"
 
 #include <sys/mman.h>
+#include <climits>
 #include "common_mapped_file_errors.h"
 #include "file_ex.h"
 #include "utils_log.h"
