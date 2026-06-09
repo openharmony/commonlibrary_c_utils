@@ -44,7 +44,7 @@ pub mod ffi {
     #[allow(dead_code)]
     unsafe extern "C++" {
         include!("commonlibrary/c_utils/base/include/directory_ex.h");
-        include!("commonlibrary/c_utils/base/src/directory_ex_inner.h");
+        include!("commonlibrary/c_utils/base/include/directory_ex_inner.h");
         /// Get the full absolute path to the current program.
         pub fn RustGetCurrentProcFullFileName() -> String;
 
