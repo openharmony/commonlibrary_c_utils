@@ -19,7 +19,7 @@ ohos_benchmarktest("DirectoryTest") {
   module_out_path = module_output_path
   include_dirs = [
     "../",
-    "../../../src",
+    "../../../include",
   ]
   cflags = [
     "-g",
