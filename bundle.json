@@ -72,7 +72,7 @@
               "thread_safety_analysis_macros.h",
               "timer.h",
               "unique_fd.h",
-              "../src/directory_ex_inner.h"
+              "directory_ex_inner.h"
             ],
             "header_base": "//commonlibrary/c_utils/base/include"
           }
@@ -107,7 +107,7 @@
               "thread_safety_analysis_macros.h",
               "timer.h",
               "unique_fd.h",
-              "../src/directory_ex_inner.h"
+              "directory_ex_inner.h"
             ],
             "header_base": "//commonlibrary/c_utils/base/include"
           }
