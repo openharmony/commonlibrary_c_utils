@@ -126,6 +126,7 @@ if (current_os == "ios") {
 }
 
 ohos_static_library("utilsbase") {
+  branch_protector_ret = "pac_ret"
   visibility = [
     ":*",
     "//applications/standard/contacts_data:contactsdataability",
