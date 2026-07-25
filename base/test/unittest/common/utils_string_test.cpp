@@ -643,6 +643,41 @@ HWTEST_F(UtilsStringTest, test_getsubstr_04, TestSize.Level0)
     EXPECT_EQ(0, static_cast<int>(strValue.size()));
 }
 
+HWTEST_F(UtilsStringTest, test_GetFirstSubStrBetween_empty_delimiter_01, TestSize.Level0)
+{
+    string strBase = "hello";
+    string subValue;
+
+    string::size_type pos = GetFirstSubStrBetween(strBase, "", "", subValue);
+    EXPECT_EQ(pos, string::npos);
+
+    pos = GetFirstSubStrBetween(strBase, "", "l", subValue);
+    EXPECT_EQ(pos, string::npos);
+
+    pos = GetFirstSubStrBetween(strBase, "l", "", subValue);
+    EXPECT_EQ(pos, string::npos);
+
+    pos = GetFirstSubStrBetween("", "", "", subValue);
+    EXPECT_EQ(pos, string::npos);
+}
+
+HWTEST_F(UtilsStringTest, test_GetSubStrBetween_empty_delimiter_01, TestSize.Level0)
+{
+    vector<string> subVec;
+
+    GetSubStrBetween("hello", "", "", subVec);
+    EXPECT_EQ(subVec.size(), 0);
+
+    GetSubStrBetween("hello", "", "l", subVec);
+    EXPECT_EQ(subVec.size(), 0);
+
+    GetSubStrBetween("hello", "l", "", subVec);
+    EXPECT_EQ(subVec.size(), 0);
+
+    GetSubStrBetween("", "", "", subVec);
+    EXPECT_EQ(subVec.size(), 0);
+}
+
 HWTEST_F(UtilsStringTest, DexToHexString_01, TestSize.Level0)
 {
     string result = DexToHexString(0);
