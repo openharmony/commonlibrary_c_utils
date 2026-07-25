@@ -205,6 +205,10 @@ bool IsSubStr(const string& str, const string& sub)
 string::size_type GetFirstSubStrBetween(const string& str, const string& left,
     const string& right, string& sub)
 {
+    if (left.empty() || right.empty()) {
+        return string::npos;
+    }
+    
     string::size_type leftPos = str.find(left);
     if (leftPos == string::npos) {
         return string::npos;
