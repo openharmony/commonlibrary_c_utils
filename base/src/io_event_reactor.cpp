@@ -122,6 +122,7 @@ ErrCode IOEventReactor::UpdateHandler(IOEventHandler* target)
     }
 
     if (target->prev_!=nullptr) {
+        std::lock_guard<std::mutex> lock(mutex_);
         if (!HasHandler(target)) {
             UTILS_LOGE("%{public}s: Failed, handler not found.", __FUNCTION__);
             return EVENT_SYS_ERR_NOT_FOUND;
