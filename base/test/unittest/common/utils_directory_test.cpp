@@ -131,13 +131,36 @@ HWTEST_F(UtilsDirectoryTest, testExtractFilePath001, TestSize.Level0)
 }
 
 /*
- * @tc.name: testExtractFileName001
+ * @tc.name: testExtractFilePath002
  * @tc.desc: get the filename of the path
+ */
+HWTEST_F(UtilsDirectoryTest, testExtractFilePath002, TestSize.Level0)
+{
+    string strFilePath = "abc.cpp";
+    string strBasePath = "";
+    string strPath = ExtractFilePath(strFilePath);
+    EXPECT_EQ(strBasePath, strPath);
+}
+
+/*
+ * @tc.name: testExtractFileName001
+ * @tc.desc: get the filename of the name
  */
 HWTEST_F(UtilsDirectoryTest, testExtractFileName001, TestSize.Level0)
 {
     string strBaseName = "UtilsDirectoryTest";
     string strName = ExtractFileName(GetCurrentProcFullFileName());
+    EXPECT_EQ(strBaseName, strName);
+}
+
+/*
+ * @tc.name: testExtractFileName002
+ * @tc.desc: get the filename of the name
+ */
+HWTEST_F(UtilsDirectoryTest, testExtractFileName002, TestSize.Level0)
+{
+    string strBaseName = "abc.cpp";
+    string strName = ExtractFileName(strBaseName);
     EXPECT_EQ(strBaseName, strName);
 }
 

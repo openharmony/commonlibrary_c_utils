@@ -181,12 +181,20 @@ string GetCurrentProcPath()
 
 string ExtractFilePath(const string& fileFullName)
 {
-    return string(fileFullName).substr(0, fileFullName.rfind("/") + 1);
+    size_t pos = fileFullName.rfind("/");
+    if (pos == std::string::npos) {
+        return "";
+    }
+    return fileFullName.substr(0, pos + 1);
 }
 
 std::string ExtractFileName(const std::string& fileFullName)
 {
-    return string(fileFullName).substr(fileFullName.rfind("/") + 1, fileFullName.size());
+    size_t pos = fileFullName.rfind("/");
+    if (pos == std::string::npos) {
+        return fileFullName;
+    }
+    return fileFullName.substr(pos + 1);
 }
 
 string ExtractFileExt(const string& fileName)
