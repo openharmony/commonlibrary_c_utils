@@ -25,6 +25,14 @@ config("module_private_config") {
   cflags = [ "-Wno-implicit-const-int-float-conversion" ]
 }
 
+config("io_event_epoll_private_config") {
+  visibility = [ ":*" ]
+
+  include_dirs = [
+    "../../../src",
+  ]
+}
+
 ##############################unittest##########################################
 ohos_unittest("UtilsStringTest") {
   module_out_path = module_output_path
@@ -127,6 +135,20 @@ ohos_unittest("UtilsEventTest") {
   sources = [ "utils_event_test.cpp" ]
 
   configs = [ ":module_private_config" ]
+
+  deps = [ "//commonlibrary/c_utils/base:utils" ]
+
+  external_deps = [ "googletest:gtest_main" ]
+}
+
+ohos_unittest("UtilsIOEventEpollTest") {
+  module_out_path = module_output_path
+  sources = [ "utils_io_event_epoll_test.cpp" ]
+
+  configs = [
+    ":module_private_config",
+    ":io_event_epoll_private_config",
+  ]
 
   deps = [ "//commonlibrary/c_utils/base:utils" ]
 
@@ -329,6 +351,7 @@ group("unittest") {
     ":UtilsDirectoryTest",
     ":UtilsEventTest",
     ":UtilsFileTest",
+    ":UtilsIOEventEpollTest",
     ":UtilsMappedFileTest",
     ":UtilsObserverTest",
     ":UtilsParcelTest",
