@@ -31,6 +31,9 @@ config("utils_config") {
   if (current_os == "ios") {
     defines += [ "IOS_PLATFORM" ]
   }
+  if (is_ohos) {
+    defines += [ "OHOS_PLATFORM" ]
+  }
   if (current_os == "win" || current_os == "mingw") {
     defines += [ "WINDOWS_PLATFORM" ]
   }

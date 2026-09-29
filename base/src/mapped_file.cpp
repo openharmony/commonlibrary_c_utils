@@ -19,9 +19,31 @@
 #include "common_mapped_file_errors.h"
 #include "file_ex.h"
 #include "utils_log.h"
+#ifdef OHOS_PLATFORM
+#include <stdio.h>
+#endif
 
 namespace OHOS {
 namespace Utils {
+#ifdef OHOS_PLATFORM
+static constexpr uint64_t MAPPED_FILE_FDSAN_TAG = 0xD003D00;
+#endif
+
+static bool CloseFd(int& fd)
+{
+    if (fd == -1) {
+        return true;
+    }
+
+    int fdToClose = fd;
+    fd = -1;
+#ifdef OHOS_PLATFORM
+    return fdsan_close_with_tag(fdToClose, MAPPED_FILE_FDSAN_TAG) != -1;
+#else
+    return close(fdToClose) != -1;
+#endif
+}
+
 off_t MappedFile::pageSize_ = static_cast<off_t>(sysconf(_SC_PAGESIZE));
 
 MappedFile::MappedFile(std::string& path, MapMode mode, off_t offset, off_t size, const char *hint)
@@ -166,10 +188,14 @@ bool MappedFile::OpenFile()
         return false;
     }
 
+#ifdef OHOS_PLATFORM
+    fdsan_exchange_owner_tag(fd, 0, MAPPED_FILE_FDSAN_TAG);
+#endif
+
     if (isNewFile_) {
         if (!NormalizePath()) {
             UTILS_LOGE("%{public}s normalize path failed. %{public}s", __FUNCTION__, strerror(errno));
-            if (close(fd) == -1) {
+            if (!CloseFd(fd)) {
                 UTILS_LOGW("%{public}s: NormalizePath Failed. Cannot close the file: %{public}s.", \
                            __FUNCTION__, strerror(errno));
             }
@@ -181,7 +207,7 @@ bool MappedFile::OpenFile()
         }
         if (ftruncate(fd, EndOffset() + 1) == -1) {
             UTILS_LOGD("%{public}s: Failed. Cannot change file size: %{public}s.", __FUNCTION__, strerror(errno));
-            if (close(fd) == -1) {
+            if (!CloseFd(fd)) {
                 UTILS_LOGW("%{public}s: Failed. Cannot close the file: %{public}s.", \
                            __FUNCTION__, strerror(errno));
             }
@@ -468,7 +494,7 @@ ErrCode MappedFile::Clear(bool force)
         }
     }
 
-    if (fd_ != -1 && close(fd_) == -1) {
+    if (!CloseFd(fd_)) {
         UTILS_LOGD("%{public}s: Failed. Cannot close the file: %{public}s.", \
                    __FUNCTION__, strerror(errno));
         return MAPPED_FILE_ERR_FAILED;
@@ -487,7 +513,7 @@ MappedFile::~MappedFile()
         }
     }
 
-    if (fd_ != -1 && close(fd_) == -1) {
+    if (!CloseFd(fd_)) {
         UTILS_LOGE("%{public}s: Failed. Cannot close the file: %{public}s.", \
                    __FUNCTION__, strerror(errno));
     }
@@ -561,14 +587,13 @@ bool MappedFile::ChangePath(const std::string& val)
 {
     if (path_ != val) {
         if (!isMapped_ || Unmap() == MAPPED_FILE_ERR_OK) {
-            if (fd_ != -1 && close(fd_) == -1) {
+            if (!CloseFd(fd_)) {
                 UTILS_LOGW("%{public}s: Failed. Cannot close the file: %{public}s.", \
                            __FUNCTION__, strerror(errno));
                 return false;
             }
             path_ = val;
             isNormed_ = false;
-            fd_ = -1;
 
             return true;
         } else {

@@ -14,9 +14,11 @@
  */
 #include "mapped_file.h"
 
+#include <csignal>
 #include <fstream>
 #include <gtest/gtest.h>
 #include <iostream>
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include "common_mapped_file_errors.h"
@@ -1528,6 +1530,153 @@ HWTEST_F(UtilsMappedFileTest, testMoveMappedFile004, TestSize.Level0)
     // 6. read from mapped file
     // write to mapped file
     TestTwoFileWrite(mf, filename, filename1, content1);
+}
+
+/*
+ * @tc.name: testClear001
+ * @tc.desc: Test Clear() with a mapped region.
+ */
+HWTEST_F(UtilsMappedFileTest, testClear001, TestSize.Level0)
+{
+    // 1. create a new file
+    std::string filename = "test_clear_1.txt";
+    std::string content = "Test for clear use.";
+    ReCreateFile(filename, content);
+
+    // 2. map file
+    MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
+    ASSERT_TRUE(mf.IsMapped());
+    ASSERT_NE(mf.GetFd(), -1);
+
+    // 3. clear: unmap, close fd and reset params
+    ASSERT_EQ(mf.Clear(), MAPPED_FILE_ERR_OK);
+    EXPECT_FALSE(mf.IsMapped());
+    EXPECT_FALSE(mf.IsNormed());
+    EXPECT_EQ(mf.GetFd(), -1);
+    EXPECT_EQ(mf.Begin(), nullptr);
+    EXPECT_EQ(mf.GetPath(), "");
+
+    // 4. the file itself is not removed
+    EXPECT_TRUE(FileExists(filename));
+
+    // 5. reuse the object: set path again and remap (fd reopened and retagged)
+    ASSERT_TRUE(mf.ChangePath(filename));
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
+    EXPECT_TRUE(mf.IsMapped());
+    ASSERT_NE(mf.GetFd(), -1);
+
+    std::string readout;
+    for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
+        readout.push_back(*cur);
+    }
+    EXPECT_EQ(readout, content);
+
+    RemoveTestFile(filename);
+}
+
+/*
+ * @tc.name: testClear002
+ * @tc.desc: Test Clear() after Unmap() (fd keeps open until Clear()).
+ */
+HWTEST_F(UtilsMappedFileTest, testClear002, TestSize.Level0)
+{
+    // 1. create a new file
+    std::string filename = "test_clear_2.txt";
+    std::string content = "Test for clear use.";
+    ReCreateFile(filename, content);
+
+    // 2. map file then unmap it (fd is kept open by design)
+    MappedFile mf(filename);
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
+    ASSERT_EQ(mf.Unmap(), MAPPED_FILE_ERR_OK);
+    EXPECT_FALSE(mf.IsMapped());
+    EXPECT_NE(mf.GetFd(), -1);
+
+    // 3. clear: the open fd should be closed
+    ASSERT_EQ(mf.Clear(), MAPPED_FILE_ERR_OK);
+    EXPECT_FALSE(mf.IsMapped());
+    EXPECT_EQ(mf.GetFd(), -1);
+
+    // 4. reuse the object
+    ASSERT_TRUE(mf.ChangePath(filename));
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
+    std::string readout;
+    for (char* cur = mf.Begin(); cur <= mf.End(); cur++) {
+        readout.push_back(*cur);
+    }
+    EXPECT_EQ(readout, content);
+
+    RemoveTestFile(filename);
+}
+
+/*
+ * @tc.name: testClear003
+ * @tc.desc: Test Clear() with an untouched object.
+ */
+HWTEST_F(UtilsMappedFileTest, testClear003, TestSize.Level0)
+{
+    // 1. create a new file
+    std::string filename = "test_clear_3.txt";
+    std::string content = "Test for clear use.";
+    ReCreateFile(filename, content);
+
+    // 2. clear without mapping
+    MappedFile mf(filename);
+    ASSERT_EQ(mf.Clear(), MAPPED_FILE_ERR_OK);
+    EXPECT_FALSE(mf.IsMapped());
+    EXPECT_EQ(mf.GetFd(), -1);
+
+    // 3. the object is still usable
+    ASSERT_TRUE(mf.ChangePath(filename));
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
+    EXPECT_TRUE(mf.IsMapped());
+
+    RemoveTestFile(filename);
+}
+
+/*
+ * @tc.name: testFtruncateFailed001
+ * @tc.desc: Test the OpenFile() error path: ftruncate() fails on a newly created file.
+ */
+HWTEST_F(UtilsMappedFileTest, testFtruncateFailed001, TestSize.Level0)
+{
+    // 1. prepare a non-existed file
+    std::string filename = "test_ftruncate_failed_1.txt";
+    filename.insert(0, SUITE_PATH).insert(0, BASE_PATH);
+    RemoveTestFile(filename);
+
+    MappedFile mf(filename, MapMode::DEFAULT | MapMode::CREATE_IF_ABSENT);
+
+    // 2. make ftruncate() fail with EFBIG (SIGXFSZ is ignored to keep the process alive)
+    struct rlimit oldLimit = {0};
+    ASSERT_EQ(getrlimit(RLIMIT_FSIZE, &oldLimit), 0);
+    struct rlimit newLimit = {0};
+    newLimit.rlim_cur = 1; // 1: one byte at most.
+    newLimit.rlim_max = oldLimit.rlim_max;
+    auto oldHandler = signal(SIGXFSZ, SIG_IGN);
+    ASSERT_NE(oldHandler, SIG_ERR);
+    ASSERT_EQ(setrlimit(RLIMIT_FSIZE, &newLimit), 0);
+
+    // 3. mapping should fail and the newly created file should be removed
+    ErrCode res = mf.Map();
+
+    // 4. restore the limit and the signal handler as early as possible
+    ASSERT_EQ(setrlimit(RLIMIT_FSIZE, &oldLimit), 0);
+    signal(SIGXFSZ, oldHandler);
+
+    EXPECT_EQ(res, MAPPED_FILE_ERR_FAILED);
+    EXPECT_FALSE(mf.IsMapped());
+    EXPECT_TRUE(mf.IsNormed());
+    EXPECT_EQ(mf.GetFd(), -1);
+    EXPECT_FALSE(FileExists(filename));
+
+    // 5. the object is still usable after the failure
+    ASSERT_EQ(mf.Map(), MAPPED_FILE_ERR_OK);
+    EXPECT_TRUE(mf.IsMapped());
+    ASSERT_NE(mf.GetFd(), -1);
+
+    RemoveTestFile(filename);
 }
 
 }  // namespace

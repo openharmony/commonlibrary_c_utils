@@ -19,11 +19,25 @@
 #include "common_event_sys_errors.h"
 #include "io_event_epoll.h"
 #include <strings.h>
+#ifdef OHOS_PLATFORM
+#include <stdio.h>
+#endif
 
 namespace OHOS {
 namespace Utils {
+#ifdef OHOS_PLATFORM
+static constexpr uint64_t IO_EVENT_EPOLL_FDSAN_TAG = 0xD003D00;
+#endif
+
 IOEventEpoll::IOEventEpoll()
-    : epollFd_(epoll_create1(EPOLL_CLOEXEC)), maxEvents_(EPOLL_MAX_EVENTS_INIT) {}
+    : epollFd_(epoll_create1(EPOLL_CLOEXEC)), maxEvents_(EPOLL_MAX_EVENTS_INIT)
+{
+#ifdef OHOS_PLATFORM
+    if (epollFd_ >= 0) {
+        fdsan_exchange_owner_tag(epollFd_, 0, IO_EVENT_EPOLL_FDSAN_TAG);
+    }
+#endif
+}
 
 IOEventEpoll::~IOEventEpoll()
 {
@@ -37,6 +51,9 @@ ErrCode IOEventEpoll::SetUp()
         if (epollFd_ < 0) {
             return EVENT_SYS_ERR_BADF;
         }
+#ifdef OHOS_PLATFORM
+        fdsan_exchange_owner_tag(epollFd_, 0, IO_EVENT_EPOLL_FDSAN_TAG);
+#endif
     }
     return EVENT_SYS_ERR_OK;
 }
@@ -44,7 +61,11 @@ ErrCode IOEventEpoll::SetUp()
 void IOEventEpoll::CleanUp()
 {
     if (epollFd_ != IO_EVENT_INVALID_FD) {
+#ifdef OHOS_PLATFORM
+        if (fdsan_close_with_tag(epollFd_, IO_EVENT_EPOLL_FDSAN_TAG) != 0) {
+#else
         if (close(epollFd_) != 0) {
+#endif
             UTILS_LOGW("%{public}s: Failed, cannot close fd: %{public}s.", __FUNCTION__, strerror(errno));
         }
         epollFd_ = IO_EVENT_INVALID_FD;
