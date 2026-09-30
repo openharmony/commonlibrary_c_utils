@@ -20,9 +20,15 @@
 
 #include <sys/timerfd.h>
 #include <unistd.h>
+#ifdef UTILS_FDSAN
+#include <stdio.h>
+#endif
 
 namespace OHOS {
 namespace Utils {
+#ifdef UTILS_FDSAN
+static constexpr uint64_t TIMER_EVENT_HANDLER_FDSAN_TAG = 0xD003D00;
+#endif
 
 // Unit of measure conversion
 static const int MILLI_TO_BASE = 1000;
@@ -36,11 +42,22 @@ TimerEventHandler::TimerEventHandler(EventReactor* p, uint32_t timeout /* ms */,
       callback_(),
       initInfo_()
 {
+#ifdef UTILS_FDSAN
+    if (GetHandle() >= 0) {
+        fdsan_exchange_owner_tag(GetHandle(), 0, TIMER_EVENT_HANDLER_FDSAN_TAG);
+    }
+#endif
 }
 
 TimerEventHandler::~TimerEventHandler()
 {
-    close(GetHandle());
+    if (GetHandle() != INVALID_TIMER_FD) {
+#ifdef UTILS_FDSAN
+        fdsan_close_with_tag(GetHandle(), TIMER_EVENT_HANDLER_FDSAN_TAG);
+#else
+        close(GetHandle());
+#endif
+    }
     SetHandle(INVALID_TIMER_FD);
 }
 

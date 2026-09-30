@@ -19,9 +19,16 @@
 #include "event_handler.h"
 #include "common_timer_errors.h"
 #include "utils_log.h"
+#ifdef UTILS_FDSAN
+#include <stdio.h>
+#endif
+
 
 namespace OHOS {
 namespace Utils {
+#ifdef UTILS_FDSAN
+static constexpr uint64_t EVENT_DEMULTIPLEXER_FDSAN_TAG = 0xD003D00;
+#endif
 
 static const int EPOLL_MAX_EVENS_INIT = 8;
 static const int HALF_OF_MAX_EVENT = 2;
@@ -35,6 +42,11 @@ EventDemultiplexer::EventDemultiplexer()
     : epollFd_(epoll_create1(EPOLL_CLOEXEC)), maxEvents_(EPOLL_MAX_EVENS_INIT), mutex_(), eventHandlers_(),
     epollCtlErrQueue_()
 {
+#ifdef UTILS_FDSAN
+    if (epollFd_ >= 0) {
+        fdsan_exchange_owner_tag(epollFd_, 0, EVENT_DEMULTIPLEXER_FDSAN_TAG);
+    }
+#endif
 }
 
 EventDemultiplexer::~EventDemultiplexer()
@@ -49,6 +61,9 @@ uint32_t EventDemultiplexer::StartUp()
         if (epollFd_ < 0) {
             return TIMER_ERR_BADF;
         }
+#ifdef UTILS_FDSAN
+        fdsan_exchange_owner_tag(epollFd_, 0, EVENT_DEMULTIPLEXER_FDSAN_TAG);
+#endif
     }
     return TIMER_ERR_OK;
 }
@@ -56,7 +71,11 @@ uint32_t EventDemultiplexer::StartUp()
 void EventDemultiplexer::CleanUp()
 {
     if (epollFd_ != EPOLL_INVALID_FD) {
+#ifdef UTILS_FDSAN
+        fdsan_close_with_tag(epollFd_, EVENT_DEMULTIPLEXER_FDSAN_TAG);
+#else
         close(epollFd_);
+#endif
         epollFd_ = EPOLL_INVALID_FD;
     }
 }
