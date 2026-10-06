@@ -31,9 +31,6 @@ config("utils_config") {
   if (current_os == "ios") {
     defines += [ "IOS_PLATFORM" ]
   }
-  if (is_ohos) {
-    defines += [ "OHOS_PLATFORM" ]
-  }
   if (current_os == "win" || current_os == "mingw") {
     defines += [ "WINDOWS_PLATFORM" ]
   }
@@ -45,6 +42,13 @@ config("utils_config") {
   }
   if (current_os == "ohos") {
     defines += [ "OHOS_PLATFORM" ]
+  }
+}
+
+config("utils_fdsan_config") {
+  visibility = [ ":*" ]
+  if (is_ohos) {
+    defines = [ "UTILS_FDSAN" ]
   }
 }
 
@@ -172,6 +176,7 @@ ohos_static_library("utilsbase") {
   } else {
     sources = sources_utils
     configs = [ ":utils_coverage_config" ]
+    configs += [ ":utils_fdsan_config" ]
     public_configs = [ ":utils_config" ]
     if (current_os != "android" && current_os != "ios" && !is_host_product) {
       defines = [ "CONFIG_HILOG" ]
@@ -189,6 +194,7 @@ ohos_static_library("utilsbase") {
 ohos_static_library("utilsbase_rtti") {
   visibility = [ "//foundation/multimedia/media_foundation/engine/plugin/plugins/source/video_capture:std_video_capture" ]
   sources = sources_utils
+  configs = [ ":utils_fdsan_config" ]
   public_configs = [ ":utils_config" ]
   if (current_os != "android" && current_os != "ios" && !is_host_product) {
     defines = [ "CONFIG_HILOG" ]
@@ -225,6 +231,7 @@ ohos_shared_library("utils") {
   } else {
     sources = sources_utils
     configs = [ ":utils_coverage_config" ]
+    configs += [ ":utils_fdsan_config" ]
 
     if (!is_arkui_x && !is_host_product) {
       if (c_utils_feature_intsan) {

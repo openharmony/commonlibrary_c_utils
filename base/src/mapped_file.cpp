@@ -19,13 +19,13 @@
 #include "common_mapped_file_errors.h"
 #include "file_ex.h"
 #include "utils_log.h"
-#ifdef OHOS_PLATFORM
+#ifdef UTILS_FDSAN
 #include <stdio.h>
 #endif
 
 namespace OHOS {
 namespace Utils {
-#ifdef OHOS_PLATFORM
+#ifdef UTILS_FDSAN
 static constexpr uint64_t MAPPED_FILE_FDSAN_TAG = 0xD003D00;
 #endif
 
@@ -37,7 +37,7 @@ static bool CloseFd(int& fd)
 
     int fdToClose = fd;
     fd = -1;
-#ifdef OHOS_PLATFORM
+#ifdef UTILS_FDSAN
     return fdsan_close_with_tag(fdToClose, MAPPED_FILE_FDSAN_TAG) != -1;
 #else
     return close(fdToClose) != -1;
@@ -188,7 +188,7 @@ bool MappedFile::OpenFile()
         return false;
     }
 
-#ifdef OHOS_PLATFORM
+#ifdef UTILS_FDSAN
     fdsan_exchange_owner_tag(fd, 0, MAPPED_FILE_FDSAN_TAG);
 #endif
 
